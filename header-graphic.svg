@@ -1,0 +1,55 @@
+<!-- Brain ⚡ Bolt header graphic — subtle tech lines & glow -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 420" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <!-- Deep header base -->
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%"  stop-color="#0e1e27"/>
+      <stop offset="100%" stop-color="#0c1920"/>
+    </linearGradient>
+
+    <!-- Cyan glow accents -->
+    <radialGradient id="glowCyan" cx="75%" cy="20%" r="60%">
+      <stop offset="0%" stop-color="rgba(74,201,255,0.32)"/>
+      <stop offset="60%" stop-color="rgba(74,201,255,0.08)"/>
+      <stop offset="100%" stop-color="rgba(74,201,255,0)"/>
+    </radialGradient>
+
+    <!-- Orange glow -->
+    <radialGradient id="glowOrange" cx="20%" cy="85%" r="55%">
+      <stop offset="0%" stop-color="rgba(255,140,0,0.25)"/>
+      <stop offset="60%" stop-color="rgba(255,140,0,0.06)"/>
+      <stop offset="100%" stop-color="rgba(255,140,0,0)"/>
+    </radialGradient>
+
+    <!-- Tech stroke color -->
+    <linearGradient id="tech" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%"  stop-color="rgba(74,201,255,0.55)"/>
+      <stop offset="100%" stop-color="rgba(74,201,255,0.15)"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Base -->
+  <rect width="1600" height="420" fill="url(#bg)"/>
+
+  <!-- Glows -->
+  <rect width="1600" height="420" fill="url(#glowCyan)"/>
+  <rect width="1600" height="420" fill="url(#glowOrange)"/>
+
+  <!-- Soft tech lines -->
+  <g stroke="url(#tech)" stroke-width="2" stroke-linecap="round" opacity="0.5">
+    <path d="M50 100h220m40 0h140m60 0h200m60 0h260"/>
+    <path d="M110 180h160m50 0h100m60 0h260m40 0h290"/>
+    <path d="M140 260h200m40 0h180m40 0h200m80 0h220"/>
+    <path d="M200 340h240m40 0h120m80 0h300m60 0h160"/>
+  </g>
+
+  <!-- Faint nodes -->
+  <g fill="#4ac9ff" opacity="0.35">
+    <circle cx="320" cy="100" r="3"/>
+    <circle cx="960" cy="100" r="3"/>
+    <circle cx="720" cy="180" r="3"/>
+    <circle cx="1340" cy="260" r="3"/>
+    <circle cx="540" cy="340" r="3"/>
+    <circle cx="1180" cy="340" r="3"/>
+  </g>
+</svg>
