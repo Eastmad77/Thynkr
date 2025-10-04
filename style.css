@@ -1,9 +1,9 @@
 /* ==========================================================
    The Daily Brain Bolt — Styles
-   Clean dark UI, premium feel
+   Dark, premium, neon energy accents
    ========================================================== */
 
-/* ---------- Base / Theme ---------- */
+/* ---------- Theme ---------- */
 :root{
   --bg:#0b1220;
   --bg-soft:#0e1628;
@@ -11,10 +11,10 @@
   --muted:#9fb0d0;
   --text:#e6eeff;
   --text-soft:#cfe0ff;
-  --brand:#2563eb;         /* primary */
-  --brand-2:#7c3aed;       /* accent */
-  --ok:#22c55e;            /* green */
-  --bad:#ef4444;           /* red */
+  --brand:#2563eb;
+  --brand-2:#7c3aed;
+  --ok:#22c55e;
+  --bad:#ef4444;
   --ring: rgba(37,99,235,.5);
   --shadow: 0 10px 30px rgba(0,0,0,.35);
   --radius: 16px;
@@ -24,22 +24,19 @@
 html,body{height:100%}
 body{
   margin:0;
-  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji","Segoe UI Emoji", "Segoe UI Symbol";
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans";
   color:var(--text);
-  background: radial-gradient(1200px 800px at 10% -10%, #162447 0%, transparent 60%) ,
-              radial-gradient(1200px 800px at 110% -10%, #1b2955 0%, transparent 60%) ,
-              var(--bg);
+  background:
+    radial-gradient(1200px 800px at 10% -10%, #162447 0%, transparent 60%),
+    radial-gradient(1200px 800px at 110% -10%, #1b2955 0%, transparent 60%),
+    var(--bg);
   -webkit-font-smoothing:antialiased;
   text-rendering:optimizeLegibility;
 }
 
 /* ---------- Layout ---------- */
 .page{min-height:100%}
-.container{
-  width:min(1100px, 92vw);
-  margin: 24px auto 64px;
-}
-
+.container{ width:min(1100px, 92vw); margin:24px auto 64px; }
 .card{
   background:linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.00));
   border:1px solid rgba(255,255,255,.06);
@@ -57,7 +54,7 @@ p{margin:.25rem 0 1rem}
 a{color:#8ab4ff;text-decoration:none}
 a:hover{opacity:.9}
 
-/* ---------- Header / Brand ---------- */
+/* ---------- Header ---------- */
 .site-header{
   position:sticky; top:0; z-index:50;
   display:flex; align-items:center; justify-content:space-between;
@@ -85,8 +82,7 @@ a:hover{opacity:.9}
   border-left:1px solid rgba(255,255,255,.08);
   box-shadow:-20px 0 40px rgba(0,0,0,.35);
   transition:right .35s ease;
-  padding:18px;
-  z-index:60;
+  padding:18px; z-index:60;
 }
 #sideMenu.open{ right:0; }
 
@@ -126,37 +122,47 @@ a:hover{opacity:.9}
   border:1px solid rgba(255,255,255,.08);
   box-shadow: var(--shadow);
 }
-.price{
-  font-size:1.25rem; margin:.5rem 0 1rem;
-  color:var(--text-soft)
-}
+.price{ font-size:1.25rem; margin:.5rem 0 1rem; color:var(--text-soft) }
 
-/* ---------- Streak “temperature” bar ---------- */
+/* ---------- Premium Streak (floating glow segments) ---------- */
+/* container: 12 slim segments in a row */
 #streakDisplay{
-  --barH: 14px;
   display:grid;
   grid-template-columns: repeat(12, 1fr);
-  gap:6px; margin:14px 0 8px;
+  gap:8px; margin:14px 0 8px;
 }
-.streak-bar{
-  height:var(--barH);
-  background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
-  border:1px solid rgba(255,255,255,.06);
-  border-radius:10px;
-  position:relative; overflow:hidden;
+/* each segment is a slim pill with faint inner rail */
+.streak-seg{
+  position:relative;
+  height:12px;
+  border-radius:999px;
+  overflow:hidden;
+  background: transparent;
+  box-shadow: inset 0 0 10px rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.06);
 }
-.streak-bar.correct{
-  background: linear-gradient(180deg, rgba(34,197,94,.25), rgba(34,197,94,.15));
-  border-color: rgba(34,197,94,.45);
-  box-shadow: 0 8px 14px rgba(34,197,94,.25), inset 0 0 0 999px rgba(34,197,94,.18);
+.streak-rail{
+  position:absolute; inset:2px;
+  border-radius:999px;
+  background: rgba(255,255,255,0.03);
 }
-.streak-bar.incorrect{
-  background: linear-gradient(180deg, rgba(239,68,68,.25), rgba(239,68,68,.15));
-  border-color: rgba(239,68,68,.45);
-  box-shadow: 0 8px 14px rgba(239,68,68,.22), inset 0 0 0 999px rgba(239,68,68,.16);
+/* active states add neon glow without heavy fill */
+.streak-seg.is-correct{
+  box-shadow:
+    0 0 10px rgba(34,197,94,0.20),
+    0 0 18px rgba(34,197,94,0.25),
+    inset 0 0 14px rgba(34,197,94,0.35);
+  border-color: rgba(34,197,94,0.45);
+}
+.streak-seg.is-incorrect{
+  box-shadow:
+    0 0 10px rgba(239,68,68,0.18),
+    0 0 18px rgba(239,68,68,0.25),
+    inset 0 0 14px rgba(239,68,68,0.32);
+  border-color: rgba(239,68,68,0.45);
 }
 
-/* ---------- Splash screens ---------- */
+/* ---------- Splash ---------- */
 .splash{
   position:fixed; inset:0; display:grid; place-items:center;
   background:rgba(5,8,15,.8); backdrop-filter: blur(6px);
@@ -173,11 +179,9 @@ a:hover{opacity:.9}
 .splash .msg{ color:var(--text-soft); margin:0 }
 
 /* ---------- Footer ---------- */
-.site-footer{
-  width:100%; margin:40px 0; text-align:center; color:var(--muted);
-}
+.site-footer{ width:100%; margin:40px 0; text-align:center; color:var(--muted) }
 
-/* ---------- Forms (if used later) ---------- */
+/* ---------- Forms ---------- */
 input,select,textarea{
   background:#0f1830; color:var(--text);
   border:1px solid rgba(255,255,255,.08);
@@ -185,12 +189,12 @@ input,select,textarea{
 }
 label{display:block; font-weight:600; margin:.25rem 0 .35rem}
 
-/* ---------- Utility ---------- */
+/* ---------- Utilities ---------- */
 .center{display:grid; place-items:center}
 .row{display:flex; gap:12px; align-items:center}
 .space{height:16px}
 
-/* ---------- Responsive tweaks ---------- */
+/* ---------- Responsive ---------- */
 @media (max-width:720px){
   .site-header{ padding:12px 16px }
   .brand-text small{ font-size:.7rem }
@@ -198,5 +202,5 @@ label{display:block; font-weight:600; margin:.25rem 0 .35rem}
   .price{ font-size:1.05rem }
 }
 
-/* ---------- Accessibility helpers ---------- */
+/* ---------- Accessibility ---------- */
 :focus-visible{ outline: 3px solid var(--ring); outline-offset: 2px }
