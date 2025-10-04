@@ -1,30 +1,46 @@
-<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="The Daily Brain Bolt app icon">
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+    <radialGradient id="ring" cx="50%" cy="40%" r="70%">
       <stop offset="0%" stop-color="#1a73e8"/>
-      <stop offset="100%" stop-color="#0b53c6"/>
-    </linearGradient>
-    <radialGradient id="glow" cx="50%" cy="38%" r="60%">
-      <stop offset="0%" stop-color="#29ffa1" stop-opacity=".22"/>
-      <stop offset="70%" stop-color="#29ffa1" stop-opacity="0"/>
+      <stop offset="55%" stop-color="#0b53c6"/>
+      <stop offset="100%" stop-color="#0a2a43"/>
     </radialGradient>
-    <filter id="boltShadow" x="-30%" y="-30%" width="160%" height="160%">
-      <feDropShadow dx="0" dy="8" stdDeviation="14" flood-color="#001a33" flood-opacity="0.4"/>
+    <linearGradient id="sheen" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="rgba(255,255,255,0.7)"/>
+      <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
+    </linearGradient>
+    <linearGradient id="boltFill" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#e8f7ff"/>
+    </linearGradient>
+    <filter id="innerShadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feOffset dx="0" dy="2"/>
+      <feGaussianBlur stdDeviation="6"/>
+      <feComposite in2="SourceAlpha" operator="arithmetic" k2="-1" k3="1"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 0   0 0 0 0 0   0 0 0 0 0   0 0 0 .45 0"/>
+      <feBlend in="SourceGraphic" mode="normal"/>
+    </filter>
+    <filter id="boltGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="6"/>
     </filter>
   </defs>
 
-  <!-- Full background squircle -->
-  <path fill="url(#bg)" d="M128 40c-48 0-88 40-88 88v256c0 48 40 88 88 88h256c48 0 88-40 88-88V128c0-48-40-88-88-88H128z"/>
+  <!-- Circular badge -->
+  <g filter="url(#innerShadow)">
+    <circle cx="256" cy="256" r="224" fill="url(#ring)"/>
+    <!-- soft highlight -->
+    <ellipse cx="256" cy="160" rx="180" ry="90" fill="url(#sheen)" opacity=".22"/>
+    <!-- rim -->
+    <circle cx="256" cy="256" r="224" fill="none" stroke="rgba(255,255,255,.18)" stroke-width="2"/>
+  </g>
 
-  <!-- Glow -->
-  <ellipse cx="256" cy="190" rx="210" ry="150" fill="url(#glow)"/>
-
-  <!-- Subtle inner badge -->
-  <g transform="translate(256,256) scale(0.82) translate(-256,-256)">
-    <circle cx="256" cy="272" r="120" fill="rgba(255,255,255,.06)" stroke="rgba(255,255,255,.12)" stroke-width="2"/>
-    <g filter="url(#boltShadow)">
-      <path fill="#fff"
-            d="M274 128c4 0 7 4 6 8l-26 84h72c5 0 7 6 4 9L192 406c-3 4-10 1-9-4l28-111h-64c-5 0-8-6-5-10l124-153c2-3 4-4 6-4z"/>
-    </g>
+  <!-- Bolt -->
+  <g transform="translate(0,6)">
+    <path d="M274 128c4 0 7 4 6 8l-26 84h72c5 0 7 6 4 9L192 406c-3 4-10 1-9-4l28-111h-64c-5 0-8-6-5-10l124-153c2-3 4-4 6-4z"
+          fill="url(#boltFill)"/>
+    <!-- glow -->
+    <path d="M274 128c4 0 7 4 6 8l-26 84h72c5 0 7 6 4 9L192 406c-3 4-10 1-9-4l28-111h-64c-5 0-8-6-5-10l124-153c2-3 4-4 6-4z"
+          fill="#ffffff" opacity=".55" filter="url(#boltGlow)"/>
   </g>
 </svg>
