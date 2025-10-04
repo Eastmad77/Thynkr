@@ -1,70 +1,81 @@
 /* ==========================================================
-   shell.js — Global UI Framework for The Daily Brain Bolt
-   v5012 — Handles menus, splash screens, and transitions
-   ========================================================== */
+   shell.js — Brain ⚡ Bolt
+   Compatible with the “good” index.html (mmMenuBtn/mmSideMenu)
+   - Safe null checks
+   - Menu toggle + auto-hide after 5s
+   - Optional start splash fade (redundant; app.js also hides it)
+========================================================== */
 
 console.log("[BrainBolt] Shell loaded");
 
 document.addEventListener("DOMContentLoaded", () => {
   initMenu();
-  initSplashScreens();
+  initStartSplashFallback();
+  initNotificationsToggle(); // optional, only if #notifyItem exists
 });
 
 /* ---------- Menu ---------- */
 function initMenu() {
-  const menuButton = document.getElementById("menuButton");
-  const sideMenu = document.getElementById("sideMenu");
-
-  if (!menuButton || !sideMenu) {
-    console.warn("[BrainBolt] Menu elements not found on this page — skipping initMenu()");
+  const menuBtn = document.getElementById("mmMenuBtn");
+  const side = document.getElementById("mmSideMenu");
+  if (!menuBtn || !side) {
+    // Not all pages have a menu. Don't throw.
     return;
   }
 
-  menuButton.addEventListener("click", () => {
-    sideMenu.classList.toggle("open");
-
-    // Auto-hide after 5 seconds if open
-    if (sideMenu.classList.contains("open")) {
-      setTimeout(() => {
-        sideMenu.classList.remove("open");
-      }, 5000);
+  menuBtn.addEventListener("click", () => {
+    side.classList.toggle("open");
+    if (side.classList.contains("open")) {
+      setTimeout(() => side.classList.remove("open"), 5000); // auto-hide after 5s
     }
   });
 }
 
-/* ---------- Splash Screens ---------- */
-function initSplashScreens() {
-  const splashStart = document.getElementById("splashStart");
-  const splashSuccess = document.getElementById("splashSuccess");
-  const splashFail = document.getElementById("splashFail");
+/* ---------- Start Splash (fallback / redundancy) ----------
+   Your app.js already calls killStartSplash(), but this ensures
+   the start splash fades out even if app.js is delayed.
+---------------------------------------------------------- */
+function initStartSplashFallback() {
+  const startSplash = document.getElementById("startSplash");
+  if (!startSplash) return;
 
-  // Only show start splash if it exists
-  if (splashStart) {
-    splashStart.classList.remove("hidden");
-    setTimeout(() => splashStart.classList.add("hidden"), 2500);
-  }
-
-  // Success splash auto-hide (if used manually)
-  if (splashSuccess) {
-    splashSuccess.addEventListener("show", () => {
-      splashSuccess.classList.remove("hidden");
-      setTimeout(() => splashSuccess.classList.add("hidden"), 3000);
-    });
-  }
-
-  // Fail splash auto-hide (if used manually)
-  if (splashFail) {
-    splashFail.addEventListener("show", () => {
-      splashFail.classList.remove("hidden");
-      setTimeout(() => splashFail.classList.add("hidden"), 3000);
-    });
-  }
+  // If it's still around after ~2.5s, fade it out
+  setTimeout(() => {
+    if (!document.body.contains(startSplash)) return;
+    startSplash.classList.add("hiding"); // CSS handles opacity transition
+    setTimeout(() => startSplash.remove(), 500);
+  }, 2500);
 }
 
-/* ---------- Utility (optional manual trigger) ---------- */
-window.showSplash = function(id) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  el.classList.remove("hidden");
-  setTimeout(() => el.classList.add("hidden"), 3000);
-};
+/* ---------- Notifications toggle (only if present) ---------- */
+function initNotificationsToggle() {
+  const item = document.getElementById("notifyItem");
+  if (!item) return;
+
+  function updateLabel(enabled) {
+    item.textContent = enabled ? "🔔 Notifications: ON" : "🔕 Notifications: OFF";
+  }
+
+  updateLabel(Notification && Notification.permission === "granted");
+
+  item.addEventListener("click", async () => {
+    try {
+      if (!("Notification" in window)) {
+        alert("Notifications are not supported by your browser.");
+        return;
+      }
+      if (Notification.permission === "granted") {
+        updateLabel(true);
+        return;
+      }
+      if (Notification.permission !== "denied") {
+        const perm = await Notification.requestPermission();
+        updateLabel(perm === "granted");
+      } else {
+        alert("Notifications are blocked in your browser settings.");
+      }
+    } catch (e) {
+      console.warn("Notification request failed:", e);
+    }
+  });
+}
