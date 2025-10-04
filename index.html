@@ -1,150 +1,82 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>The Daily Brain ⚡ Bolt</title>
+  <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>The Daily Brain Bolt</title>
 
-  <!-- PWA + Icons -->
-  <link rel="manifest" href="/site.webmanifest" />
   <link rel="icon" href="/favicon.svg" />
-  <link rel="apple-touch-icon" href="/icon-192.png" />
+  <link rel="manifest" href="/site.webmanifest" />
+  <link rel="stylesheet" href="/style.css?v=5012" />
 
-  <!-- Styles -->
-  <link rel="stylesheet" href="/style.css?v=4101" />
-
-  <!-- External Libs -->
-  <script defer src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-
-  <!-- App Scripts -->
-  <script defer src="/shell.js?v=460"></script>
-  <script defer src="/app.js?v=4002"></script>
+  <!-- preloads / scripts -->
+  <script src="/shell.js?v=5012" defer></script>
+  <script src="/app.js?v=5012" defer></script>
+  <link rel="prefetch" href="/service-worker.js?v=5012" />
 </head>
-<body>
-  <!-- Startup Splash -->
-  <div class="splash" id="startSplash" aria-hidden="false">
-    <div class="splash-inner">
-      <div class="splash-badge">
-        <svg class="splash-bolt" width="140" height="140" viewBox="0 0 512 512" aria-hidden="true">
-          <path fill="#fff"
-            d="M274 128c4 0 7 4 6 8l-26 84h72c5 0 7 6 4 9L192 406c-3 4-10 1-9-4l28-111h-64c-5 0-8-6-5-10l124-153c2-3 4-4 6-4z"/>
-        </svg>
-      </div>
-      <h1 class="splash-title">
-        <span class="word">Brain</span>
-        <span class="zap">⚡</span>
-        <span class="word">Bolt</span>
-      </h1>
-    </div>
-  </div>
-
-  <!-- Hero Header -->
-  <header class="topbar hero">
-    <div class="hero-bg">
-      <img src="/header-graphic.svg" alt="" aria-hidden="true" />
-    </div>
-    <div class="hero-inner">
-      <div class="brand">
-        <img src="/app-icon.svg" class="logo" alt="logo" />
-        <div class="brand-text">
-          <div class="kicker">The Daily</div>
-          <h1>Brain <span class="zap">⚡</span> Bolt</h1>
-          <p class="tagline">Daily 12-question challenge</p>
-        </div>
-      </div>
-      <div class="actions">
-        <button id="soundBtn" aria-label="Toggle sound">🔊</button>
-        <button id="mmMenuBtn" class="menu" aria-label="Open menu">☰</button>
-      </div>
-    </div>
-    <div class="status">
-      <span id="dateLabel"></span>
-      <span id="setLabel">Ready</span>
-      <span id="progressLabel">Q 0/12</span>
-    </div>
+<body class="page">
+  <header class="site-header">
+    <a class="brand" href="/"><img src="/app-icon.svg" alt="" class="brand-icon"> <span class="brand-text"><small>The Daily</small> Brain ⚡ Bolt</span></a>
+    <button id="menuButton" class="menu-button" aria-label="Menu">☰</button>
   </header>
 
-  <!-- Sidebar -->
-  <aside class="side-menu" id="mmSideMenu" aria-hidden="true">
-    <nav class="menu-nav" aria-label="Main">
-      <a href="/" aria-current="page">🏠 Home</a>
-      <a href="/about.html">ℹ️ About</a>
-      <a href="/contact.html">✉️ Contact</a>
-      <a href="/privacy.html">🔒 Privacy</a>
-      <a href="/terms.html">📄 Terms</a>
-      <a href="/signin.html">🔑 Sign In</a>
-      <a href="/pro.html">⭐ Pro</a>
-      <a href="/admin.html">🛠️ Admin</a>
-      <button type="button" id="notifyItem">🔕 Notifications: OFF</button>
+  <!-- Slide-out menu (auto-hides in JS after 5s) -->
+  <aside id="sideMenu" aria-hidden="true">
+    <nav>
+      <p><a href="/pro.html">Go Pro</a></p>
+      <p><a href="/about.html">About</a></p>
+      <p><a href="/privacy.html">Privacy</a> · <a href="/terms.html">Terms</a></p>
     </nav>
   </aside>
 
-  <!-- Main -->
   <main class="container">
-    <section class="card quiz-card">
-      <!-- Overall elapsed timer -->
-      <div class="timer-wrapper"><div id="timerBar" class="timer-bar"></div></div>
+    <section class="card">
+      <h1>Daily 12-question challenge</h1>
+      <p class="muted">Answer as many as you can. Three total incorrect ends the game. Three correct in a row removes one incorrect. Good luck!</p>
 
-      <!-- Per-question 10s timer -->
-      <div class="qtimer-wrapper" title="10-second question timer">
-        <div id="qTimerBar" class="qtimer-bar"></div>
+      <!-- Premium glow streak bar (Option 2) -->
+      <div id="streakDisplay">
+        <div class="streak-bar">
+          <div class="streak-fill-green" id="streakGreen"></div>
+          <div class="streak-fill-red"   id="streakRed"></div>
+        </div>
       </div>
 
-      <div class="meta">
-        <span id="elapsedTime" class="elapsed-time">0:00</span>
-        <div class="pill" id="pillScore">Score 0</div>
-      </div>
-
-      <!-- 12-segment streak “temperature” bar -->
-      <div class="streak-vis" id="streakVis" aria-label="Answer streak visualization"></div>
-
-      <div id="questionBox" class="question-box">Press Start to Play</div>
-      <div id="choices" class="choices"></div>
-
-      <div class="controls">
-        <button id="startBtn" class="btn primary">▶️ Start</button>
-        <button id="shuffleBtn" class="btn">🔀 Shuffle</button>
-        <button id="shareBtn" class="btn ghost">📤 Share</button>
-        <button id="playAgainBtn" class="btn" style="display:none;">🔄 Play Again</button>
-      </div>
-
-      <div id="gameOverBox" class="gameover" style="display:none;">
-        <p id="gameOverText"></p>
+      <!-- Question -->
+      <h2 id="questionText">Loading…</h2>
+      <div class="row" style="flex-wrap:wrap; gap:10px; margin-top:10px">
+        <button class="btn option">A</button>
+        <button class="btn option">B</button>
+        <button class="btn option">C</button>
+        <button class="btn option">D</button>
       </div>
     </section>
   </main>
 
-  <!-- Countdown -->
-  <div id="countdownOverlay" class="countdown-overlay" hidden aria-hidden="true">
-    <div class="countdown-dot" id="countNum">3</div>
-  </div>
-
-  <!-- Success Splash (no buttons; auto-hide to reset) -->
-  <div id="successSplash" class="success-splash" aria-hidden="true">
-    <div class="splash-inner success-anim">
-      <div class="splash-badge">
-        <svg class="splash-bolt" width="120" height="120" viewBox="0 0 512 512" aria-hidden="true">
-          <path fill="#fff"
-            d="M274 128c4 0 7 4 6 8l-26 84h72c5 0 7 6 4 9L192 406c-3 4-10 1-9-4l28-111h-64c-5 0-8-6-5-10l124-153c2-3 4-4 6-4z"/>
-        </svg>
-      </div>
-      <h2 class="splash-title">
-        <span class="word">Quiz</span>
-        <span class="zap">⚡</span>
-        <span class="word">Complete!</span>
-      </h2>
-      <p class="splash-msg">A fresh quiz will be ready for you tomorrow ⚡</p>
+  <!-- Splash screens -->
+  <div id="splashStart" class="splash hidden" aria-live="polite">
+    <div class="splash-card">
+      <h2 class="title">Welcome back</h2>
+      <p class="msg">Today’s quiz is ready.</p>
     </div>
   </div>
 
-  <footer class="footer">
-    <p>© 2025 The Daily Brain ⚡ Bolt · <a href="/privacy.html">Privacy</a> · <a href="/terms.html">Terms</a></p>
-  </footer>
+  <div id="splashSuccess" class="splash hidden" aria-live="polite">
+    <div class="splash-card">
+      <h2 class="title">Nice work!</h2>
+      <p class="msg">You finished today’s 12.</p>
+    </div>
+  </div>
 
-  <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/service-worker.js?v=351');
-    }
-  </script>
+  <div id="splashFail" class="splash hidden" aria-live="polite">
+    <div class="splash-card">
+      <h2 class="title">Try again tomorrow</h2>
+      <p class="msg">You reached 3 incorrect.</p>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <p>© 2025 Brain ⚡ Bolt · <a href="/privacy.html">Privacy</a> · <a href="/terms.html">Terms</a></p>
+  </footer>
 </body>
 </html>
