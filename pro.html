@@ -4,36 +4,37 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Pro • The Daily Brain Bolt</title>
+
   <link rel="icon" href="/favicon.svg" />
-  <link rel="stylesheet" href="/style.css" />
-  <script defer src="/app.js"></script>
+  <link rel="stylesheet" href="/style.css?v=5012" />
+  <script src="/app.js?v=5012" defer></script>
+  <script src="/shell.js?v=5012" defer></script>
 </head>
 <body class="page">
   <header class="site-header">
-    <a class="brand" href="/"><img src="/app-icon.svg" alt="" class="brand-icon"> <span class="brand-text"><small>The Daily</small> Brain ⚡ Bolt</span></a>
+    <a class="brand" href="/"><img src="/app-icon.svg" alt="" class="brand-icon"><span class="brand-text"><small>The Daily</small> Brain ⚡ Bolt</span></a>
     <button id="menuButton" class="menu-button" aria-label="Menu">☰</button>
   </header>
 
   <main class="container">
     <section class="card">
       <h1>Pro</h1>
-      <p class="muted">Unlock advanced stats, hard mode, ad-free play, and streak boosts.</p>
+      <p class="muted">Unlock ad-free play, advanced stats, hard mode, and streak boosts.</p>
 
       <div class="pricing-grid">
         <div class="price-card">
           <h2>Monthly</h2>
-          <p class="price"><span id="price-monthly-label">$ / mo</span></p>
-          <button id="btnSubscribeMonthly" class="btn btn-primary">Subscribe Monthly</button>
+          <p class="price">NZ$3.99 / mo</p>
+          <button class="btn btn-primary" id="btnMonthly">Subscribe Monthly</button>
         </div>
         <div class="price-card">
           <h2>Yearly</h2>
-          <p class="price"><span id="price-yearly-label">$ / yr</span></p>
-          <button id="btnSubscribeYearly" class="btn btn-primary">Subscribe Yearly</button>
-          <p class="muted small">Save big vs. monthly</p>
+          <p class="price">NZ$39.99 / yr</p>
+          <button class="btn btn-primary" id="btnYearly">Subscribe Yearly</button>
+          <p class="muted small">Save big vs monthly</p>
         </div>
       </div>
 
-      <p id="proStatus" class="muted small" role="status"></p>
       <div id="proError" class="alert hidden" role="alert"></div>
     </section>
 
@@ -53,17 +54,9 @@
   </footer>
 
   <script>
-    // Attach button handlers after app.js loads
     window.addEventListener('DOMContentLoaded', () => {
-      const monthlyBtn = document.getElementById('btnSubscribeMonthly');
-      const yearlyBtn  = document.getElementById('btnSubscribeYearly');
-
-      monthlyBtn?.addEventListener('click', () => startCheckout('monthly'));
-      yearlyBtn?.addEventListener('click',  () => startCheckout('yearly'));
-
-      // Optional: show friendly labels if you want static text
-      // document.getElementById('price-monthly-label').textContent = '$3.99 / mo';
-      // document.getElementById('price-yearly-label').textContent  = '$39.99 / yr';
+      document.getElementById('btnMonthly')?.addEventListener('click', () => startCheckout('monthly'));
+      document.getElementById('btnYearly') ?.addEventListener('click', () => startCheckout('yearly'));
     });
   </script>
 </body>
