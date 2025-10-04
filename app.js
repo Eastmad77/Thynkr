@@ -1,14 +1,14 @@
 /* ==========================================================
    The Daily Brain Bolt — App Logic
-   Version 3.3 (Pro-ready)
+   v3.3 / cache v=5012
    ----------------------------------------------------------
    - Splash screens (auto-hide)
    - Slide-out menu (auto-hide after 5s)
    - Quiz logic (12 Qs)
-   - Premium streak bar (floating glow segments)
+   - Premium streak bar (floating glow, left=green, right=red)
    - 3 total incorrect ends game (non-consecutive)
    - 3 correct in a row removes 1 incorrect
-   - Stripe Checkout integration for Pro
+   - Stripe Checkout integration (Pro)
 ========================================================== */
 
 console.log("[BrainBolt] App loaded");
@@ -18,16 +18,15 @@ let currentQuestionIndex = 0;
 let correctCount = 0;
 let incorrectCount = 0;
 let questions = [];
-let streak = 0;                      // consecutive-correct streak
+let streak = 0;                      // consecutive correct
 let totalQuestions = 12;
 let answeredQuestions = 0;
-let streakIndicators = [];           // array of 'green' | 'red' per question answered
+let streakIndicators = [];           // 'green' | 'red'
 
 // ---------- DOM ----------
 const splashStart   = document.getElementById("splashStart");
 const splashSuccess = document.getElementById("splashSuccess");
 const splashFail    = document.getElementById("splashFail");
-const streakDisplay = document.getElementById("streakDisplay");
 const menuButton    = document.getElementById("menuButton");
 const sideMenu      = document.getElementById("sideMenu");
 
@@ -62,13 +61,14 @@ function initMenu() {
   if (!menuButton || !sideMenu) return;
   menuButton.addEventListener("click", () => {
     sideMenu.classList.toggle("open");
-    // auto-hide after 5s
-    setTimeout(() => sideMenu.classList.remove("open"), 5000);
+    setTimeout(() => sideMenu.classList.remove("open"), 5000); // auto-hide
   });
 }
 
 // ---------- Quiz ----------
 async function initQuiz() {
+  const qEl = document.getElementById("questionText");
+  if (!qEl) return; // not on the quiz page
   try {
     const res = await fetch("/questions.csv");
     const text = await res.text();
@@ -76,6 +76,7 @@ async function initQuiz() {
     startQuiz();
   } catch (err) {
     console.error("Failed to load quiz:", err);
+    qEl.textContent = "Could not load questions.";
   }
 }
 
@@ -97,12 +98,13 @@ function startQuiz() {
   streak = 0;
   answeredQuestions = 0;
   streakIndicators = [];
-  renderStreakDisplay(); // draw 12 empty segments
+  refreshStreakBar();     // show empty bar
   showQuestion();
 }
 
 function showQuestion() {
   if (currentQuestionIndex >= totalQuestions) {
+    refreshStreakBar();
     showSuccessSplash();
     return;
   }
@@ -113,7 +115,6 @@ function showQuestion() {
   if (!qEl || !opts.length) return;
 
   qEl.textContent = q.Question;
-
   const shuffled = shuffle([q.OptionA, q.OptionB, q.OptionC, q.OptionD]);
   opts.forEach((btn, i) => {
     btn.textContent = shuffled[i];
@@ -131,101 +132,60 @@ function handleAnswer(isCorrect) {
     streak++;
     streakIndicators.push("green");
 
-    // remove 1 incorrect if 3 correct in a row
+    // forgiveness: remove 1 incorrect after 3 correct in a row
     if (incorrectCount > 0 && streak >= 3) {
       incorrectCount--;
-      streak = 0; // reset the "healing" streak
+      streak = 0; // reset the forgiveness streak
     }
   } else {
     incorrectCount++;
     streak = 0;
     streakIndicators.push("red");
 
-    // end after 3 total incorrect
     if (incorrectCount >= 3) {
-      updateStreakDisplay(); // show final state
+      refreshStreakBar(); // final state
       showFailSplash();
       return;
     }
   }
 
-  updateStreakDisplay();
+  refreshStreakBar();
   currentQuestionIndex++;
   showQuestion();
 }
 
-// ---------- Premium Streak Bar (glowing segments) ----------
-function renderStreakDisplay() {
-  if (!streakDisplay) return;
-  streakDisplay.innerHTML = "";
-  for (let i = 0; i < totalQuestions; i++) {
-    const seg = document.createElement("div");
-    seg.className = "streak-seg";
-    // add inner light rail for subtle base
-    const rail = document.createElement("div");
-    rail.className = "streak-rail";
-    seg.appendChild(rail);
-    streakDisplay.appendChild(seg);
-  }
-  updateStreakDisplay();
-}
+// ---------- Premium streak bar (glow) ----------
+function refreshStreakBar() {
+  const greenEl = document.getElementById('streakGreen');
+  const redEl   = document.getElementById('streakRed');
+  if (!greenEl || !redEl) return;
 
-function updateStreakDisplay() {
-  if (!streakDisplay) return;
-  const segs = Array.from(streakDisplay.children);
+  const greens = streakIndicators.filter(x => x === 'green').length;
+  const reds   = streakIndicators.filter(x => x === 'red').length;
 
-  // clear classes
-  segs.forEach(s => {
-    s.classList.remove("is-correct","is-incorrect");
-  });
+  const greenPct = Math.max(0, Math.min(100, (greens / totalQuestions) * 100));
+  const redPct   = Math.max(0, Math.min(100, (reds   / totalQuestions) * 100));
 
-  // apply glow state per answered question
-  for (let i = 0; i < streakIndicators.length; i++) {
-    const seg = segs[i];
-    if (!seg) continue;
-    if (streakIndicators[i] === "green") seg.classList.add("is-correct");
-    if (streakIndicators[i] === "red")   seg.classList.add("is-incorrect");
-  }
+  greenEl.style.width = `${greenPct}%`; // grows from left
+  redEl.style.width   = `${redPct}%`;   // grows from right (CSS handles right anchor)
 }
 
 // ---------- Stripe Checkout ----------
 async function startCheckout(plan) {
   try {
-    const res = await fetch("/.netlify/functions/create-checkout-session", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ plan }) // "monthly" | "yearly"
+    const res = await fetch('/.netlify/functions/create-checkout-session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ plan })   // "monthly" or "yearly"
     });
-
-    if (!res.ok) {
-      const text = await res.text();
-      throw new Error(`Checkout failed: ${text}`);
-    }
-
-    const data = await res.json(); // { url }
-    if (data && data.url) {
-      window.location.href = data.url;
-    } else {
-      throw new Error("No checkout URL returned");
-    }
+    if (!res.ok) throw new Error(await res.text());
+    const { url } = await res.json();
+    if (url) window.location.href = url; else throw new Error('No URL returned');
   } catch (err) {
-    console.error("Checkout error:", err);
-    alert("Could not start checkout. Please try again.");
+    console.error(err);
+    const el = document.getElementById('proError');
+    if (el) { el.classList.remove('hidden'); el.textContent = 'Checkout failed. Please try again.'; }
+    else alert('Checkout failed. Please try again.');
   }
 }
 window.startCheckout = startCheckout;
-
-// ---------- Daily Streak (placeholder local) ----------
-function updateDailyStreak() {
-  const lastPlayed = localStorage.getItem("lastPlayed");
-  const today = new Date().toDateString();
-
-  if (lastPlayed === today) return;
-  const prev = parseInt(localStorage.getItem("dayStreak") || "0", 10);
-  const diff = lastPlayed ? (new Date(today) - new Date(lastPlayed)) / 86400000 : 0;
-
-  if (diff === 1) localStorage.setItem("dayStreak", prev + 1);
-  else if (diff > 1) localStorage.setItem("dayStreak", 0);
-
-  localStorage.setItem("lastPlayed", today);
-}
