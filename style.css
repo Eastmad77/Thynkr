@@ -1,9 +1,8 @@
 /* ==========================================================
    The Daily Brain Bolt — Styles
-   Dark, premium, neon energy accents
+   Dark premium UI with neon energy accents
    ========================================================== */
 
-/* ---------- Theme ---------- */
 :root{
   --bg:#0b1220;
   --bg-soft:#0e1628;
@@ -13,8 +12,6 @@
   --text-soft:#cfe0ff;
   --brand:#2563eb;
   --brand-2:#7c3aed;
-  --ok:#22c55e;
-  --bad:#ef4444;
   --ring: rgba(37,99,235,.5);
   --shadow: 0 10px 30px rgba(0,0,0,.35);
   --radius: 16px;
@@ -34,7 +31,7 @@ body{
   text-rendering:optimizeLegibility;
 }
 
-/* ---------- Layout ---------- */
+/* Layout */
 .page{min-height:100%}
 .container{ width:min(1100px, 92vw); margin:24px auto 64px; }
 .card{
@@ -44,7 +41,6 @@ body{
   padding:24px;
   box-shadow: var(--shadow);
 }
-
 h1,h2,h3{margin:0 0 .5rem}
 h1{font-size:clamp(28px, 4vw, 40px); letter-spacing:.2px}
 h2{font-size:clamp(20px, 2.8vw, 28px); color:var(--text-soft)}
@@ -54,7 +50,7 @@ p{margin:.25rem 0 1rem}
 a{color:#8ab4ff;text-decoration:none}
 a:hover{opacity:.9}
 
-/* ---------- Header ---------- */
+/* Header */
 .site-header{
   position:sticky; top:0; z-index:50;
   display:flex; align-items:center; justify-content:space-between;
@@ -68,13 +64,12 @@ a:hover{opacity:.9}
 .menu-button{
   appearance:none; border:0; outline:0;
   width:40px;height:40px; border-radius:12px;
-  color:var(--text); background:var(--card);
+  color:var(--text); background:#0f1830;
   display:grid; place-items:center; cursor:pointer;
   box-shadow:var(--shadow);
 }
-.menu-button:hover{filter:brightness(1.06)}
 
-/* ---------- Slide-out Menu ---------- */
+/* Slide-out menu */
 #sideMenu{
   position:fixed; inset:auto 0 0 auto; top:64px; right:-340px;
   width:320px; height:calc(100dvh - 64px);
@@ -86,7 +81,7 @@ a:hover{opacity:.9}
 }
 #sideMenu.open{ right:0; }
 
-/* ---------- Buttons ---------- */
+/* Buttons */
 .btn{
   appearance:none; border:0; outline:0; cursor:pointer;
   padding:.9rem 1.1rem; border-radius:14px;
@@ -96,11 +91,9 @@ a:hover{opacity:.9}
   box-shadow: 0 6px 16px rgba(0,0,0,.25);
 }
 .btn:hover{ transform: translateY(-1px); }
-.btn:active{ transform: translateY(0); }
 .btn-primary{ background: linear-gradient(135deg, var(--brand), #3182f6); color:#fff; box-shadow: 0 10px 24px rgba(37,99,235,.35)}
-.btn-primary:focus{ box-shadow: 0 0 0 4px var(--ring) }
 
-/* ---------- Alerts ---------- */
+/* Alerts */
 .alert{
   background: #1f2a4a;
   border:1px solid rgba(138,180,255,.25);
@@ -109,7 +102,7 @@ a:hover{opacity:.9}
 }
 .hidden{display:none}
 
-/* ---------- Pro Pricing ---------- */
+/* Pro pricing */
 .pricing-grid{
   display:grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
@@ -124,45 +117,37 @@ a:hover{opacity:.9}
 }
 .price{ font-size:1.25rem; margin:.5rem 0 1rem; color:var(--text-soft) }
 
-/* ---------- Premium Streak (floating glow segments) ---------- */
-/* container: 12 slim segments in a row */
-#streakDisplay{
-  display:grid;
-  grid-template-columns: repeat(12, 1fr);
-  gap:8px; margin:14px 0 8px;
+/* ---------- Premium Streak (floating glow) ---------- */
+#streakDisplay { margin: 12px 0; }
+.streak-bar{
+  position: relative;
+  width: 100%;
+  height: 10px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.03);
+  overflow: hidden;
+  box-shadow: 0 0 10px rgba(255,255,255,0.05) inset;
 }
-/* each segment is a slim pill with faint inner rail */
-.streak-seg{
-  position:relative;
-  height:12px;
-  border-radius:999px;
-  overflow:hidden;
-  background: transparent;
-  box-shadow: inset 0 0 10px rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.06);
+/* green grows from left */
+.streak-fill-green{
+  position:absolute; left:0; top:0;
+  height:100%; width:0%;
+  background: linear-gradient(90deg, #00ff99, #22c55e);
+  border-radius:20px;
+  box-shadow: 0 0 12px rgba(34,197,94,.65);
+  transition: width .35s ease;
 }
-.streak-rail{
-  position:absolute; inset:2px;
-  border-radius:999px;
-  background: rgba(255,255,255,0.03);
-}
-/* active states add neon glow without heavy fill */
-.streak-seg.is-correct{
-  box-shadow:
-    0 0 10px rgba(34,197,94,0.20),
-    0 0 18px rgba(34,197,94,0.25),
-    inset 0 0 14px rgba(34,197,94,0.35);
-  border-color: rgba(34,197,94,0.45);
-}
-.streak-seg.is-incorrect{
-  box-shadow:
-    0 0 10px rgba(239,68,68,0.18),
-    0 0 18px rgba(239,68,68,0.25),
-    inset 0 0 14px rgba(239,68,68,0.32);
-  border-color: rgba(239,68,68,0.45);
+/* red grows from right */
+.streak-fill-red{
+  position:absolute; right:0; top:0;
+  height:100%; width:0%;
+  background: linear-gradient(90deg, #ff4d4d, #ef4444);
+  border-radius:20px;
+  box-shadow: 0 0 12px rgba(239,68,68,.6);
+  transition: width .35s ease;
 }
 
-/* ---------- Splash ---------- */
+/* Splash */
 .splash{
   position:fixed; inset:0; display:grid; place-items:center;
   background:rgba(5,8,15,.8); backdrop-filter: blur(6px);
@@ -178,29 +163,18 @@ a:hover{opacity:.9}
 .splash .title{ font-size:clamp(26px, 5vw, 36px); margin:0 0 8px }
 .splash .msg{ color:var(--text-soft); margin:0 }
 
-/* ---------- Footer ---------- */
+/* Footer */
 .site-footer{ width:100%; margin:40px 0; text-align:center; color:var(--muted) }
 
-/* ---------- Forms ---------- */
+/* Forms */
 input,select,textarea{
   background:#0f1830; color:var(--text);
   border:1px solid rgba(255,255,255,.08);
   border-radius:12px; padding:.75rem .9rem; width:100%;
 }
-label{display:block; font-weight:600; margin:.25rem 0 .35rem}
 
-/* ---------- Utilities ---------- */
-.center{display:grid; place-items:center}
-.row{display:flex; gap:12px; align-items:center}
-.space{height:16px}
-
-/* ---------- Responsive ---------- */
+/* Responsive */
 @media (max-width:720px){
   .site-header{ padding:12px 16px }
-  .brand-text small{ font-size:.7rem }
   .container{ margin:16px auto 56px }
-  .price{ font-size:1.05rem }
 }
-
-/* ---------- Accessibility ---------- */
-:focus-visible{ outline: 3px solid var(--ring); outline-offset: 2px }
