@@ -1,82 +1,81 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>The Daily Brain Bolt</title>
-
-  <link rel="icon" href="/favicon.svg" />
-  <link rel="manifest" href="/site.webmanifest" />
-  <link rel="stylesheet" href="/style.css?v=5012" />
-
-  <!-- preloads / scripts -->
-  <script src="/shell.js?v=5012" defer></script>
-  <script src="/app.js?v=5012" defer></script>
-  <link rel="prefetch" href="/service-worker.js?v=5012" />
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="style.css?v=5012" />
+  <meta name="theme-color" content="#0a2a43" />
 </head>
-<body class="page">
-  <header class="site-header">
-    <a class="brand" href="/"><img src="/app-icon.svg" alt="" class="brand-icon"> <span class="brand-text"><small>The Daily</small> Brain ⚡ Bolt</span></a>
-    <button id="menuButton" class="menu-button" aria-label="Menu">☰</button>
+
+<body>
+  <!-- Splash Screen -->
+  <div id="splashStart" class="splash-screen">
+    <div class="splash-content">
+      <img src="app-icon.svg" alt="App Icon" class="splash-logo" />
+      <h1 class="splash-title"><span class="small-title">The Daily</span><br><span class="main-title">Brain Bolt ⚡</span></h1>
+      <div class="loader"></div>
+    </div>
+  </div>
+
+  <!-- Success Splash -->
+  <div id="splashSuccess" class="splash-screen hidden">
+    <div class="splash-content">
+      <h1 class="splash-title">Nice work! ⚡</h1>
+      <p>You completed today’s quiz.</p>
+    </div>
+  </div>
+
+  <!-- Fail Splash -->
+  <div id="splashFail" class="splash-screen hidden">
+    <div class="splash-content">
+      <h1 class="splash-title">Game Over 😅</h1>
+      <p>Try again tomorrow!</p>
+    </div>
+  </div>
+
+  <!-- Sidebar Menu -->
+  <header>
+    <button id="menuButton" class="menu-button">☰</button>
   </header>
+  <nav id="sideMenu" class="side-menu">
+    <ul>
+      <li><a href="index.html">🏠 Home</a></li>
+      <li><a href="pro.html">💎 Pro</a></li>
+      <li><a href="about.html">ℹ️ About</a></li>
+      <li><a href="contact.html">📬 Contact</a></li>
+      <li><a href="signin.html">🔑 Sign In</a></li>
+    </ul>
+  </nav>
 
-  <!-- Slide-out menu (auto-hides in JS after 5s) -->
-  <aside id="sideMenu" aria-hidden="true">
-    <nav>
-      <p><a href="/pro.html">Go Pro</a></p>
-      <p><a href="/about.html">About</a></p>
-      <p><a href="/privacy.html">Privacy</a> · <a href="/terms.html">Terms</a></p>
-    </nav>
-  </aside>
-
-  <main class="container">
-    <section class="card">
-      <h1>Daily 12-question challenge</h1>
-      <p class="muted">Answer as many as you can. Three total incorrect ends the game. Three correct in a row removes one incorrect. Good luck!</p>
-
-      <!-- Premium glow streak bar (Option 2) -->
-      <div id="streakDisplay">
-        <div class="streak-bar">
-          <div class="streak-fill-green" id="streakGreen"></div>
-          <div class="streak-fill-red"   id="streakRed"></div>
-        </div>
+  <!-- Main Quiz Interface -->
+  <main id="quizApp" class="quiz-container hidden">
+    <div class="quiz-header">
+      <h2>Question <span id="question-number">1</span> of <span id="total-questions">12</span></h2>
+      <div class="streak-bar">
+        <div id="streak-fill-green" class="streak-fill-green"></div>
+        <div id="streak-fill-red" class="streak-fill-red"></div>
       </div>
+    </div>
 
-      <!-- Question -->
-      <h2 id="questionText">Loading…</h2>
-      <div class="row" style="flex-wrap:wrap; gap:10px; margin-top:10px">
-        <button class="btn option">A</button>
-        <button class="btn option">B</button>
-        <button class="btn option">C</button>
-        <button class="btn option">D</button>
-      </div>
-    </section>
+    <div class="question-box">
+      <p id="question-text">Loading question...</p>
+    </div>
+
+    <div class="options-grid">
+      <button class="option-btn" id="optA"></button>
+      <button class="option-btn" id="optB"></button>
+      <button class="option-btn" id="optC"></button>
+      <button class="option-btn" id="optD"></button>
+    </div>
   </main>
 
-  <!-- Splash screens -->
-  <div id="splashStart" class="splash hidden" aria-live="polite">
-    <div class="splash-card">
-      <h2 class="title">Welcome back</h2>
-      <p class="msg">Today’s quiz is ready.</p>
-    </div>
-  </div>
-
-  <div id="splashSuccess" class="splash hidden" aria-live="polite">
-    <div class="splash-card">
-      <h2 class="title">Nice work!</h2>
-      <p class="msg">You finished today’s 12.</p>
-    </div>
-  </div>
-
-  <div id="splashFail" class="splash hidden" aria-live="polite">
-    <div class="splash-card">
-      <h2 class="title">Try again tomorrow</h2>
-      <p class="msg">You reached 3 incorrect.</p>
-    </div>
-  </div>
-
-  <footer class="site-footer">
-    <p>© 2025 Brain ⚡ Bolt · <a href="/privacy.html">Privacy</a> · <a href="/terms.html">Terms</a></p>
+  <footer>
+    <p>&copy; 2025 The Daily Brain Bolt ⚡</p>
   </footer>
+
+  <script src="shell.js?v=5012" defer></script>
+  <script src="app.js?v=5012" defer></script>
 </body>
 </html>
