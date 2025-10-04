@@ -1,53 +1,70 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Pro – Brain ⚡ Bolt</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="icon" href="/favicon.svg">
-  <link rel="stylesheet" href="/style.css?v=330">
-  <script defer src="/shell.js?v=330"></script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Pro • The Daily Brain Bolt</title>
+  <link rel="icon" href="/favicon.svg" />
+  <link rel="stylesheet" href="/style.css" />
+  <script defer src="/app.js"></script>
 </head>
-<body>
-  <header class="topbar hero">
-    <div class="hero-bg"></div>
-    <div class="hero-inner">
-      <div class="brand">
-        <img src="/app-icon.svg" class="logo" alt="logo" />
-        <div class="brand-text">
-          <h1>Brain ⚡ Bolt</h1>
-          <p class="tagline">Daily 12-question challenge</p>
-        </div>
-      </div>
-      <div class="actions">
-        <button id="mmMenuBtn" class="menu" aria-label="Open menu">☰</button>
-      </div>
-    </div>
-    <div class="status"><span>Pro</span></div>
+<body class="page">
+  <header class="site-header">
+    <a class="brand" href="/"><img src="/app-icon.svg" alt="" class="brand-icon"> <span class="brand-text"><small>The Daily</small> Brain ⚡ Bolt</span></a>
+    <button id="menuButton" class="menu-button" aria-label="Menu">☰</button>
   </header>
-
-  <aside class="side-menu" id="mmSideMenu" aria-hidden="true">
-    <nav class="menu-nav" aria-label="Main">
-      <a href="/">🏠 Home</a>
-      <a href="/about.html">ℹ️ About</a>
-      <a href="/contact.html">✉️ Contact</a>
-      <a href="/privacy.html">🔒 Privacy</a>
-      <a href="/terms.html">📄 Terms</a>
-      <a href="/signin.html">🔑 Sign In</a>
-      <a href="/pro.html" aria-current="page">⭐ Pro</a>
-      <button type="button" id="notifyItem">🔕 Notifications: OFF</button>
-    </nav>
-  </aside>
 
   <main class="container">
     <section class="card">
       <h1>Pro</h1>
-      <p>Pro features coming soon. Expect advanced stats, hard mode, and streak boosts.</p>
+      <p class="muted">Unlock advanced stats, hard mode, ad-free play, and streak boosts.</p>
+
+      <div class="pricing-grid">
+        <div class="price-card">
+          <h2>Monthly</h2>
+          <p class="price"><span id="price-monthly-label">$ / mo</span></p>
+          <button id="btnSubscribeMonthly" class="btn btn-primary">Subscribe Monthly</button>
+        </div>
+        <div class="price-card">
+          <h2>Yearly</h2>
+          <p class="price"><span id="price-yearly-label">$ / yr</span></p>
+          <button id="btnSubscribeYearly" class="btn btn-primary">Subscribe Yearly</button>
+          <p class="muted small">Save big vs. monthly</p>
+        </div>
+      </div>
+
+      <p id="proStatus" class="muted small" role="status"></p>
+      <div id="proError" class="alert hidden" role="alert"></div>
+    </section>
+
+    <section class="card">
+      <h2>What you get</h2>
+      <ul class="bullets">
+        <li>Ad-free experience</li>
+        <li>Advanced stats & streak insights</li>
+        <li>Hard mode + bonus sets</li>
+        <li>Priority features</li>
+      </ul>
     </section>
   </main>
 
-  <footer class="footer">
+  <footer class="site-footer">
     <p>© 2025 Brain ⚡ Bolt · <a href="/privacy.html">Privacy</a> · <a href="/terms.html">Terms</a></p>
   </footer>
+
+  <script>
+    // Attach button handlers after app.js loads
+    window.addEventListener('DOMContentLoaded', () => {
+      const monthlyBtn = document.getElementById('btnSubscribeMonthly');
+      const yearlyBtn  = document.getElementById('btnSubscribeYearly');
+
+      monthlyBtn?.addEventListener('click', () => startCheckout('monthly'));
+      yearlyBtn?.addEventListener('click',  () => startCheckout('yearly'));
+
+      // Optional: show friendly labels if you want static text
+      // document.getElementById('price-monthly-label').textContent = '$3.99 / mo';
+      // document.getElementById('price-yearly-label').textContent  = '$39.99 / yr';
+    });
+  </script>
 </body>
 </html>
