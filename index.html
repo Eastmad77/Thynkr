@@ -10,11 +10,11 @@
   <link rel="icon" href="/favicon.svg" />
 
   <!-- Styles -->
-  <link rel="stylesheet" href="/style.css?v=5103" />
+  <link rel="stylesheet" href="/style.css?v=5104" />
 
   <!-- Libraries & App scripts -->
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js" defer></script>
-  <script src="/shell.js?v=5103" defer></script>
+  <script src="/shell.js?v=5104" defer></script>
   <script src="/app.js?v=5103" defer></script>
 </head>
 <body>
@@ -45,7 +45,7 @@
 
       <div class="actions">
         <button id="mmMenuBtn" aria-label="Menu">☰</button>
-        <button id="notifyItem" aria-label="Notifications">🔔 Notifications: ON</button>
+        <!-- Notifications moved to sidebar -->
         <button id="soundBtn" aria-label="Sound">🔊</button>
       </div>
     </div>
@@ -66,6 +66,7 @@
       <a href="/privacy.html">🔒 Privacy</a>
       <a href="/terms.html">📄 Terms</a>
       <a href="/contact.html">✉️ Contact</a>
+      <button id="notifyItem" type="button">🔔 Notifications: ON</button>
     </nav>
   </aside>
 
