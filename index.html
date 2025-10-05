@@ -5,16 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>The Daily Brain Bolt</title>
 
+  <!-- PWA / Icons -->
   <link rel="manifest" href="/site.webmanifest" />
   <link rel="icon" href="/favicon.svg" />
 
   <!-- Styles -->
-  <link rel="stylesheet" href="/style.css?v=5102" />
+  <link rel="stylesheet" href="/style.css?v=5103" />
 
   <!-- Libraries & App scripts -->
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js" defer></script>
-  <script src="/shell.js?v=5102" defer></script>
-  <script src="/app.js?v=5102" defer></script>
+  <script src="/shell.js?v=5103" defer></script>
+  <script src="/app.js?v=5103" defer></script>
 </head>
 <body>
   <!-- Start splash -->
@@ -37,7 +38,7 @@
         <img src="/app-icon.svg" alt="" class="logo" />
         <div class="brand-text">
           <div class="kicker">The Daily</div>
-          <h1 style="color:#fff;">Brain <span class="zap">⚡</span> Bolt</h1>
+          <h1>Brain <span class="zap">⚡</span> Bolt</h1>
           <div class="tagline">Sharpen your mind — daily.</div>
         </div>
       </a>
@@ -71,21 +72,28 @@
   <!-- Main -->
   <main class="container">
     <section class="card quiz-card">
+      <!-- Overall timer -->
       <div class="timer-wrapper"><div id="timerBar" class="timer-bar"></div></div>
       <div class="elapsed-time">Time: <span id="elapsedTime">0:00</span></div>
 
+      <!-- Premium floating streak bar -->
       <div class="streak-vis" id="streakVis"></div>
+
+      <!-- Per-question timer -->
       <div class="qtimer-wrapper"><div id="qTimerBar" class="qtimer-bar"></div></div>
 
+      <!-- Question + choices -->
       <div id="questionBox" class="question-box">Press Start to Play</div>
       <div id="choices" class="choices"></div>
 
+      <!-- Controls -->
       <div class="controls">
         <button id="startBtn" class="btn primary">Start</button>
         <button id="shuffleBtn" class="btn ghost">Shuffle Set</button>
         <button id="shareBtn" class="btn ghost">Share</button>
       </div>
 
+      <!-- Game over box -->
       <div id="gameOverBox" class="footer" style="display:none">
         <p id="gameOverText"></p>
         <button id="playAgainBtn" class="btn primary" style="display:none">Play Again</button>
