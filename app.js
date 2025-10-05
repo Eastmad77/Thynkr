@@ -1,4 +1,4 @@
-// ===== Brain ⚡ Bolt — App.js v3.12.1 (v=5100) =====
+// ===== Brain ⚡ Bolt — App.js v3.12.1 (safe DOM) =====
 const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vS6725qpD0gRYajBJaOjxcSpTFxJtS2fBzrT1XAjp9t5SHnBJCrLFuHY4C51HFV0A4MK-4c6t7jTKGG/pub?gid=1410250735&single=true&output=csv";
 
 const QUESTION_TIME_MS = 10000;
@@ -35,10 +35,16 @@ const soundBtn = document.getElementById("soundBtn");
 const setLabel = document.getElementById("setLabel");
 const streakVis = document.getElementById("streakVis");
 
-// Guard: if not on quiz page, exit early
+/* Helpers to avoid null crashes */
+const setText = (el, txt) => { if (el) el.textContent = txt; };
+const setStyle = (el, prop, val) => { if (el && el.style) el.style[prop] = val; };
+const show = (el, on=true) => { if (el) el.style.display = on ? "" : "none"; };
+const addCls = (el, cls) => { if (el) el.classList.add(cls); };
+const remCls = (el, cls) => { if (el) el.classList.remove(cls); };
+
+/* Only run the game if core quiz elements exist */
 const onQuizPage = qBox && choicesDiv;
 if (!onQuizPage) {
-  // Still expose a minimal sound toggle listener for the navbar button if present
   soundBtn?.addEventListener("click", ()=>{
     soundOn = !soundOn;
     soundBtn.textContent = soundOn ? "🔊" : "🔇";
@@ -50,7 +56,7 @@ function killStartSplash() {
   const s = document.getElementById('startSplash');
   if (!s || s.dataset.dismissed === '1') return;
   s.dataset.dismissed = '1';
-  s.classList.add('hiding');
+  addCls(s,'hiding');
   setTimeout(()=> s.remove(), 420);
 }
 document.addEventListener('DOMContentLoaded', () => setTimeout(killStartSplash, 900));
@@ -119,8 +125,8 @@ function buildStreakBar() {
 function markStreak(index, ok) {
   const dot = streakVis?.querySelector(`.streak-dot[data-index="${index}"]`);
   if (!dot) return;
-  dot.classList.remove('is-correct','is-wrong');
-  dot.classList.add(ok ? 'is-correct' : 'is-wrong');
+  remCls(dot,'is-correct'); remCls(dot,'is-wrong');
+  addCls(dot, ok ? 'is-correct' : 'is-wrong');
 }
 
 /* Question timer */
@@ -129,12 +135,12 @@ function startQuestionTimer(onTimeout) {
   qRemaining = QUESTION_TIME_MS;
   qLastTickSec = 3;
   qTimerBar?.classList.remove('warn');
-  qTimerBar && (qTimerBar.style.width = '100%');
+  setStyle(qTimerBar,'width','100%');
 
   qTimer = setInterval(() => {
     qRemaining -= QUESTION_TICK_MS;
     const pct = Math.max(0, qRemaining / QUESTION_TIME_MS) * 100;
-    qTimerBar && (qTimerBar.style.width = pct + '%');
+    setStyle(qTimerBar,'width', pct + '%');
 
     const secsLeft = Math.ceil(qRemaining / 1000);
     if (qRemaining <= 3000) {
@@ -157,56 +163,56 @@ async function startGame() {
   clearTimeout(successAutoNav);
   try {
     successSplash?.classList.remove('show');
-    setLabel && (setLabel.textContent = 'Loading…');
+    setText(setLabel,'Loading…');
 
     const data = await fetchCSV();
     questions = shuffleArray(data).slice(0,12);
     currentIndex = 0; score = 0; wrongTotal = 0; correctSinceLastWrong = 0; elapsed = 0;
 
-    pillScore.textContent = "Score 0";
-    progressLabel.textContent = "Q 0/12";
-    gameOverBox.style.display = "none";
-    playAgainBtn.style.display = "none";
-    playAgainBtn.classList.remove("pulse");
-    setLabel && (setLabel.textContent = 'Ready');
+    setText(pillScore,"Score 0");
+    setText(progressLabel,"Q 0/12");
+    show(gameOverBox,false);
+    show(playAgainBtn,false);
+    remCls(playAgainBtn,'pulse');
+    setText(setLabel,'Ready');
 
     buildStreakBar();
 
     // Countdown
     let n = 3;
-    countNum.textContent = n;
-    countdownOverlay.hidden = false;
+    setText(countNum, n);
+    if (countdownOverlay) countdownOverlay.hidden = false;
     const int = setInterval(() => {
       n--;
       if (n > 0) {
-        countNum.textContent = n;
-        countNum.style.animation = "none"; void countNum.offsetWidth; countNum.style.animation = "popIn .4s ease";
+        setText(countNum, n);
+        if (countNum){ countNum.style.animation = "none"; void countNum.offsetWidth; countNum.style.animation = "popIn .4s ease"; }
         beepTick();
       } else {
         clearInterval(int);
-        countNum.textContent = "GO";
-        countNum.style.animation = "none"; void countNum.offsetWidth; countNum.style.animation = "popIn .4s ease";
+        setText(countNum, "GO");
+        if (countNum){ countNum.style.animation = "none"; void countNum.offsetWidth; countNum.style.animation = "popIn .4s ease"; }
         beepGo();
-        setTimeout(()=>{ countdownOverlay.hidden = true; beginQuiz(); }, 380);
+        setTimeout(()=>{ if (countdownOverlay) countdownOverlay.hidden = true; beginQuiz(); }, 380);
       }
     }, 700);
   } catch (e) {
-    qBox.textContent = "Could not load today’s quiz. Please try again.";
-    setLabel && (setLabel.textContent = 'Error');
+    setText(qBox, "Could not load today’s quiz. Please try again.");
+    setText(setLabel, 'Error');
     console.error(e);
   }
 }
 
 function beginQuiz() {
   elapsed = 0;
-  elapsedTimeEl.textContent = "0:00";
-  timerBar && (timerBar.style.width = "0%");
+  setText(elapsedTimeEl,"0:00");
+  setStyle(timerBar,'width',"0%");
   clearInterval(elapsedInterval);
   elapsedInterval = setInterval(()=>{
     elapsed++;
-    elapsedTimeEl.textContent = formatTime(elapsed);
+    setText(elapsedTimeEl, formatTime(elapsed));
     const pct = Math.min(100, (elapsed/300)*100);
-    timerBar && (timerBar.style.width = pct + "%");
+    setStyle(timerBar,'width', pct + "%");
   },1000);
   showQuestion();
 }
@@ -217,8 +223,8 @@ function showQuestion() {
   const q = questions[currentIndex];
   const correctText = resolveCorrectText(q);
 
-  qBox.textContent = q?.Question || "—";
-  choicesDiv.innerHTML = "";
+  setText(qBox, q?.Question || "—");
+  if (choicesDiv) choicesDiv.innerHTML = "";
 
   let opts = [];
   ["OptionA","OptionB","OptionC","OptionD"].forEach((k)=>{
@@ -234,10 +240,10 @@ function showQuestion() {
     const b = document.createElement("button");
     b.textContent = opt.text;
     b.onclick = () => handleAnswer(b, opt.isCorrect);
-    choicesDiv.appendChild(b);
+    choicesDiv?.appendChild(b);
   });
 
-  progressLabel.textContent = `Q ${currentIndex+1}/12`;
+  setText(progressLabel, `Q ${currentIndex+1}/12`);
   startQuestionTimer(() => handleTimeout());
 }
 
@@ -249,13 +255,13 @@ function handleTimeout() {
 
 function handleAnswer(btn, isCorrect) {
   stopQuestionTimer();
-  [...choicesDiv.querySelectorAll("button")].forEach(b=>b.disabled=true);
+  [...(choicesDiv?.querySelectorAll("button") || [])].forEach(b=>b.disabled=true);
 
   if (isCorrect) {
     btn.classList.add("correct");
     sfxCorrect(); vibrate(60);
     score++;
-    pillScore.textContent = `Score ${score}`;
+    setText(pillScore, `Score ${score}`);
     registerCorrect();
   } else {
     btn.classList.add("incorrect");
@@ -292,12 +298,12 @@ function endGame(msg="") {
   stopQuestionTimer();
 
   if (msg) {
-    gameOverText.textContent = msg;
-    gameOverBox.style.display = "block";
-    playAgainBtn.style.display = "inline-block";
-    playAgainBtn.classList.add("pulse");
+    setText(gameOverText, msg);
+    show(gameOverBox,true);
+    show(playAgainBtn,true);
+    addCls(playAgainBtn,'pulse');
   } else {
-    countdownOverlay && (countdownOverlay.hidden = true);
+    if (countdownOverlay) countdownOverlay.hidden = true;
     successSplash?.removeAttribute('aria-hidden');
     successSplash?.classList.remove('show');
     void successSplash?.offsetWidth;
@@ -306,10 +312,10 @@ function endGame(msg="") {
     clearTimeout(successAutoNav);
     successAutoNav = setTimeout(() => {
       successSplash?.classList.remove('show');
-      qBox.textContent = "Press Start to Play";
-      pillScore.textContent = "Score 0";
-      progressLabel.textContent = "Q 0/12";
-      timerBar && (timerBar.style.width = "0%");
+      setText(qBox, "Press Start to Play");
+      setText(pillScore, "Score 0");
+      setText(progressLabel, "Q 0/12");
+      setStyle(timerBar,'width',"0%");
       buildStreakBar();
     }, 3000);
   }
