@@ -1,63 +1,44 @@
-/* ==========================================================
-   shell.v5015.js — Brain ⚡ Bolt (universal, defensive)
-   - Works with IDs: menuButton/sideMenu OR mmMenuBtn/mmSideMenu
-   - Safe null checks (prevents crashes)
-   - Menu auto-hide after 5s
-   - Start splash fallback fade
-========================================================== */
-
-console.log("[BrainBolt] Shell v5015 loaded");
-
+// ===== Brain ⚡ Bolt — shell.js v3.7 (null-safe) =====
 document.addEventListener("DOMContentLoaded", () => {
-  initMenuUniversal();
-  initStartSplashFallback();
-});
+  const menuBtn    = document.getElementById("mmMenuBtn");
+  const sideMenu   = document.getElementById("mmSideMenu");
+  const notifyItem = document.getElementById("notifyItem");
 
-/* ---------- Menu (universal) ---------- */
-function initMenuUniversal() {
-  // Try modern IDs first, then legacy IDs
-  const menuBtn =
-    document.getElementById("menuButton") ||
-    document.getElementById("mmMenuBtn");
+  let hideTimer = null;
+  const hasMenu = !!sideMenu;
 
-  const sideMenu =
-    document.getElementById("sideMenu") ||
-    document.getElementById("mmSideMenu");
+  function openMenu(){ if(!hasMenu) return; sideMenu.classList.add("open"); sideMenu.setAttribute("aria-hidden","false"); restartHideTimer(); }
+  function closeMenu(){ if(!hasMenu) return; sideMenu.classList.remove("open"); sideMenu.setAttribute("aria-hidden","true"); clearTimeout(hideTimer); hideTimer=null; }
+  function toggleMenu(){ if(!hasMenu) return; sideMenu.classList.contains("open") ? closeMenu() : openMenu(); }
+  function restartHideTimer(){ if(!hasMenu) return; clearTimeout(hideTimer); hideTimer=setTimeout(closeMenu, 5000); }
 
-  if (!menuBtn || !sideMenu) {
-    console.warn("[BrainBolt] Menu elements not found — skipping menu init");
-    return;
+  if (menuBtn && hasMenu) {
+    menuBtn.addEventListener("click", (e) => { e.stopPropagation(); toggleMenu(); });
   }
 
-  // Defensive addEventListener
-  try {
-    menuBtn.addEventListener("click", () => {
-      if (!sideMenu) return;
-      sideMenu.classList.toggle("open");
-      if (sideMenu.classList.contains("open")) {
-        setTimeout(() => {
-          if (sideMenu) sideMenu.classList.remove("open");
-        }, 5000);
-      }
+  if (hasMenu) {
+    document.addEventListener("click", (e) => {
+      if (!sideMenu.classList.contains("open")) return;
+      if (!sideMenu.contains(e.target) && e.target !== menuBtn) closeMenu();
     });
-  } catch (e) {
-    console.warn("[BrainBolt] Menu init failed:", e);
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape" && sideMenu.classList.contains("open")) closeMenu(); });
+    sideMenu.addEventListener("click", (e) => {
+      const a = e.target.tagName === "A" ? e.target : e.target.closest("a");
+      if (a) { closeMenu(); return; }
+      restartHideTimer();
+    });
   }
-}
 
-/* ---------- Start Splash (fallback) ---------- */
-function initStartSplashFallback() {
-  const startSplash =
-    document.getElementById("splashStart") ||
-    document.getElementById("startSplash"); // support either id
+  if (notifyItem) {
+    notifyItem.addEventListener("click", () => {
+      const off = notifyItem.textContent.includes("OFF");
+      notifyItem.textContent = off ? "🔔 Notifications: ON" : "🔕 Notifications: OFF";
+      if (off) alert("You will be reminded daily!");
+    });
+  }
 
-  if (!startSplash) return;
-
-  setTimeout(() => {
-    if (!document.body.contains(startSplash)) return;
-    startSplash.classList.add("hiding"); // CSS should animate opacity
-    setTimeout(() => {
-      if (startSplash.parentNode) startSplash.parentNode.removeChild(startSplash);
-    }, 500);
-  }, 2500);
-}
+  // Consistent service worker registration
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/service-worker.js?v=5100').catch(()=>{});
+  }
+});
