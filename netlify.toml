@@ -1,22 +1,38 @@
-# Netlify config for Brain ⚡ Bolt — SPA + headers
+# Netlify config for Brain ⚡ Bolt — SPA + functions + headers
 
 [build]
   publish = "."
   command = ""
+  functions = "netlify/functions"   # <- tell Netlify where your functions live
 
-# Pass through real files
+# --- Functions protection (make sure SPA fallback doesn't catch them) ---
+# This ensures that any request to /.netlify/functions/* is NOT redirected to /index.html
+[[redirects]]
+  from = "/.netlify/functions/*"
+  to   = "/.netlify/functions/:splat"
+  status = 200
+  force = true
+
+# (Optional) Pretty path for Stripe Checkout session creation
+[[redirects]]
+  from = "/pro-checkout"
+  to   = "/.netlify/functions/create-checkout-session"
+  status = 200
+  force = true
+
+# Pass through real files (kept from your original)
 [[redirects]]
   from = "/:file.:ext"
   to   = "/:file.:ext"
   status = 200
 
-# SPA fallback
+# SPA fallback (place AFTER the functions rules)
 [[redirects]]
   from = "/*"
   to   = "/index.html"
   status = 200
 
-# Explicit 404
+# Explicit 404 (usually redundant with SPA apps, but safe to keep)
 [[redirects]]
   from = "/404.html"
   to   = "/404.html"
