@@ -1,4 +1,4 @@
-// ===== Brain ⚡ Bolt — App.js v3.12.1 (safe DOM) =====
+// ===== Brain ⚡ Bolt — App.js v3.12.2 (defensive CSV + safe DOM) =====
 const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vS6725qpD0gRYajBJaOjxcSpTFxJtS2fBzrT1XAjp9t5SHnBJCrLFuHY4C51HFV0A4MK-4c6t7jTKGG/pub?gid=1410250735&single=true&output=csv";
 
 const QUESTION_TIME_MS = 10000;
@@ -35,23 +35,24 @@ const soundBtn = document.getElementById("soundBtn");
 const setLabel = document.getElementById("setLabel");
 const streakVis = document.getElementById("streakVis");
 
-/* Helpers to avoid null crashes */
+/* Helpers (no-ops if null) */
 const setText = (el, txt) => { if (el) el.textContent = txt; };
 const setStyle = (el, prop, val) => { if (el && el.style) el.style[prop] = val; };
 const show = (el, on=true) => { if (el) el.style.display = on ? "" : "none"; };
 const addCls = (el, cls) => { if (el) el.classList.add(cls); };
 const remCls = (el, cls) => { if (el) el.classList.remove(cls); };
 
-/* Only run the game if core quiz elements exist */
+/* Only run game on quiz page */
 const onQuizPage = qBox && choicesDiv;
 if (!onQuizPage) {
+  // still wire sound button if present
   soundBtn?.addEventListener("click", ()=>{
     soundOn = !soundOn;
     soundBtn.textContent = soundOn ? "🔊" : "🔇";
   });
 } else {
 
-/* Startup splash */
+/* Start splash */
 function killStartSplash() {
   const s = document.getElementById('startSplash');
   if (!s || s.dataset.dismissed === '1') return;
@@ -91,7 +92,7 @@ function fetchCSV(){
   return new Promise((resolve, reject) => {
     Papa.parse(CSV_URL, {
       download:true, header:true, skipEmptyLines:true,
-      complete:(res)=>resolve(res.data),
+      complete:(res)=>resolve(res.data || []),
       error:(err)=>reject(err)
     });
   });
@@ -102,13 +103,31 @@ function formatTime(sec){ const m=Math.floor(sec/60), s=sec%60; return `${m}:${s
 function shuffleArray(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
 function norm(x){ return String(x ?? "").trim().toLowerCase(); }
 
-/* Resolve correct text */
+/* Resolve correct text (defensive) */
 function resolveCorrectText(q) {
-  const ans = norm(q.Answer);
-  const letter = { a:"OptionA", b:"OptionB", c:"OptionC", d:"OptionD" };
-  if (["a","b","c","d"].includes(ans)) return q[letter[ans]] ?? "";
-  if (["optiona","optionb","optionc","optiond"].includes(ans)) return q[ans.replace("option","Option")] ?? "";
-  return q.Answer ?? "";
+  if (!q) return "";
+  // normalise keys in case of header case drift
+  const Q = (k) => q[k] ?? q[k?.toLowerCase?.()] ?? q[k?.toUpperCase?.()];
+  const ansRaw = norm(Q('Answer'));
+  const letterMap = { a:'OptionA', b:'OptionB', c:'OptionC', d:'OptionD' };
+
+  if (['a','b','c','d'].includes(ansRaw)) {
+    return Q(letterMap[ansRaw]) ?? "";
+  }
+  if (['optiona','optionb','optionc','optiond'].includes(ansRaw)) {
+    const key = 'Option' + ansRaw.slice(-1).toUpperCase();
+    return Q(key) ?? "";
+  }
+  return Q('Answer') ?? "";
+}
+
+/* Validate a row is usable */
+function isValidRow(row){
+  if (!row) return false;
+  const get = (k)=> row[k] ?? row[k?.toLowerCase?.()] ?? row[k?.toUpperCase?.()];
+  const hasQ = !!norm(get('Question'));
+  const opts = ['OptionA','OptionB','OptionC','OptionD'].map(k=>get(k)).filter(Boolean);
+  return hasQ && opts.length >= 2;
 }
 
 /* Streak bar */
@@ -166,7 +185,14 @@ async function startGame() {
     setText(setLabel,'Loading…');
 
     const data = await fetchCSV();
-    questions = shuffleArray(data).slice(0,12);
+
+    // Filter to safe rows and take 12
+    const safe = data.filter(isValidRow);
+    if (safe.length === 0) {
+      throw new Error("No valid questions in CSV");
+    }
+    questions = shuffleArray(safe).slice(0,12);
+
     currentIndex = 0; score = 0; wrongTotal = 0; correctSinceLastWrong = 0; elapsed = 0;
 
     setText(pillScore,"Score 0");
@@ -197,7 +223,7 @@ async function startGame() {
       }
     }, 700);
   } catch (e) {
-    setText(qBox, "Could not load today’s quiz. Please try again.");
+    setText(qBox, "Could not load today’s quiz. Please try again later.");
     setText(setLabel, 'Error');
     console.error(e);
   }
@@ -218,24 +244,33 @@ function beginQuiz() {
 }
 
 function showQuestion() {
-  if (currentIndex >= 12) return endGame();
+  // Guard out-of-range
+  if (!Array.isArray(questions) || currentIndex >= questions.length) {
+    return endGame();
+  }
 
   const q = questions[currentIndex];
+  if (!q) { currentIndex++; return showQuestion(); }
+
+  const Q = (k) => q[k] ?? q[k?.toLowerCase?.()] ?? q[k?.toUpperCase?.()];
   const correctText = resolveCorrectText(q);
 
-  setText(qBox, q?.Question || "—");
+  setText(qBox, Q('Question') || "—");
   if (choicesDiv) choicesDiv.innerHTML = "";
 
   let opts = [];
-  ["OptionA","OptionB","OptionC","OptionD"].forEach((k)=>{
-    const val = q[k];
+  ['OptionA','OptionB','OptionC','OptionD'].forEach((k)=>{
+    const val = Q(k);
     if (!val) return;
     const isCorrect = norm(val) === norm(correctText);
     opts.push({ text: String(val), isCorrect });
   });
-  if (!opts.some(o => o.isCorrect) && q.OptionA) { opts[0].isCorrect = true; }
-  opts = shuffleArray(opts);
 
+  // Fallbacks: ensure at least one correct + at least two options
+  if (!opts.some(o => o.isCorrect) && opts.length > 0) { opts[0].isCorrect = true; }
+  if (opts.length < 2) { currentIndex++; return showQuestion(); }
+
+  opts = shuffleArray(opts);
   opts.forEach(opt => {
     const b = document.createElement("button");
     b.textContent = opt.text;
@@ -243,7 +278,7 @@ function showQuestion() {
     choicesDiv?.appendChild(b);
   });
 
-  setText(progressLabel, `Q ${currentIndex+1}/12`);
+  setText(progressLabel, `Q ${Math.min(currentIndex+1, 12)}/12`);
   startQuestionTimer(() => handleTimeout());
 }
 
@@ -272,7 +307,7 @@ function handleAnswer(btn, isCorrect) {
   setTimeout(()=> advanceOrEnd(), 800);
 }
 
-/* New rule helpers */
+/* Rule helpers */
 function registerCorrect(){
   markStreak(currentIndex, true);
   correctSinceLastWrong++;
