@@ -1,31 +1,12 @@
 {
-  "name": "brainbolt-app",
+  "name": "thynkr",
   "version": "1.0.0",
-  "description": "Brain ⚡ Bolt — daily quiz web app with Stripe Pro subscription and Firebase integration.",
-  "main": "app.js",
+  "private": true,
+  "description": "Thynkr — Sharpen your mind — daily.",
   "scripts": {
-    "dev": "netlify dev",
-    "build": "echo 'Static build handled by Netlify'",
-    "start": "netlify dev",
-    "test": "echo 'No tests defined'"
+    "start": "npx serve . -p 5173",
+    "lint": "echo \"No lint configured\"",
+    "test": "echo \"No tests configured\""
   },
-  "dependencies": {
-    "firebase-admin": "^12.6.0",
-    "stripe": "^14.0.0"
-  },
-  "devDependencies": {},
-  "engines": {
-    "node": ">=18.0.0"
-  },
-  "keywords": [
-    "stripe",
-    "netlify-functions",
-    "firebase-admin",
-    "brainbolt",
-    "quiz",
-    "pwa",
-    "subscription"
-  ],
-  "author": "Brendan Hayman",
-  "license": "MIT"
+  "license": "UNLICENSED"
 }
