@@ -82,7 +82,7 @@
       err.style.display = 'none';
       try {
         alert('Starting checkout for: ' + plan);
-        // TODO: integrate Stripe/PayPal or your gateway here.
+        // TODO: integrate Stripe/PayPal/etc.
       } catch(e){
         err.textContent = 'Could not start checkout. Please try again.';
         err.style.display = 'block';
