@@ -1,43 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Go Pro · The Daily Brain Bolt</title>
-
-  <!-- PWA / Icons -->
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Thynkr Pro — Coming Soon</title>
+  <meta name="description" content="Thynkr Pro will unlock ad-free play and premium features." />
   <link rel="manifest" href="/site.webmanifest" />
-  <link rel="icon" href="/favicon.svg" />
-
-  <!-- Styles (keep in sync with site) -->
-  <link rel="stylesheet" href="/style.css?v=5107" />
-
-  <!-- Scripts used site-wide -->
-  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js" defer></script>
-  <script src="/shell.js?v=5107" defer></script>
-  <script src="/app.js?v=5107" defer></script>
+  <link rel="icon" href="/media/thynkr-icon-192.png" type="image/png" />
+  <link rel="stylesheet" href="/style.css?v=8001" />
+  <script src="/shell.js?v=8001" defer></script>
 </head>
 <body>
-  <!-- Header -->
   <header class="topbar">
-    <div class="hero-bg"><img src="/header-graphic.svg" alt=""></div>
     <div class="hero-inner">
-      <a class="brand" href="/">
-        <img src="/app-icon.svg" alt="" class="logo" />
-        <div class="brand-text">
-          <div class="kicker">The Daily</div>
-          <h1>Brain <span class="zap">⚡</span> Bolt</h1>
-          <div class="tagline">Go Pro</div>
-        </div>
+      <a class="brand" href="/"><img src="/media/thynkr-icon-192.png" class="logo" alt="" />
+        <div class="brand-text"><div class="kicker">The Daily</div><h1>Thynkr</h1><div class="tagline">Sharpen your mind — daily.</div></div>
       </a>
-      <div class="actions">
-        <button id="mmMenuBtn" aria-label="Menu">☰</button>
-        <button id="soundBtn" aria-label="Sound">🔊</button>
-      </div>
+      <div class="actions"><button id="mmMenuBtn" aria-label="Menu">☰</button></div>
     </div>
   </header>
 
-  <!-- Side menu -->
   <aside id="mmSideMenu" class="side-menu" aria-hidden="true">
     <nav class="menu-nav">
       <a href="/">🏠 Home</a>
@@ -46,108 +27,17 @@
       <a href="/privacy.html">🔒 Privacy</a>
       <a href="/terms.html">📄 Terms</a>
       <a href="/contact.html">✉️ Contact</a>
-      <hr class="menu-sep" />
-      <button id="notifyItem" class="menu-btn">🔔 Notifications: ON</button>
     </nav>
   </aside>
 
-  <!-- Main -->
   <main class="container">
-    <section class="card">
-      <h2 style="margin-bottom:.25rem;">Unlock Brain ⚡ Bolt Pro</h2>
-      <p class="muted" style="margin-bottom:1rem;">Go Pro to support the project and get the best Brain Bolt experience.</p>
-
-      <ul class="muted" style="margin:0 0 1rem 1.25rem;">
-        <li>Access upcoming Pro-only sets & features</li>
-        <li>Early feature previews</li>
-        <li>Support indie development <span aria-hidden="true">❤️</span></li>
-      </ul>
-
-      <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-top:1rem;">
-        <button class="btn primary" id="proMonthly">Subscribe Monthly</button>
-        <button class="btn ghost" id="proYearly">Subscribe Yearly</button>
-      </div>
-
-      <p id="proMsg" class="muted" style="margin-top:.75rem;"></p>
-
-      <hr class="menu-sep" style="margin:1rem 0;" />
-
-      <details>
-        <summary>How checkout works</summary>
-        <p class="muted" style="margin-top:.5rem;">
-          You’ll be redirected to a secure Stripe checkout page. After payment,
-          you’ll return here with a confirmation. In test mode, use the card
-          <code>4242 4242 4242 4242</code> with any future expiry and CVC.
-        </p>
-      </details>
+    <section class="card quiz-card" style="text-align:center">
+      <h2>⭐ Thynkr Pro — Coming Soon</h2>
+      <p style="color:#cdd6e0;margin:.5rem 0 1rem">Ad-free play, advanced streak modes, deep stats, and exclusive packs.</p>
+      <button class="btn primary" onclick="alert('We’ll notify you when Pro is live!')">🔔 Notify Me</button>
     </section>
   </main>
 
-  <!-- Footer -->
-  <footer class="footer">
-    <p>© 2025 Brain ⚡ Bolt · <a href="/privacy.html">Privacy</a> · <a href="/terms.html">Terms</a></p>
-  </footer>
-
-  <!-- Inline page script: Checkout -->
-  <script>
-    // If you have Firebase Auth, set this before clicking (optional):
-    // window.myFirebaseUid = firebase.auth().currentUser?.uid;
-
-    async function startCheckout(plan, uid) {
-      const btnId = plan === "monthly" ? "proMonthly" : "proYearly";
-      const btn = document.getElementById(btnId);
-      const msg = document.getElementById("proMsg");
-      const old = btn.textContent;
-
-      btn.disabled = true;
-      btn.textContent = "Redirecting…";
-      msg.textContent = "";
-
-      try {
-        const res = await fetch("/.netlify/functions/create-checkout-session", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ plan, uid })
-        });
-        if (!res.ok) throw new Error("Create session failed");
-        const data = await res.json();
-        if (data.url) {
-          location.href = data.url; // Stripe-hosted Checkout
-        } else {
-          throw new Error("No checkout URL");
-        }
-      } catch (e) {
-        console.error(e);
-        msg.textContent = "Couldn’t start checkout. Please try again.";
-        btn.disabled = false;
-        btn.textContent = old;
-      }
-    }
-
-    document.getElementById("proMonthly")?.addEventListener("click", () =>
-      startCheckout("monthly", window.myFirebaseUid)
-    );
-    document.getElementById("proYearly")?.addEventListener("click", () =>
-      startCheckout("yearly", window.myFirebaseUid)
-    );
-
-    // Reflect status after redirect back from Stripe
-    (function reflectCheckoutStatus() {
-      const p = new URLSearchParams(location.search);
-      const status = p.get("checkout");
-      const plan = p.get("plan");
-      if (!status) return;
-      const msg = document.getElementById("proMsg");
-      if (!msg) return;
-
-      if (status === "success") {
-        msg.textContent = plan
-          ? `✅ Thanks! Your ${plan} subscription is active.`
-          : "✅ Thanks! Your purchase was successful.";
-      } else if (status === "cancel") {
-        msg.textContent = "You canceled checkout. No charge.";
-      }
-    })();
-  </script>
+  <footer class="footer"><p>© 2025 Thynkr · <a href="/privacy.html">Privacy</a> · <a href="/terms.html">Terms</a></p></footer>
 </body>
 </html>
