@@ -1,34 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Menu • The Daily Brain Bolt</title>
-  <link rel="icon" href="/favicon.svg" />
-  <link rel="stylesheet" href="/style.css?v=5105" />
-  <script src="/shell.js?v=5104" defer></script>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Menu — Thynkr</title>
+  <link rel="manifest" href="/site.webmanifest" />
+  <link rel="icon" href="/media/thynkr-icon-192.png" type="image/png" />
+  <link rel="stylesheet" href="/style.css?v=8002" />
+  <script src="/shell.js?v=8002" defer></script>
 </head>
 <body>
   <header class="topbar">
-    <div class="hero-bg"><img src="/header-graphic.svg" alt=""></div>
     <div class="hero-inner">
-      <a class="brand" href="/">
-        <img src="/app-icon.svg" alt="" class="logo" />
-        <div class="brand-text">
-          <div class="kicker">The Daily</div>
-          <h1>Brain <span class="zap">⚡</span> Bolt</h1>
-          <div class="tagline">Sharpen your mind — daily.</div>
-        </div>
+      <a class="brand" href="/"><img src="/media/thynkr-icon-192.png" class="logo" alt="" />
+        <div class="brand-text"><div class="kicker">The Daily</div><h1>Thynkr</h1><div class="tagline">Sharpen your mind — daily.</div></div>
       </a>
-      <div class="actions">
-        <button id="mmMenuBtn" aria-label="Menu">☰</button>
-      </div>
+      <div class="actions"><button id="mmMenuBtn" aria-label="Menu">☰</button></div>
     </div>
-    <div class="status"><span class="muted">Menu</span></div>
   </header>
 
-  <!-- Side menu -->
-  <aside id="mmSideMenu" class="side-menu" aria-hidden="true">
+  <aside id="mmSideMenu" class="side-menu visible" aria-hidden="false">
     <nav class="menu-nav">
       <a href="/">🏠 Home</a>
       <a href="/about.html">ℹ️ About</a>
@@ -36,19 +26,16 @@
       <a href="/privacy.html">🔒 Privacy</a>
       <a href="/terms.html">📄 Terms</a>
       <a href="/contact.html">✉️ Contact</a>
-      <button id="notifyItem" type="button">🔔 Notifications: ON</button>
     </nav>
   </aside>
 
   <main class="container">
-    <section class="card">
-      <h1>Menu</h1>
-      <p class="muted">Quick links to pages and features.</p>
+    <section class="card quiz-card" style="text-align:center">
+      <h2>Navigation</h2>
+      <p style="color:#cdd6e0">Use the side menu to explore Thynkr.</p>
     </section>
   </main>
 
-  <footer class="footer">
-    <p>© 2025 Brain ⚡ Bolt · <a href="/privacy.html">Privacy</a> · <a href="/terms.html">Terms</a></p>
-  </footer>
+  <footer class="footer"><p>© 2025 Thynkr · <a href="/privacy.html">Privacy</a> · <a href="/terms.html">Terms</a></p></footer>
 </body>
 </html>
