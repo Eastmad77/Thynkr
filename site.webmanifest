@@ -1,12 +1,13 @@
 {
-  "name": "The Daily Brain Bolt",
-  "short_name": "Brain Bolt",
-  "start_url": "/",
+  "name": "Thynkr",
+  "short_name": "Thynkr",
+  "start_url": "/index.html",
+  "scope": "/",
   "display": "standalone",
-  "background_color": "#0d1117",
-  "theme_color": "#1a73e8",
+  "background_color": "#081a2d",
+  "theme_color": "#17f1d1",
   "icons": [
-    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" }
+    { "src": "/media/thynkr-icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/media/thynkr-icon-512.png", "sizes": "512x512", "type": "image/png" }
   ]
 }
