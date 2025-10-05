@@ -1,4 +1,4 @@
-// ===== Brain ⚡ Bolt — App.js v3.12.3 (robust CSV normalize + safe DOM) =====
+// ===== Brain ⚡ Bolt — App.js v3.12.3 (defensive CSV + premium redemption) =====
 const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vS6725qpD0gRYajBJaOjxcSpTFxJtS2fBzrT1XAjp9t5SHnBJCrLFuHY4C51HFV0A4MK-4c6t7jTKGG/pub?gid=1410250735&single=true&output=csv";
 
 const QUESTION_TIME_MS = 10000;
@@ -36,11 +36,11 @@ const setLabel = document.getElementById("setLabel");
 const streakVis = document.getElementById("streakVis");
 
 /* Helpers (no-ops if null) */
-const setText  = (el, txt)          => { if (el) el.textContent = txt; };
-const setStyle = (el, prop, val)    => { if (el && el.style) el.style[prop] = val; };
-const show     = (el, on=true)      => { if (el) el.style.display = on ? "" : "none"; };
-const addCls   = (el, cls)          => { if (el) el.classList.add(cls); };
-const remCls   = (el, cls)          => { if (el) el.classList.remove(cls); };
+const setText = (el, txt) => { if (el) el.textContent = txt; };
+const setStyle = (el, prop, val) => { if (el && el.style) el.style[prop] = val; };
+const show = (el, on=true) => { if (el) el.style.display = on ? "" : "none"; };
+const addCls = (el, cls) => { if (el) el.classList.add(cls); };
+const remCls = (el, cls) => { if (el) el.classList.remove(cls); };
 
 /* Only run game on quiz page */
 const onQuizPage = qBox && choicesDiv;
@@ -87,7 +87,7 @@ const sfxIncorrect = () => beep(220, 0.2);
 const tickSoft     = () => beep(740, 0.08);
 function vibrate(ms=100){ if (navigator.vibrate) navigator.vibrate(ms); }
 
-/* CSV fetch */
+/* CSV */
 function fetchCSV(){
   return new Promise((resolve, reject) => {
     Papa.parse(CSV_URL, {
@@ -98,56 +98,34 @@ function fetchCSV(){
   });
 }
 
-/* Key normalization */
-const CANON = {
-  question: 'Question',
-  answer:   'Answer',
-  optiona:  'OptionA',
-  optionb:  'OptionB',
-  optionc:  'OptionC',
-  optiond:  'OptionD'
-};
-function canonKey(k){
-  if (!k) return '';
-  const t = String(k).trim().toLowerCase();
-  return CANON[t] || k.trim();
-}
-function normalizeRow(row){
-  const out = {};
-  Object.keys(row || {}).forEach((k)=>{
-    const v = row[k];
-    const ck = canonKey(k);
-    out[ck] = typeof v === 'string' ? v.trim() : v;
-  });
-  return out;
+/* Utils */
+function formatTime(sec){ const m=Math.floor(sec/60), s=sec%60; return `${m}:${s<10?'0':''}${s}`; }
+function shuffleArray(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function norm(x){ return String(x ?? "").trim().toLowerCase(); }
+
+/* Resolve correct text (defensive) */
+function resolveCorrectText(q) {
+  if (!q) return "";
+  const Q = (k) => q[k] ?? q[k?.toLowerCase?.()] ?? q[k?.toUpperCase?.()];
+  const ansRaw = norm(Q('Answer'));
+  const letterMap = { a:'OptionA', b:'OptionB', c:'OptionC', d:'OptionD' };
+
+  if (['a','b','c','d'].includes(ansRaw)) return Q(letterMap[ansRaw]) ?? "";
+  if (['optiona','optionb','optionc','optiond'].includes(ansRaw)) {
+    const key = 'Option' + ansRaw.slice(-1).toUpperCase();
+    return Q(key) ?? "";
+  }
+  return Q('Answer') ?? "";
 }
 
 /* Row validity */
 function isValidRow(row){
   if (!row) return false;
-  const r = normalizeRow(row);
-  const q = (r.Question || '').trim();
-  const opts = ['OptionA','OptionB','OptionC','OptionD'].map(k => (r[k]||'').trim()).filter(Boolean);
-  return !!q && opts.length >= 2;
+  const get = (k)=> row[k] ?? row[k?.toLowerCase?.()] ?? row[k?.toUpperCase?.()];
+  const hasQ = !!norm(get('Question'));
+  const opts = ['OptionA','OptionB','OptionC','OptionD'].map(k=>get(k)).filter(Boolean);
+  return hasQ && opts.length >= 2;
 }
-
-/* Resolve correct text (defensive, on normalized row) */
-function resolveCorrectText(r) {
-  if (!r) return "";
-  const ansRaw = (r.Answer || '').toString().trim().toLowerCase();
-  const map = { a:'OptionA', b:'OptionB', c:'OptionC', d:'OptionD' };
-  if (['a','b','c','d'].includes(ansRaw)) return r[map[ansRaw]] || "";
-  if (['optiona','optionb','optionc','optiond'].includes(ansRaw)) {
-    const key = 'Option' + ansRaw.slice(-1).toUpperCase();
-    return r[key] || "";
-  }
-  return r.Answer || "";
-}
-
-/* Utilities */
-function formatTime(sec){ const m=Math.floor(sec/60), s=sec%60; return `${m}:${s<10?'0':''}${s}`; }
-function shuffleArray(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
-function norm(x){ return String(x ?? "").trim().toLowerCase(); }
 
 /* Streak bar */
 function buildStreakBar() {
@@ -167,6 +145,22 @@ function markStreak(index, ok) {
   addCls(dot, ok ? 'is-correct' : 'is-wrong');
 }
 
+/* Redemption animation (Option A) */
+function redeemOneWrongDot(){
+  if (!streakVis) return;
+  const wrongs = [...streakVis.querySelectorAll('.streak-dot.is-wrong')];
+  if (!wrongs.length) return;
+
+  // Prefer most recent wrong BEFORE current question; fallback to last wrong
+  let target = wrongs.reverse().find(d => Number(d.dataset.index) < currentIndex) || wrongs[0];
+
+  // Animate: add redeem class; then clear wrong state to neutral after animation
+  target.classList.add('redeem');
+  setTimeout(() => {
+    target.classList.remove('is-wrong','redeem'); // back to glass neutral
+  }, 900);
+}
+
 /* Question timer */
 function startQuestionTimer(onTimeout) {
   stopQuestionTimer();
@@ -184,14 +178,10 @@ function startQuestionTimer(onTimeout) {
     if (qRemaining <= 3000) {
       qTimerBar?.classList.add('warn');
       if (secsLeft > 0 && secsLeft < qLastTickSec + 1) {
-        tickSoft();
-        qLastTickSec = secsLeft;
+        tickSoft(); qLastTickSec = secsLeft;
       }
     }
-    if (qRemaining <= 0) {
-      stopQuestionTimer();
-      onTimeout?.();
-    }
+    if (qRemaining <= 0) { stopQuestionTimer(); onTimeout?.(); }
   }, QUESTION_TICK_MS);
 }
 function stopQuestionTimer() { if (qTimer) { clearInterval(qTimer); qTimer = null; } }
@@ -203,20 +193,16 @@ async function startGame() {
     successSplash?.classList.remove('show');
     setText(setLabel,'Loading…');
 
-    const raw = await fetchCSV();
+    const data = await fetchCSV();
+    const safe = data.filter(isValidRow);
+    if (safe.length === 0) throw new Error("No valid questions in CSV");
 
-    // Normalize, filter, slice 12
-    const normalized = raw.map(normalizeRow).filter(isValidRow);
-    if (normalized.length === 0) throw new Error("No valid questions in CSV");
-    questions = shuffleArray(normalized).slice(0,12);
-
+    questions = shuffleArray(safe).slice(0,12);
     currentIndex = 0; score = 0; wrongTotal = 0; correctSinceLastWrong = 0; elapsed = 0;
 
     setText(pillScore,"Score 0");
     setText(progressLabel,"Q 0/12");
-    show(gameOverBox,false);
-    show(playAgainBtn,false);
-    remCls(playAgainBtn,'pulse');
+    show(gameOverBox,false); show(playAgainBtn,false); remCls(playAgainBtn,'pulse');
     setText(setLabel,'Ready');
 
     buildStreakBar();
@@ -261,29 +247,23 @@ function beginQuiz() {
 }
 
 function showQuestion() {
-  // Guard out-of-range
-  if (!Array.isArray(questions) || currentIndex >= questions.length) {
-    return endGame();
-  }
+  if (!Array.isArray(questions) || currentIndex >= questions.length) return endGame();
 
-  const r = questions[currentIndex];     // normalized row
-  if (!r) { currentIndex++; return showQuestion(); }
+  const q = questions[currentIndex]; if (!q) { currentIndex++; return showQuestion(); }
+  const Q = (k) => q[k] ?? q[k?.toLowerCase?.()] ?? q[k?.toUpperCase?.()];
+  const correctText = resolveCorrectText(q);
 
-  const correctText = resolveCorrectText(r);
-
-  setText(qBox, r.Question || "—");
+  setText(qBox, Q('Question') || "—");
   if (choicesDiv) choicesDiv.innerHTML = "";
 
   let opts = [];
   ['OptionA','OptionB','OptionC','OptionD'].forEach((k)=>{
-    const val = (r[k] || '').trim();
-    if (!val) return;
+    const val = Q(k); if (!val) return;
     const isCorrect = norm(val) === norm(correctText);
     opts.push({ text: String(val), isCorrect });
   });
 
-  // Fallbacks: ensure at least one correct + at least two options
-  if (!opts.some(o => o.isCorrect) && opts.length > 0) { opts[0].isCorrect = true; }
+  if (!opts.some(o => o.isCorrect) && opts.length > 0) opts[0].isCorrect = true;
   if (opts.length < 2) { currentIndex++; return showQuestion(); }
 
   opts = shuffleArray(opts);
@@ -311,8 +291,7 @@ function handleAnswer(btn, isCorrect) {
   if (isCorrect) {
     btn.classList.add("correct");
     sfxCorrect(); vibrate(60);
-    score++;
-    setText(pillScore, `Score ${score}`);
+    score++; setText(pillScore, `Score ${score}`);
     registerCorrect();
   } else {
     btn.classList.add("incorrect");
@@ -328,6 +307,7 @@ function registerCorrect(){
   markStreak(currentIndex, true);
   correctSinceLastWrong++;
   if (correctSinceLastWrong >= 3 && wrongTotal > 0) {
+    redeemOneWrongDot();     // ← premium animation
     wrongTotal--;
     correctSinceLastWrong = 0;
   }
@@ -345,19 +325,15 @@ function advanceOrEnd(){
 }
 
 function endGame(msg="") {
-  clearInterval(elapsedInterval);
-  stopQuestionTimer();
+  clearInterval(elapsedInterval); stopQuestionTimer();
 
   if (msg) {
     setText(gameOverText, msg);
-    show(gameOverBox,true);
-    show(playAgainBtn,true);
-    addCls(playAgainBtn,'pulse');
+    show(gameOverBox,true); show(playAgainBtn,true); addCls(playAgainBtn,'pulse');
   } else {
     if (countdownOverlay) countdownOverlay.hidden = true;
     successSplash?.removeAttribute('aria-hidden');
-    successSplash?.classList.remove('show');
-    void successSplash?.offsetWidth;
+    successSplash?.classList.remove('show'); void successSplash?.offsetWidth;
     successSplash?.classList.add('show');
 
     clearTimeout(successAutoNav);
@@ -376,11 +352,8 @@ function endGame(msg="") {
 startBtn?.addEventListener("click", startGame);
 shuffleBtn?.addEventListener("click", ()=>{
   shuffleArray(questions);
-  currentIndex=0;
-  wrongTotal=0;
-  correctSinceLastWrong=0;
-  buildStreakBar();
-  showQuestion();
+  currentIndex=0; wrongTotal=0; correctSinceLastWrong=0;
+  buildStreakBar(); showQuestion();
 });
 shareBtn?.addEventListener("click", ()=>{
   const text = `I'm playing Brain ⚡ Bolt! Current score: ${score}/12`;
