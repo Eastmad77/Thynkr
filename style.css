@@ -167,3 +167,12 @@ a{color:var(--color-blue)}a:hover{text-decoration:underline}
 .topbar a.brand:visited {
   color:#fff !important;
 }
+/* === Force white text for brand link and all its children === */
+.topbar a.brand,
+.topbar a.brand *,
+.topbar .brand-text h1,
+.topbar .brand-text .tagline,
+.topbar .brand-text .kicker {
+  color: #fff !important;
+  text-decoration: none !important;
+}
