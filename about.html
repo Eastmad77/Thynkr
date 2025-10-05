@@ -1,33 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>About • The Daily Brain Bolt</title>
-  <link rel="icon" href="/favicon.svg" />
-  <link rel="stylesheet" href="/style.css?v=5105" />
-  <script src="/shell.js?v=5100" defer></script>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>About — Thynkr</title>
+  <meta name="description" content="Learn what Thynkr is about and how it sharpens your mind daily." />
+  <link rel="manifest" href="/site.webmanifest" />
+  <link rel="icon" href="/media/thynkr-icon-192.png" type="image/png" />
+  <link rel="stylesheet" href="/style.css?v=8001" />
+  <script src="/shell.js?v=8001" defer></script>
 </head>
 <body>
   <header class="topbar">
-    <div class="hero-bg"><img src="/header-graphic.svg" alt=""></div>
     <div class="hero-inner">
-      <a class="brand" href="/">
-        <img src="/app-icon.svg" alt="" class="logo" />
-        <div class="brand-text">
-          <div class="kicker">The Daily</div>
-          <h1>Brain <span class="zap">⚡</span> Bolt</h1>
-          <div class="tagline">Sharpen your mind — daily.</div>
-        </div>
+      <a class="brand" href="/"><img src="/media/thynkr-icon-192.png" class="logo" alt="" />
+        <div class="brand-text"><div class="kicker">The Daily</div><h1>Thynkr</h1><div class="tagline">Sharpen your mind — daily.</div></div>
       </a>
-      <div class="actions">
-        <button id="mmMenuBtn" aria-label="Menu">☰</button>
-      </div>
+      <div class="actions"><button id="mmMenuBtn" aria-label="Menu">☰</button></div>
     </div>
-    <div class="status"><span class="muted">About</span></div>
   </header>
 
-  <!-- Side menu -->
   <aside id="mmSideMenu" class="side-menu" aria-hidden="true">
     <nav class="menu-nav">
       <a href="/">🏠 Home</a>
@@ -40,14 +31,20 @@
   </aside>
 
   <main class="container">
-    <section class="card">
-      <h1>About</h1>
-      <p class="muted">Brain ⚡ Bolt is a fast daily quiz designed to keep your mind sharp with quick, focused challenges.</p>
+    <section class="card quiz-card" style="text-align:left">
+      <h2>What is Thynkr?</h2>
+      <p>Thynkr is a daily mental-fitness game. Play short, focused sets that challenge memory, logic, and attention — and build a streak over time.</p>
+      <h3>How it works</h3>
+      <ul style="margin:.75rem 0 0 1rem; line-height:1.7">
+        <li>Progress through <strong>three levels</strong> per set (12 questions each).</li>
+        <li>Redemption streaks get tougher by level (3 → 4 → 5 correct in a row).</li>
+        <li>Ad intermissions on free; ad-free on Pro.</li>
+      </ul>
+      <h3 style="margin-top:1.25rem">What’s coming</h3>
+      <p>We’re building premium packs, stats, difficulty curves, and more. Got ideas? We’d love to hear them — <a href="/contact.html">contact us</a>.</p>
     </section>
   </main>
 
-  <footer class="footer">
-    <p>© 2025 Brain ⚡ Bolt · <a href="/privacy.html">Privacy</a> · <a href="/terms.html">Terms</a></p>
-  </footer>
+  <footer class="footer"><p>© 2025 Thynkr · <a href="/privacy.html">Privacy</a> · <a href="/terms.html">Terms</a></p></footer>
 </body>
 </html>
