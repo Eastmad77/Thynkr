@@ -186,3 +186,29 @@ a{color:var(--color-blue)} a:hover{text-decoration:underline}
   40%  { opacity:.9; }
   100% { opacity:0; transform: translateY(-6px) scale(1.1); }
 }
+/* ===== Countdown Overlay (centered blue circle) ===== */
+.countdown-overlay{
+  position:fixed; inset:0;
+  display:grid; place-items:center;
+  z-index:1200;
+  pointer-events:none;
+}
+.countdown-dot{
+  width:140px; height:140px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-weight:900; font-size:3rem; letter-spacing:.5px;
+  color:#fff; text-align:center;
+  background:
+    radial-gradient(120% 120% at 30% 25%, rgba(255,255,255,.18), rgba(255,255,255,0) 55%),
+    linear-gradient(180deg,#1a73e8,#0b53c6);
+  border:1px solid rgba(255,255,255,.25);
+  box-shadow:0 20px 50px rgba(0,0,0,.45), inset 0 6px 18px rgba(255,255,255,.12);
+}
+@keyframes popIn{
+  0%{transform:scale(.85);opacity:.85}
+  60%{transform:scale(1.08);opacity:1}
+  100%{transform:scale(1);opacity:1}
+}
+@media(max-width:420px){
+  .countdown-dot{width:110px;height:110px;font-size:2.4rem}
+}
