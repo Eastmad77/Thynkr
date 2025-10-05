@@ -1,4 +1,4 @@
-/* ===== Brain ⚡ Bolt — Style v3.12 (premium streak) ===== */
+/* ===== Brain ⚡ Bolt — Style v3.12 (premium streak, brand title white) ===== */
 
 /* THEME */
 :root{
@@ -46,9 +46,11 @@ a{color:var(--color-blue)} a:hover{text-decoration:underline}
 .hero-inner{position:relative; display:flex;justify-content:space-between;align-items:center; min-height:84px}
 .brand{display:flex;align-items:center;gap:.75rem}
 .logo{width:42px;height:42px}
-.brand-text h1{font-size:1.6rem; line-height:1}
+
+/* Force brand title to white site-wide */
+.brand-text h1{font-size:1.6rem; line-height:1; color:#fff}
 .brand-text .tagline{font-size:.9rem; color:var(--text-muted)}
-.actions button{background:none;border:none;color:var(--text-light);font-size:1.3rem;cursor:pointer}
+.actions button{background:none;border:none;color:var(--text-light);font-size:1.0rem;cursor:pointer;margin-left:.35rem}
 .status{position:relative; margin-top:.45rem; font-size:.9rem;color:var(--text-muted); display:flex; gap:.75rem}
 
 /* Brand kicker "The Daily" */
