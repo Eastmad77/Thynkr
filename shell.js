@@ -1,12 +1,12 @@
 /* ==========================================================
-   shell.js — Brain ⚡ Bolt (universal, defensive)
-   - Supports IDs: menuButton/sideMenu OR mmMenuBtn/mmSideMenu
-   - Safe null checks (no crashes)
+   shell.v5015.js — Brain ⚡ Bolt (universal, defensive)
+   - Works with IDs: menuButton/sideMenu OR mmMenuBtn/mmSideMenu
+   - Safe null checks (prevents crashes)
    - Menu auto-hide after 5s
    - Start splash fallback fade
 ========================================================== */
 
-console.log("[BrainBolt] Shell loaded");
+console.log("[BrainBolt] Shell v5015 loaded");
 
 document.addEventListener("DOMContentLoaded", () => {
   initMenuUniversal();
@@ -15,7 +15,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 /* ---------- Menu (universal) ---------- */
 function initMenuUniversal() {
-  // Try the new IDs first, then the old IDs
+  // Try modern IDs first, then legacy IDs
   const menuBtn =
     document.getElementById("menuButton") ||
     document.getElementById("mmMenuBtn");
@@ -25,16 +25,24 @@ function initMenuUniversal() {
     document.getElementById("mmSideMenu");
 
   if (!menuBtn || !sideMenu) {
-    console.warn("[BrainBolt] Menu elements not found on this page — skipping initMenu()");
+    console.warn("[BrainBolt] Menu elements not found — skipping menu init");
     return;
   }
 
-  menuBtn.addEventListener("click", () => {
-    sideMenu.classList.toggle("open");
-    if (sideMenu.classList.contains("open")) {
-      setTimeout(() => sideMenu.classList.remove("open"), 5000);
-    }
-  });
+  // Defensive addEventListener
+  try {
+    menuBtn.addEventListener("click", () => {
+      if (!sideMenu) return;
+      sideMenu.classList.toggle("open");
+      if (sideMenu.classList.contains("open")) {
+        setTimeout(() => {
+          if (sideMenu) sideMenu.classList.remove("open");
+        }, 5000);
+      }
+    });
+  } catch (e) {
+    console.warn("[BrainBolt] Menu init failed:", e);
+  }
 }
 
 /* ---------- Start Splash (fallback) ---------- */
@@ -45,10 +53,9 @@ function initStartSplashFallback() {
 
   if (!startSplash) return;
 
-  // If it's still around after ~2.5s, fade it out
   setTimeout(() => {
     if (!document.body.contains(startSplash)) return;
-    startSplash.classList.add("hiding"); // your CSS should handle opacity transition
+    startSplash.classList.add("hiding"); // CSS should animate opacity
     setTimeout(() => {
       if (startSplash.parentNode) startSplash.parentNode.removeChild(startSplash);
     }, 500);
