@@ -1,4 +1,4 @@
-// ===== Brain ⚡ Bolt — App.js v3.12.4 (defensive CSV + premium redemption + countdown fix) =====
+// ===== Brain ⚡ Bolt — App.js v3.12.5 (countdown-on-start only + premium redemption) =====
 const CSV_URL =
   "https://docs.google.com/spreadsheets/d/e/2PACX-1vS6725qpD0gRYajBJaOjxcSpTFxJtS2fBzrT1XAjp9t5SHnBJCrLFuHY4C51HFV0A4MK-4c6t7jTKGG/pub?gid=1410250735&single=true&output=csv";
 
@@ -62,9 +62,11 @@ function killStartSplash() {
   addCls(s, "hiding");
   setTimeout(() => s.remove(), 420);
 }
-document.addEventListener("DOMContentLoaded", () =>
-  setTimeout(killStartSplash, 900)
-);
+document.addEventListener("DOMContentLoaded", () => {
+  // Ensure countdown is hidden on initial load
+  remCls(countdownOverlay, "show");
+  setTimeout(killStartSplash, 900);
+});
 window.addEventListener("load", () => setTimeout(killStartSplash, 900));
 setTimeout(killStartSplash, 4000);
 
@@ -217,7 +219,7 @@ function stopQuestionTimer() {
   }
 }
 
-/* ==== Game start ==== */
+/* ==== Game start (countdown-on-start only) ==== */
 async function startGame() {
   clearTimeout(successAutoNav);
   try {
@@ -243,13 +245,14 @@ async function startGame() {
     setText(setLabel, "Ready");
     buildStreakBar();
 
-    // Countdown overlay
+    // Show countdown ONLY now; hide after "1"
     let n = 3;
     setText(countNum, n);
-    countdownOverlay.hidden = false;
+    addCls(countdownOverlay, "show");
     countNum.style.animation = "none";
     void countNum.offsetWidth;
     countNum.style.animation = "popIn .4s ease";
+    beepTick();
 
     const int = setInterval(() => {
       n--;
@@ -261,15 +264,10 @@ async function startGame() {
         beepTick();
       } else {
         clearInterval(int);
-        setText(countNum, "GO");
-        countNum.style.animation = "none";
-        void countNum.offsetWidth;
-        countNum.style.animation = "popIn .4s ease";
+        // Immediately hide the overlay after "1" completes (no "GO" screen)
+        remCls(countdownOverlay, "show");
         beepGo();
-        setTimeout(() => {
-          countdownOverlay.hidden = true;
-          beginQuiz();
-        }, 380);
+        beginQuiz();
       }
     }, 700);
   } catch (e) {
@@ -380,13 +378,13 @@ function advanceOrEnd() {
 function endGame(msg = "") {
   clearInterval(elapsedInterval);
   stopQuestionTimer();
+  remCls(countdownOverlay, "show"); // safety: ensure hidden
   if (msg) {
     setText(gameOverText, msg);
     show(gameOverBox, true);
     show(playAgainBtn, true);
     addCls(playAgainBtn, "pulse");
   } else {
-    countdownOverlay.hidden = true;
     successSplash?.removeAttribute("aria-hidden");
     successSplash?.classList.remove("show");
     void successSplash?.offsetWidth;
