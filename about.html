@@ -1,48 +1,53 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
-  <title>About – Brain ⚡ Bolt</title>
-
-  <!-- Favicon (SVG) -->
-  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-
-  <link rel="stylesheet" href="/style.css?v=3211" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PAGE TITLE • The Daily Brain Bolt</title>
+  <link rel="icon" href="/favicon.svg" />
+  <link rel="stylesheet" href="/style.css?v=5100" />
+  <script src="/shell.js?v=5100" defer></script>
 </head>
 <body>
-  <header>
-    <button id="mmMenuBtn" class="menu" aria-label="Open menu">☰</button>
-    <h1>About Brain Bolt</h1>
+  <header class="topbar">
+    <div class="hero-bg"><img src="/header-graphic.svg" alt=""></div>
+    <div class="hero-inner">
+      <a class="brand" href="/">
+        <img src="/app-icon.svg" alt="" class="logo" />
+        <div class="brand-text">
+          <div class="kicker">The Daily</div>
+          <h1>Brain <span class="zap">⚡</span> Bolt</h1>
+          <div class="tagline">Sharpen your mind — daily.</div>
+        </div>
+      </a>
+      <div class="actions">
+        <button id="mmMenuBtn" aria-label="Menu">☰</button>
+      </div>
+    </div>
+    <div class="status"><span class="muted">PAGE TAG</span></div>
   </header>
 
-  <main>
-    <h2>About</h2>
-    <p>Brain ⚡ Bolt is a fast-paced quiz app built with HTML, CSS, and JavaScript.</p>
-  </main>
-
-  <!-- Sidebar menu -->
-  <aside class="side-menu" id="mmSideMenu" aria-hidden="true">
-    <nav class="menu-nav" aria-label="Main">
-      <a href="/">Home</a>
-      <a href="/about.html" aria-current="page">About</a>
-      <a href="/contact.html">Contact</a>
-      <a href="/privacy.html">Privacy</a>
-      <a href="/terms.html">Terms</a>
-      <a href="/signin.html">Sign In</a>
-      <a href="/pro.html">Pro</a>
-      <a href="/admin.html">Admin</a>
-      <button type="button" id="notifyItem">Notifications: OFF</button>
+  <!-- Side menu -->
+  <aside id="mmSideMenu" class="side-menu" aria-hidden="true">
+    <nav class="menu-nav">
+      <a href="/">🏠 Home</a>
+      <a href="/about.html">ℹ️ About</a>
+      <a href="/pro.html">⭐ Pro</a>
+      <a href="/privacy.html">🔒 Privacy</a>
+      <a href="/terms.html">📄 Terms</a>
+      <a href="/contact.html">✉️ Contact</a>
     </nav>
   </aside>
 
-  <!-- Scripts -->
-  <script src="/shell.js?v=3211" defer></script>
-  <script src="/app.js?v=3211" defer></script>
-  <script>
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("/service-worker.js?v=3211");
-    }
-  </script>
+  <main class="container">
+    <section class="card">
+      <h1>PAGE TITLE</h1>
+      <p class="muted">Body copy for this page goes here.</p>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>© 2025 Brain ⚡ Bolt · <a href="/privacy.html">Privacy</a> · <a href="/terms.html">Terms</a></p>
+  </footer>
 </body>
 </html>
