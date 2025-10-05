@@ -186,13 +186,18 @@ a{color:var(--color-blue)} a:hover{text-decoration:underline}
   40%  { opacity:.9; }
   100% { opacity:0; transform: translateY(-6px) scale(1.1); }
 }
-/* ===== Countdown Overlay (centered blue circle) ===== */
+/* Countdown overlay */
 .countdown-overlay{
   position:fixed; inset:0;
-  display:grid; place-items:center;
+  display:none;                 /* hidden by default */
+  place-items:center;
   z-index:1200;
   pointer-events:none;
 }
+.countdown-overlay.show{        /* JS toggles this */
+  display:grid;
+}
+/* Blue circular dot + pop animation */
 .countdown-dot{
   width:140px; height:140px; border-radius:50%;
   display:flex; align-items:center; justify-content:center;
