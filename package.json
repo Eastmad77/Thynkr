@@ -1,12 +1,31 @@
 {
-  "private": true,
-  "type": "module",
-  "devDependencies": {
-    "sharp": "^0.33.4"
-  },
+  "name": "brainbolt-app",
+  "version": "1.0.0",
+  "description": "Brain ⚡ Bolt — daily quiz web app with Stripe Pro subscription and Firebase integration.",
+  "main": "app.js",
   "scripts": {
-    "build:images": "node scripts/export-images.js",
-    "prebuild": "npm run build:images",
-    "build": "echo 'Static site build complete'"
-  }
+    "dev": "netlify dev",
+    "build": "echo 'Static build handled by Netlify'",
+    "start": "netlify dev",
+    "test": "echo 'No tests defined'"
+  },
+  "dependencies": {
+    "firebase-admin": "^12.6.0",
+    "stripe": "^14.0.0"
+  },
+  "devDependencies": {},
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "stripe",
+    "netlify-functions",
+    "firebase-admin",
+    "brainbolt",
+    "quiz",
+    "pwa",
+    "subscription"
+  ],
+  "author": "Brendan Hayman",
+  "license": "MIT"
 }
