@@ -1,190 +1,261 @@
-// ===== Brain ⚡ Bolt — App.js v3.12.7 (countdown fix + premium redemption) =====
-const CSV_URL="https://docs.google.com/spreadsheets/d/e/2PACX-1vS6725qpD0gRYajBJaOjxcSpTFxJtS2fBzrT1XAjp9t5SHnBJCrLFuHY4C51HFV0A4MK-4c6t7jTKGG/pub?gid=1410250735&single=true&output=csv";
-const QUESTION_TIME_MS=10000, QUESTION_TICK_MS=100;
+/* ============================
+   THYNKR — v3.0 Game Engine
+   ============================ */
 
-let questions=[],currentIndex=0,score=0,wrongTotal=0,correctSinceLastWrong=0,elapsed=0,elapsedInterval=null,qTimer=null,qRemaining=QUESTION_TIME_MS,qLastTickSec=3,soundOn=true,successAutoNav=null;
+console.log("[Thynkr] v3.0 loaded");
 
-/* Elements */
-const startBtn=document.getElementById("startBtn");
-const shuffleBtn=document.getElementById("shuffleBtn");
-const shareBtn=document.getElementById("shareBtn");
-const playAgainBtn=document.getElementById("playAgainBtn");
-const qBox=document.getElementById("questionBox");
-const choicesDiv=document.getElementById("choices");
-const pillScore=document.getElementById("pillScore");
-const progressLabel=document.getElementById("progressLabel");
-const elapsedTimeEl=document.getElementById("elapsedTime");
-const countdownOverlay=document.getElementById("countdownOverlay");
-const countNum=document.getElementById("countNum");
-const successSplash=document.getElementById("successSplash");
-const gameOverBox=document.getElementById("gameOverBox");
-const gameOverText=document.getElementById("gameOverText");
-const timerBar=document.getElementById("timerBar");
-const qTimerBar=document.getElementById("qTimerBar");
-const soundBtn=document.getElementById("soundBtn");
-const setLabel=document.getElementById("setLabel");
-const streakVis=document.getElementById("streakVis");
+// ----------------------------------------------------
+// GLOBAL STATE
+// ----------------------------------------------------
+let allQuestions = [];
+let currentQuestions = [];
+let currentLevel = 1;
+const totalLevels = 3;
+const questionsPerLevel = 12;
 
-/* Helpers */
-const setText=(el,txt)=>{if(el)el.textContent=txt;};
-const setStyle=(el,p,v)=>{if(el&&el.style)el.style[p]=v;};
-const show=(el,on=true)=>{if(el)el.style.display=on?"":"none";};
-const addCls=(el,c)=>{if(el)el.classList.add(c);};
-const remCls=(el,c)=>{if(el)el.classList.remove(c);};
+const redemptionRules = {
+  1: 3, // Level 1: 3 consecutive correct to redeem
+  2: 4, // Level 2: 4 consecutive
+  3: 5  // Level 3: 5 consecutive
+};
 
-/* Extra-safety toggle for countdown */
-function showCountdown(on){
-  if(!countdownOverlay) return;
-  countdownOverlay.hidden=!on;
-  if(on) addCls(countdownOverlay,"show"); else remCls(countdownOverlay,"show");
+let questionIndex = 0;
+let correctStreak = 0;
+let strikes = 0;
+let score = 0;
+let isProUser = false; // toggle later with Firestore plan
+
+// ----------------------------------------------------
+// ELEMENTS
+// ----------------------------------------------------
+const questionBox = document.getElementById("questionBox");
+const choicesBox = document.getElementById("choices");
+const setLabel = document.getElementById("setLabel");
+const progressLabel = document.getElementById("progressLabel");
+const adContainer = document.getElementById("adContainer");
+const successSplash = document.getElementById("successSplash");
+const startBtn = document.getElementById("startBtn");
+const shuffleBtn = document.getElementById("shuffleBtn");
+const shareBtn = document.getElementById("shareBtn");
+
+// ----------------------------------------------------
+// INITIALISE GAME
+// ----------------------------------------------------
+if (startBtn) startBtn.addEventListener("click", startGame);
+
+async function loadQuestions() {
+  return new Promise((resolve, reject) => {
+    Papa.parse("/questions.csv", {
+      download: true,
+      header: true,
+      complete: (results) => {
+        allQuestions = results.data.filter(q => q.Question);
+        resolve();
+      },
+      error: reject,
+    });
+  });
 }
 
-/* Non-quiz pages */
-if(!qBox||!choicesDiv){
-  soundBtn?.addEventListener("click",()=>{soundOn=!soundOn; soundBtn.textContent=soundOn?"🔊":"🔇";});
-}else{
-/* Splash */
-function killStartSplash(){
-  const s=document.getElementById("startSplash");
-  if(!s||s.dataset.dismissed==="1")return;
-  s.dataset.dismissed="1";
-  addCls(s,"hiding"); setTimeout(()=>s.remove(),420);
-}
-document.addEventListener("DOMContentLoaded",()=>{ showCountdown(false); setTimeout(killStartSplash,900); });
-window.addEventListener("load",()=>setTimeout(killStartSplash,900));
-setTimeout(killStartSplash,4000);
+// ----------------------------------------------------
+// START + LEVEL MANAGEMENT
+// ----------------------------------------------------
+async function startGame() {
+  console.log("[Thynkr] Starting game...");
+  currentLevel = 1;
+  score = 0;
+  strikes = 0;
+  correctStreak = 0;
 
-/* Audio */
-function beep(f=600,d=.25){ if(!soundOn) return; try{ const ctx=new (window.AudioContext||window.webkitAudioContext)(); const o=ctx.createOscillator(); const g=ctx.createGain(); o.type="sine"; o.frequency.value=f; o.connect(g); g.connect(ctx.destination); g.gain.value=.25; const t=ctx.currentTime; o.start(t); g.gain.exponentialRampToValueAtTime(.0001,t+d); o.stop(t+d+.02);}catch{} }
-const beepTick=()=>beep(620,.22), beepGo=()=>beep(950,.28), sfxCorrect=()=>beep(1020,.18), sfxIncorrect=()=>beep(220,.2), tickSoft=()=>beep(740,.08);
-function vibrate(ms=100){ if(navigator.vibrate) navigator.vibrate(ms); }
-
-/* CSV */
-function fetchCSV(){ return new Promise((resolve,reject)=>{ Papa.parse(CSV_URL,{download:true,header:true,skipEmptyLines:true,complete:r=>resolve(r.data||[]),error:e=>reject(e)}); }); }
-
-/* Utils */
-function formatTime(s){const m=Math.floor(s/60),x=s%60;return `${m}:${x<10?"0":""}${x}`;}
-function shuffleArray(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
-function norm(x){return String(x??"").trim().toLowerCase();}
-
-/* Correct text resolve */
-function resolveCorrectText(q){ if(!q) return ""; const Q=k=>q[k]??q[k?.toLowerCase?.()]??q[k?.toUpperCase?.()]; const ans=norm(Q("Answer")); const M={a:"OptionA",b:"OptionB",c:"OptionC",d:"OptionD"}; if(["a","b","c","d"].includes(ans)) return Q(M[ans])??""; if(["optiona","optionb","optionc","optiond"].includes(ans)){const k="Option"+ans.slice(-1).toUpperCase(); return Q(k)??"";} return Q("Answer")??"";}
-
-/* Row validity */
-function isValidRow(row){ if(!row) return false; const get=k=>row[k]??row[k?.toLowerCase?.()]??row[k?.toUpperCase?.()]; const hasQ=!!norm(get("Question")); const opts=["OptionA","OptionB","OptionC","OptionD"].map(get).filter(Boolean); return hasQ&&opts.length>=2; }
-
-/* Streak */
-function buildStreakBar(){ if(!streakVis) return; streakVis.innerHTML=""; for(let i=0;i<12;i++){const d=document.createElement("div"); d.className="streak-dot"; d.dataset.index=i; streakVis.appendChild(d);} }
-function markStreak(i,ok){ const d=streakVis?.querySelector(`.streak-dot[data-index="${i}"]`); if(!d) return; remCls(d,"is-correct"); remCls(d,"is-wrong"); addCls(d, ok?"is-correct":"is-wrong"); }
-
-/* Redemption */
-function redeemOneWrongDot(){
-  if(!streakVis) return;
-  const wrongs=[...streakVis.querySelectorAll(".streak-dot.is-wrong")];
-  if(!wrongs.length) return;
-  let target=wrongs.reverse().find(d=>Number(d.dataset.index)<currentIndex)||wrongs[0];
-  target.classList.add("redeem");
-  setTimeout(()=>{target.classList.remove("is-wrong","redeem");},900);
+  await loadQuestions();
+  startCountdown(() => loadLevel(currentLevel));
 }
 
-/* Timers */
-function startQuestionTimer(onTimeout){
-  stopQuestionTimer(); qRemaining=QUESTION_TIME_MS; qLastTickSec=3;
-  qTimerBar?.classList.remove("warn"); setStyle(qTimerBar,"width","100%");
-  qTimer=setInterval(()=>{ qRemaining-=QUESTION_TICK_MS; const pct=Math.max(0,qRemaining/QUESTION_TIME_MS)*100; setStyle(qTimerBar,"width",pct+"%");
-    const secsLeft=Math.ceil(qRemaining/1000);
-    if(qRemaining<=3000){ qTimerBar?.classList.add("warn"); if(secsLeft>0 && secsLeft<qLastTickSec+1){ tickSoft(); qLastTickSec=secsLeft; } }
-    if(qRemaining<=0){ stopQuestionTimer(); onTimeout?.(); }
-  },QUESTION_TICK_MS);
-}
-function stopQuestionTimer(){ if(qTimer){ clearInterval(qTimer); qTimer=null; } }
+function loadLevel(level) {
+  const start = (level - 1) * questionsPerLevel;
+  const end = level * questionsPerLevel;
+  currentQuestions = allQuestions.slice(start, end);
 
-/* Start game */
-async function startGame(){
-  clearTimeout(successAutoNav);
-  try{
-    successSplash?.classList.remove("show");
-    setText(setLabel,"Loading…");
-    const data=await fetchCSV(); const safe=data.filter(isValidRow); if(!safe.length) throw new Error("No valid questions");
-    questions=shuffleArray(safe).slice(0,12);
-    currentIndex=0; score=0; wrongTotal=0; correctSinceLastWrong=0; elapsed=0;
-    setText(pillScore,"Score 0"); setText(progressLabel,"Q 0/12"); show(gameOverBox,false); show(playAgainBtn,false); remCls(playAgainBtn,"pulse"); setText(setLabel,"Ready");
-    buildStreakBar();
+  questionIndex = 0;
+  strikes = 0;
+  correctStreak = 0;
 
-    // Countdown ONLY now
-    let n=3;
-    setText(countNum,n);
-    showCountdown(true);
-    countNum.style.animation="none"; void countNum.offsetWidth; countNum.style.animation="popIn .4s ease"; beepTick();
-
-    const int=setInterval(()=>{ n--;
-      if(n>0){
-        setText(countNum,n);
-        countNum.style.animation="none"; void countNum.offsetWidth; countNum.style.animation="popIn .4s ease"; beepTick();
-      }else{
-        clearInterval(int);
-        setText(countNum,"GO");
-        countNum.style.animation="none"; void countNum.offsetWidth; countNum.style.animation="popIn .4s ease"; beepGo();
-        setTimeout(()=>{ showCountdown(false); beginQuiz(); },200); // brief GO
-      }
-    },700);
-  }catch(e){
-    setText(qBox,"Could not load today’s quiz. Please try again later.");
-    setText(setLabel,"Error"); console.error(e);
-  }
-}
-
-/* Quiz loop */
-function beginQuiz(){
-  elapsed=0; setText(elapsedTimeEl,"0:00"); setStyle(timerBar,"width","0%");
-  clearInterval(elapsedInterval);
-  elapsedInterval=setInterval(()=>{ elapsed++; setText(elapsedTimeEl,formatTime(elapsed)); setStyle(timerBar,"width",Math.min(100,(elapsed/300)*100)+"%"); },1000);
+  updateLevelUI(level);
   showQuestion();
 }
-function showQuestion(){
-  if(!Array.isArray(questions)||currentIndex>=questions.length) return endGame();
-  const q=questions[currentIndex]; if(!q){ currentIndex++; return showQuestion(); }
-  const Q=k=>q[k]??q[k?.toLowerCase?.()]??q[k?.toUpperCase?.()];
-  const correctText=resolveCorrectText(q);
-  setText(qBox,Q("Question")||"—"); choicesDiv.innerHTML="";
-  let opts=[]; ["OptionA","OptionB","OptionC","OptionD"].forEach(k=>{const v=Q(k); if(!v) return; const ok=norm(v)===norm(correctText); opts.push({text:String(v),isCorrect:ok});});
-  if(!opts.some(o=>o.isCorrect)&&opts.length>0) opts[0].isCorrect=true;
-  if(opts.length<2){ currentIndex++; return showQuestion(); }
-  opts=shuffleArray(opts);
-  opts.forEach(o=>{ const b=document.createElement("button"); b.textContent=o.text; b.onclick=()=>handleAnswer(b,o.isCorrect); choicesDiv.appendChild(b); });
-  setText(progressLabel,`Q ${Math.min(currentIndex+1,12)}/12`);
-  startQuestionTimer(()=>handleTimeout());
+
+// ----------------------------------------------------
+// COUNTDOWN
+// ----------------------------------------------------
+function startCountdown(callback) {
+  const splash = document.getElementById("startSplash");
+  const inner = splash.querySelector(".splash-inner");
+  inner.innerHTML = `<div class="countdown-circle"><span id="countNum">3</span></div>`;
+  splash.classList.add("visible");
+
+  let count = 3;
+  const counter = setInterval(() => {
+    count--;
+    const el = document.getElementById("countNum");
+    if (el) el.textContent = count > 0 ? count : "Go!";
+    if (count <= 0) {
+      clearInterval(counter);
+      setTimeout(() => {
+        splash.classList.remove("visible");
+        callback();
+      }, 900);
+    }
+  }, 1000);
 }
 
-/* Answers */
-function handleTimeout(){ sfxIncorrect(); vibrate(160); registerWrong(); advanceOrEnd(); }
-function handleAnswer(btn,isCorrect){
-  stopQuestionTimer(); [...choicesDiv.querySelectorAll("button")].forEach(b=>b.disabled=true);
-  if(isCorrect){ addCls(btn,"correct"); sfxCorrect(); vibrate(60); score++; setText(pillScore,`Score ${score}`); registerCorrect(); }
-  else{ addCls(btn,"incorrect"); sfxIncorrect(); vibrate(160); registerWrong(); }
-  setTimeout(()=>advanceOrEnd(),800);
+// ----------------------------------------------------
+// SHOW QUESTION
+// ----------------------------------------------------
+function showQuestion() {
+  const q = currentQuestions[questionIndex];
+  if (!q) return endLevel();
+
+  setLabel.textContent = `Level ${currentLevel} of ${totalLevels}`;
+  progressLabel.textContent = `Q ${questionIndex + 1}/${questionsPerLevel}`;
+  questionBox.textContent = q.Question;
+
+  const answers = shuffleArray([q.OptionA, q.OptionB, q.OptionC, q.OptionD]);
+  choicesBox.innerHTML = "";
+
+  answers.forEach((opt) => {
+    const btn = document.createElement("button");
+    btn.className = "btn choice";
+    btn.textContent = opt;
+    btn.onclick = () => handleAnswer(opt === q.Answer);
+    choicesBox.appendChild(btn);
+  });
+
+  updateStreakBar();
 }
 
-/* Rules */
-function registerCorrect(){ markStreak(currentIndex,true); correctSinceLastWrong++; if(correctSinceLastWrong>=3 && wrongTotal>0){ redeemOneWrongDot(); wrongTotal--; correctSinceLastWrong=0; } }
-function registerWrong(){ markStreak(currentIndex,false); wrongTotal++; correctSinceLastWrong=0; }
-function advanceOrEnd(){ if(wrongTotal>=3) return endGame("3 incorrect — game over!"); currentIndex++; if(currentIndex>=12) endGame(); else showQuestion(); }
+// ----------------------------------------------------
+// HANDLE ANSWERS
+// ----------------------------------------------------
+function handleAnswer(isCorrect) {
+  if (isCorrect) {
+    score++;
+    correctStreak++;
+    if (correctStreak >= redemptionRules[currentLevel] && strikes > 0) strikes--;
+  } else {
+    strikes++;
+    correctStreak = 0;
+  }
 
-/* End */
-function endGame(msg=""){
-  clearInterval(elapsedInterval); stopQuestionTimer(); showCountdown(false);
-  if(msg){ setText(gameOverText,msg); show(gameOverBox,true); show(playAgainBtn,true); addCls(playAgainBtn,"pulse"); }
-  else{
-    successSplash?.removeAttribute("aria-hidden"); successSplash?.classList.remove("show"); void successSplash?.offsetWidth; successSplash?.classList.add("show");
-    clearTimeout(successAutoNav);
-    successAutoNav=setTimeout(()=>{ successSplash?.classList.remove("show"); setText(qBox,"Press Start to Play"); setText(pillScore,"Score 0"); setText(progressLabel,"Q 0/12"); setStyle(timerBar,"width","0%"); buildStreakBar(); },3000);
+  questionIndex++;
+
+  if (questionIndex >= currentQuestions.length) {
+    endLevel();
+  } else {
+    showQuestion();
   }
 }
 
-/* Wire UI */
-startBtn?.addEventListener("click",startGame);
-shuffleBtn?.addEventListener("click",()=>{ shuffleArray(questions); currentIndex=0; wrongTotal=0; correctSinceLastWrong=0; buildStreakBar(); showQuestion(); });
-shareBtn?.addEventListener("click",()=>{ const text=`I'm playing Brain ⚡ Bolt! Current score: ${score}/12`; if(navigator.share) navigator.share({title:"Brain ⚡ Bolt",text,url:location.href}).catch(()=>{}); else navigator.clipboard?.writeText(`${text} - ${location.href}`); });
-playAgainBtn?.addEventListener("click",startGame);
-soundBtn?.addEventListener("click",()=>{ soundOn=!soundOn; soundBtn.textContent=soundOn?"🔊":"🔇"; });
-} // end guard
+// ----------------------------------------------------
+// LEVEL END & TRANSITION
+// ----------------------------------------------------
+function endLevel() {
+  showLevelSummary(currentLevel, score);
+
+  if (currentLevel < totalLevels) {
+    if (!isProUser) showAdIntermission(() => nextLevel());
+    else nextLevel();
+  } else {
+    endGame();
+  }
+}
+
+function nextLevel() {
+  currentLevel++;
+  if (currentLevel <= totalLevels) loadLevel(currentLevel);
+  else endGame();
+}
+
+// ----------------------------------------------------
+// LEVEL SUMMARY
+// ----------------------------------------------------
+function showLevelSummary(level, score) {
+  questionBox.innerHTML = `
+    <h2>Level ${level} Complete! 🧠</h2>
+    <p>Your score so far: ${score} / ${(level) * questionsPerLevel}</p>
+  `;
+  choicesBox.innerHTML = "";
+
+  const btn = document.createElement("button");
+  btn.className = "btn primary";
+  btn.textContent = (level < totalLevels) ? "Next Level →" : "View Results";
+  btn.onclick = () => (level < totalLevels ? nextLevel() : endGame());
+  questionBox.appendChild(btn);
+}
+
+// ----------------------------------------------------
+// AD INTERMISSION (Free Only)
+// ----------------------------------------------------
+function showAdIntermission(callback) {
+  adContainer.classList.remove("hidden");
+  adContainer.innerHTML = `
+    <div class="ad-card">
+      <h2>Ad Break 🕒</h2>
+      <p>Upgrade to <strong>Thynkr Pro</strong> for ad-free play!</p>
+      <button class="btn ghost" id="skipAdBtn">Skip Ad (15s)</button>
+    </div>
+  `;
+
+  let timer = 15;
+  const skipBtn = document.getElementById("skipAdBtn");
+  skipBtn.disabled = true;
+
+  const countdown = setInterval(() => {
+    timer--;
+    skipBtn.textContent = `Skip Ad (${timer}s)`;
+    if (timer <= 0) {
+      clearInterval(countdown);
+      adContainer.classList.add("hidden");
+      callback();
+    }
+  }, 1000);
+}
+
+// ----------------------------------------------------
+// GAME COMPLETE
+// ----------------------------------------------------
+function endGame() {
+  showSuccessSplash();
+  questionBox.innerHTML = `
+    <h2>Thynkr Master Achieved ⚡</h2>
+    <p>You scored ${score} / ${questionsPerLevel * totalLevels} correct!</p>
+    <button class="btn primary" onclick="startGame()">Play Again</button>
+  `;
+  choicesBox.innerHTML = "";
+}
+
+// ----------------------------------------------------
+// SUCCESS SPLASH
+// ----------------------------------------------------
+function showSuccessSplash() {
+  successSplash.classList.add("visible");
+  setTimeout(() => successSplash.classList.remove("visible"), 3000);
+}
+
+// ----------------------------------------------------
+// UI HELPERS
+// ----------------------------------------------------
+function updateLevelUI(level) {
+  document.body.className = `level-${level}`;
+}
+
+function updateStreakBar() {
+  const bar = document.getElementById("streakVis");
+  if (!bar) return;
+  const streakGoal = redemptionRules[currentLevel];
+  const fill = Math.min(correctStreak / streakGoal, 1) * 100;
+  bar.style.width = `${fill}%`;
+}
+
+function shuffleArray(arr) {
+  return arr.sort(() => Math.random() - 0.5);
+}
