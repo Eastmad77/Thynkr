@@ -1,61 +1,43 @@
-# Netlify config for Brain ⚡ Bolt — SPA + functions + headers
+# Netlify config for Thynkr — SPA + functions + headers
 
 [build]
   publish = "."
   command = ""
   functions = "netlify/functions"
 
-# --- Pretty paths for HTML pages ---
+# Ensure functions aren't caught by SPA fallback
 [[redirects]]
-  from = "/pro"
-  to   = "/pro.html"
+  from = "/.netlify/functions/*"
+  to   = "/.netlify/functions/:splat"
   status = 200
+  force = true
 
-[[redirects]]
-  from = "/about"
-  to   = "/about.html"
-  status = 200
-
-[[redirects]]
-  from = "/privacy"
-  to   = "/privacy.html"
-  status = 200
-
-[[redirects]]
-  from = "/terms"
-  to   = "/terms.html"
-  status = 200
-
-[[redirects]]
-  from = "/contact"
-  to   = "/contact.html"
-  status = 200
-
-[[redirects]]
-  from = "/signin"
-  to   = "/signin.html"
-  status = 200
-
-# --- Stripe checkout endpoint shortcut ---
+# Optional pretty path for Stripe Checkout session creation
 [[redirects]]
   from = "/pro-checkout"
   to   = "/.netlify/functions/create-checkout-session"
   status = 200
   force = true
 
-# --- SPA fallback ---
+# Pass-through real files
+[[redirects]]
+  from = "/:file.:ext"
+  to   = "/:file.:ext"
+  status = 200
+
+# SPA fallback
 [[redirects]]
   from = "/*"
   to   = "/index.html"
   status = 200
 
-# --- Explicit 404 page ---
+# 404 (optional for crawlers)
 [[redirects]]
   from = "/404.html"
   to   = "/404.html"
   status = 404
 
-# --- Security headers ---
+# Security headers
 [[headers]]
   for = "/*"
   [headers.values]
@@ -64,7 +46,7 @@
     Referrer-Policy = "strict-origin-when-cross-origin"
     Permissions-Policy = "geolocation=(), microphone=(), camera=()"
 
-# --- Cache rules ---
+# Keep core app assets fresh (cache-busted via ?v=)
 [[headers]]
   for = "/service-worker.js"
   [headers.values]
@@ -80,12 +62,8 @@
   [headers.values]
     Cache-Control = "no-cache"
 
+# Posters/icons: allow caching
 [[headers]]
-  for = "/.netlify/functions/stripe-webhook"
+  for = "/media/*"
   [headers.values]
-    Cache-Control = "no-cache"
-
-[[headers]]
-  for = "/site.webmanifest"
-  [headers.values]
-    Cache-Control = "no-cache"
+    Cache-Control = "public, max-age=604800, immutable"
