@@ -1,49 +1,68 @@
-// Creates a Stripe Checkout session for monthly/yearly subscription
-// Env needed: STRIPE_SECRET_KEY, STRIPE_PRICE_MONTHLY, STRIPE_PRICE_YEARLY, SITE_URL
+// Creates a Stripe Checkout Session for Brain Bolt Pro (monthly or yearly)
+// POST body: { plan: "monthly" | "yearly", uid?: "firebaseAuthUid" }
 
-import Stripe from 'stripe';
+const allowedOrigins = [
+  process.env.SITE_URL,           // e.g. "https://your-site.netlify.app"
+  "http://localhost:8888",        // Netlify dev
+  "http://localhost:5173"         // Vite dev (optional)
+];
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: '2024-06-20',
-});
+exports.handler = async (event) => {
+  const origin = event.headers.origin || "";
+  const allow = allowedOrigins.filter(Boolean).includes(origin);
+  const cors = {
+    "Access-Control-Allow-Origin": allow ? origin : (process.env.SITE_URL || "*"),
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization",
+  };
 
-export const handler = async (event) => {
+  if (event.httpMethod === "OPTIONS") {
+    return { statusCode: 200, headers: cors, body: "" };
+  }
+  if (event.httpMethod !== "POST") {
+    return { statusCode: 405, headers: cors, body: "Method Not Allowed" };
+  }
+
   try {
-    if (event.httpMethod !== 'POST') {
-      return { statusCode: 405, body: 'Method Not Allowed' };
+    const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
+    const body = event.body ? JSON.parse(event.body) : {};
+    const plan = (body.plan || "").toLowerCase(); // "monthly" | "yearly"
+    const uid = body.uid || ""; // optional firebase uid
+
+    const priceMap = {
+      monthly: process.env.STRIPE_PRICE_MONTHLY,
+      yearly:  process.env.STRIPE_PRICE_YEARLY,
+    };
+    const price = priceMap[plan];
+    if (!price) {
+      return { statusCode: 400, headers: cors, body: "No price for selected plan" };
     }
 
-    const payload = JSON.parse(event.body || '{}');
-    const plan = (payload.plan === 'yearly') ? 'yearly' : 'monthly';
-    const email = payload.email || undefined;
-    const uid   = payload.uid   || '';
+    const site = process.env.SITE_URL || "http://localhost:8888";
+    const successUrl = `${site}/pro.html?checkout=success&plan=${plan}&session_id={CHECKOUT_SESSION_ID}`;
+    const cancelUrl  = `${site}/pro.html?checkout=cancel&plan=${plan}`;
 
-    const priceId = plan === 'yearly'
-      ? process.env.STRIPE_PRICE_YEARLY
-      : process.env.STRIPE_PRICE_MONTHLY;
-
-    if (!priceId) {
-      return { statusCode: 500, body: 'Missing Stripe price ID env var' };
-    }
-
-    const siteUrl = process.env.SITE_URL || `https://${event.headers.host}`;
     const session = await stripe.checkout.sessions.create({
-      mode: 'subscription',
-      line_items: [{ price: priceId, quantity: 1 }],
+      mode: "subscription", // for one-time use: "payment" (and set a one-time price)
+      line_items: [{ price, quantity: 1 }],
+      customer_creation: "if_required",
       allow_promotion_codes: true,
-      customer_email: email, // if provided
-      success_url: `${siteUrl}/success.html?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${siteUrl}/cancel.html`,
-      metadata: { uid }, // used by webhook to attach entitlement
+      success_url: successUrl,
+      cancel_url: cancelUrl,
+      metadata: {
+        uid,       // optional
+        plan,      // "monthly" | "yearly"
+        site: site // debugging/helpful context
+      },
     });
 
     return {
       statusCode: 200,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ url: session.url }),
+      headers: { ...cors, "Content-Type": "application/json" },
+      body: JSON.stringify({ url: session.url, id: session.id }),
     };
   } catch (err) {
-    console.error('create-checkout-session error:', err);
-    return { statusCode: 500, body: 'Internal Server Error' };
+    console.error("create-checkout-session error:", err);
+    return { statusCode: 500, headers: cors, body: "Server Error" };
   }
 };
