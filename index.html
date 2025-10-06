@@ -6,20 +6,21 @@
   <title>Thynkr — Daily Mind Training</title>
   <link rel="manifest" href="/site.webmanifest">
   <link rel="icon" href="/media/favicon.svg" />
-  <link rel="stylesheet" href="/style.css?v=9020" />
+  <link rel="stylesheet" href="/style.css?v=9021" />
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js" defer></script>
-  <script src="/shell.js?v=9020" defer></script>
-  <script src="/app.js?v=9020" defer></script>
+  <script src="/shell.js?v=9021" defer></script>
+  <script src="/app.js?v=9021" defer></script>
 </head>
 <body>
-  <!-- Start / loading splash -->
-  <div id="startSplash" class="splash success-anim" role="dialog" aria-live="polite">
+  <!-- Start splash (Tap to Begin) -->
+  <div id="startSplash" class="splash splash-show" role="dialog" aria-live="polite">
     <div class="splash-inner">
       <div class="splash-badge">
-        <img src="/media/avatars/thynkr-fox-core.png" alt="Thynkr Fox" class="splash-bolt" width="120" height="120">
+        <img src="/media/avatars/thynkr-fox-core.png" alt="Thynkr Fox" class="avatar avatar-splash" width="120" height="120">
       </div>
       <div class="splash-title">Thynkr</div>
-      <div class="splash-msg">Loading today’s set…</div>
+      <div class="splash-msg">Sharpen your mind — daily.</div>
+      <div class="splash-cta">Tap to begin</div>
     </div>
   </div>
 
@@ -34,10 +35,6 @@
           <div class="tagline">Sharpen your mind — daily.</div>
         </div>
       </a>
-
-      <!-- Live avatar (updates via app.js) -->
-      <img id="avatar" src="/media/avatars/thynkr-fox-core.png" class="avatar" alt="Thynkr Fox avatar" />
-
       <div class="actions">
         <button id="mmMenuBtn" aria-label="Menu">☰</button>
       </div>
@@ -63,11 +60,14 @@
 
   <main class="container">
     <section class="card quiz-card">
+      <!-- Hero avatar -->
+      <img id="avatarHero" class="avatar avatar-hero" src="/media/avatars/thynkr-fox-core.png" alt="Thynkr Fox">
+
       <!-- Global timer & elapsed -->
       <div class="timer-wrapper"><div id="timerBar" class="timer-bar"></div></div>
       <div class="elapsed-time">Time: <span id="elapsedTime">0:00</span></div>
 
-      <!-- PREMIUM STREAK BAR with mistake pips -->
+      <!-- Premium streak bar -->
       <div class="streak-wrap" aria-live="polite">
         <div class="streak-top">
           <span id="streakLabel">Streak 0/3</span>
@@ -98,39 +98,40 @@
     </section>
   </main>
 
-  <!-- Success splash -->
+  <!-- Success splash (between rounds) -->
   <div id="successSplash" class="success-splash success-anim" aria-hidden="true">
     <div class="splash-inner">
-      <div class="splash-badge"><img src="/media/avatars/thynkr-fox-genius.png" alt="" class="splash-bolt" width="120" height="120"></div>
+      <img src="/media/avatars/thynkr-fox-genius.png" class="avatar avatar-splash" alt="">
       <div class="splash-title">Nice work!</div>
       <div class="splash-msg">Resetting for the next round…</div>
     </div>
   </div>
 
-  <!-- Level Up Splash -->
+  <!-- LEVEL UP SPLASH -->
   <div id="levelUpSplash" class="level-splash hidden" aria-hidden="true">
     <video id="levelVideo" class="level-video" muted playsinline preload="auto">
       <source src="/media/thynkr-levelup.mp4" type="video/mp4">
     </video>
     <div class="level-text">
+      <img id="levelUpAvatar" src="/media/avatars/thynkr-fox-genius.png" class="avatar avatar-splash" alt="">
       <h1 id="levelUpTitle">Level 2 Unlocked</h1>
       <p>Keep your streak alive!</p>
     </div>
   </div>
 
-  <!-- Game Over Splash -->
+  <!-- GAME OVER SPLASH -->
   <div id="failSplash" class="fail-splash hidden" aria-hidden="true">
     <video id="failVideo" class="level-video" muted playsinline preload="auto">
       <source src="/media/thynkr-fail.mp4" type="video/mp4">
     </video>
     <div class="level-text">
-      <img src="/media/avatars/thynkr-fox-gameover.png" alt="" class="splash-avatar"/>
+      <img id="failAvatar" src="/media/avatars/thynkr-fox-gameover.png" class="avatar avatar-splash" alt="">
       <h1>Game Over</h1>
-      <p>Try again</p>
+      <p>Try again!</p>
     </div>
   </div>
 
-  <!-- Optional sounds -->
+  <!-- Sounds (optional) -->
   <audio id="sfxLevelUp" src="/media/thynkr-levelup.mp3" preload="auto"></audio>
   <audio id="sfxFail" src="/media/thynkr-fail.mp3" preload="auto"></audio>
 
