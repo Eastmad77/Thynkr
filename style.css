@@ -1,212 +1,100 @@
-/* ==========================================================
-   Thynkr — v9001 Premium Blue Theme
-   ========================================================== */
-
+/* --- Base (kept lightweight; adjust to your global system as needed) --- */
 :root{
-  --bg: #0b1220;
-  --bg-2: #0f1a2f;
-  --brand: #1877F2;            /* Facebook blue */
-  --brand-2: #5ea2ff;          /* lighter blue for glow */
-  --accent: #21e6a6;           /* teal accent */
-  --text: #ffffff;
-  --muted: rgba(255,255,255,.66);
-
-  --card-bg: rgba(255,255,255,.06);
-  --card-border: rgba(255,255,255,.10);
-
-  --btn-bg: var(--brand);
-  --btn-text: #fff;
-  --btn-bg-hover: #2a86ff;
-
-  --shadow-strong: 0 14px 50px rgba(0,0,0,.45);
-  --transition: all .25s ease;
-
-  --radius-lg: 18px;
-  --radius-sm: 12px;
-
-  font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --bg:#0b1421;
+  --card:#121a27;
+  --muted:#9fb0c2;
+  --text:#e9f1ff;
+  --blue1:#00C6FF;
+  --blue2:#0072FF;
+  --glass: rgba(255,255,255,0.08);
+  --glass2: rgba(255,255,255,0.04);
+  --red:#ff6b6b;
+  --green:#1ecb86;
 }
 
-/* Reset */
-*{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%}
-body{
-  background: radial-gradient(1200px 500px at 50% -10%, #1a2e57 0%, var(--bg) 60%);
-  color:var(--text);
-  line-height:1.6;
-  overflow-x:hidden;
-}
-a{color:var(--brand);text-decoration:none;transition:var(--transition)}
-a:hover{color:var(--brand-2)}
-
-/* -------------------- Topbar -------------------- */
-.topbar{
-  position:relative;
-  background: linear-gradient(180deg, #0b1220 0%, #101b33 100%);
-  padding:.6rem 1rem 1.2rem;
-  box-shadow:0 3px 18px rgba(0,0,0,.55);
-  z-index:10;
-}
-.hero-bg img{
-  position:absolute;inset:0;
-  width:100%;height:100%;
-  object-fit:cover;
-  opacity:.22;
-  z-index:-1;
-}
-.hero-inner{
-  display:flex;align-items:center;justify-content:space-between;gap:.75rem;flex-wrap:wrap;
-}
-.brand{display:flex;align-items:center;gap:.75rem}
-.logo{
-  width:60px;height:60px;border-radius:14px;
-  background: rgba(24,119,242,.08);
-  box-shadow: 0 0 0 1px rgba(255,255,255,.06) inset, 0 0 16px rgba(94,162,255,.35);
-}
-.brand-text .kicker{
-  font-size:.85rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)
-}
-.brand-text h1{
-  margin-top:.05rem;font-size:1.9rem;font-weight:800;color:#fff;
-  text-shadow:0 0 18px rgba(94,162,255,.25)
-}
-.tagline{font-size:.95rem;color:var(--muted)}
-.actions button{
-  background:none;border:none;color:#fff;font-size:1.6rem;cursor:pointer;transition:var(--transition)
-}
-.actions button:hover{color:var(--brand);transform:scale(1.08)}
-
-.status{
-  display:flex;justify-content:center;gap:1rem;margin-top:.4rem;color:var(--muted);font-size:.92rem
-}
+*{box-sizing:border-box}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif}
+a{color:#cfe2ff}
 .muted{color:var(--muted)}
+.container{max-width:940px;margin:0 auto;padding:18px}
+.card{background:var(--card);border-radius:18px;padding:18px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+.btn{border:0;border-radius:12px;padding:10px 14px;cursor:pointer}
+.btn.primary{background:linear-gradient(90deg,var(--blue1),var(--blue2));color:white}
+.btn.ghost{background:transparent;border:1px solid rgba(255,255,255,.15);color:var(--text)}
 
-/* -------------------- Layout -------------------- */
-.container{max-width:780px;margin:2rem auto;padding:0 1.2rem}
-.card{
-  background:var(--card-bg);
-  border:1px solid var(--card-border);
-  border-radius:var(--radius-lg);
-  box-shadow:var(--shadow-strong);
-  backdrop-filter: blur(12px);
-  padding:1.5rem;
-  text-align:center;
-  transition:var(--transition);
-}
-.card:hover{transform:translateY(-2px)}
+.topbar{position:relative;padding:16px 18px 10px}
+.hero-inner{display:flex;align-items:center;justify-content:space-between;gap:14px}
+.brand{display:flex;align-items:center;gap:12px;color:inherit;text-decoration:none}
+.logo{width:40px;height:40px;border-radius:10px}
+.kicker{font-size:12px;opacity:.8}
+h1{margin:0;font-size:28px;letter-spacing:.4px}
+.tagline{font-size:12px;opacity:.7}
+.status{font-size:13px;display:flex;gap:12px;padding:8px 18px;color:var(--muted)}
 
-/* -------------------- Buttons -------------------- */
-.btn{
-  display:inline-block;border-radius:30px;padding:.72rem 1.6rem;
-  font-weight:700;cursor:pointer;transition:var(--transition)
-}
-.btn.primary{
-  background:var(--btn-bg);color:var(--btn-text);
-  box-shadow:0 0 20px rgba(24,119,242,.45)
-}
-.btn.primary:hover{background:var(--btn-bg-hover);box-shadow:0 0 26px rgba(24,119,242,.55)}
-.btn.ghost{
-  background:transparent;border:1px solid var(--brand);color:var(--brand)
-}
-.btn.ghost:hover{background:var(--brand);color:#fff}
+.timer-wrapper,.qtimer-wrapper{position:relative;height:6px;background:rgba(255,255,255,.06);border-radius:999px;margin-bottom:8px;overflow:hidden}
+.timer-bar,.qtimer-bar{height:100%;width:0;background:linear-gradient(90deg,var(--blue1),var(--blue2));transition:width .4s ease}
 
-/* -------------------- Choices -------------------- */
-.choices{margin-top:1.1rem;display:flex;flex-direction:column;gap:.75rem}
-.choices button{
-  border-radius:12px;padding:.9rem;background:rgba(255,255,255,.06);
-  border:1px solid rgba(255,255,255,.1);color:#fff;font-size:1rem;font-weight:600;cursor:pointer;transition:var(--transition)
-}
-.choices button:hover{background:rgba(255,255,255,.12);transform:translateY(-1px)}
-.choices button.correct{background:rgba(33,230,166,.28);border-color:var(--accent)}
-.choices button.wrong{background:rgba(255,78,78,.28);border-color:#ff4e4e}
+.question-box{font-size:20px;line-height:1.4;padding:12px 4px;min-height:70px}
+.choices{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.choices button{background:rgba(255,255,255,.05);color:var(--text);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:12px 10px;text-align:left}
+.choices button:hover{border-color:rgba(255,255,255,.25)}
 
-/* -------------------- Question & Timers -------------------- */
-.question-box{font-size:1.25rem;font-weight:700;min-height:80px;padding:1rem;line-height:1.4}
+/* --- Premium streak bar --- */
+.streak-wrap{position:relative;margin:10px 0 14px}
+.streak-top{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin-bottom:6px}
 
-.timer-wrapper,.qtimer-wrapper{
-  position:relative;width:100%;height:6px;border-radius:4px;overflow:hidden;
-  background:rgba(255,255,255,.1);margin:.35rem 0
+.streak-bar{
+  position:relative;
+  height:12px;
+  border-radius:999px;
+  background:linear-gradient(180deg,var(--glass),var(--glass2));
+  box-shadow:0 8px 24px rgba(0,0,0,.25);
+  overflow:hidden;
+  backdrop-filter: blur(6px);
 }
-.timer-bar,.qtimer-bar{
-  position:absolute;inset:0 auto 0 0;height:100%;width:0%;
-  background:linear-gradient(90deg, var(--brand), var(--brand-2));
-  border-radius:4px;transition:width .3s ease
+.streak-fill{
+  position:absolute;inset:0 100% 0 0; /* width via inset */
+  background:linear-gradient(90deg,var(--blue1),var(--blue2));
+  box-shadow:0 0 0 rgba(0,0,0,0);
+  transition:inset .6s cubic-bezier(.2,.7,.2,1), box-shadow .3s ease;
+  border-radius:999px;
+}
+.streak-fill.glow{
+  box-shadow:0 0 18px rgba(0,150,255,.45), 0 0 40px rgba(0,100,255,.25);
 }
 
-/* -------------------- Streak Visual -------------------- */
-.streak-vis{
-  margin:1.1rem 0;display:flex;justify-content:center;align-items:center;gap:.32rem;perspective:800px
+/* Incorrect “pips” (mistakes) */
+.streak-pips{position:absolute;top:-16px;right:4px;display:flex;gap:6px;pointer-events:none}
+.streak-pip{
+  width:10px;height:10px;border-radius:999px;background:var(--red);
+  box-shadow:0 2px 10px rgba(255,0,0,.35);
+  opacity:.95;transform:translateY(0);transition:transform .4s ease, opacity .4s ease;
 }
-.streak-dot{
-  width:18px;height:18px;border-radius:50%;
-  background:rgba(255,255,255,.22);
-  box-shadow:inset 0 0 6px rgba(0,0,0,.55);
-  transition:all .25s ease
-}
-.streak-dot.active{
-  background:var(--brand);box-shadow:0 0 14px var(--brand-2);
-  transform:scale(1.15) translateY(-2px)
-}
-.streak-dot.correct-restore{animation:redeemPulse 1s ease-out}
-@keyframes redeemPulse{
-  0%{box-shadow:0 0 10px var(--accent);transform:scale(1.2)}
-  50%{box-shadow:0 0 26px var(--accent)}
-  100%{box-shadow:0 0 12px var(--brand-2);transform:scale(1.1)}
+.streak-pip.remove{ /* redemption animation */
+  opacity:0;transform:translateY(-10px) scale(.9);
+  filter:drop-shadow(0 0 10px rgba(0,150,255,.6));
 }
 
-/* -------------------- Splashes (video + overlay copy) -------------------- */
-.splash,.success-splash{
-  position:fixed;inset:0;display:flex;justify-content:center;align-items:center;z-index:2000;overflow:hidden;background:#000
-}
-.splash video,.success-splash video{
-  position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.9;transition:opacity .4s ease
-}
-.splash-inner{
-  position:relative;z-index:1;text-align:center;display:flex;flex-direction:column;align-items:center;gap:.6rem;
-  padding:1rem 1.2rem;border-radius:16px;background:rgba(0,0,0,.28);
-  box-shadow:0 10px 40px rgba(0,0,0,.35);backdrop-filter: blur(8px)
-}
-.splash-icon{
-  width:110px;height:110px;border-radius:24px;box-shadow:0 0 22px rgba(94,162,255,.55)
-}
-.splash-title{
-  font-size:2rem;font-weight:800;letter-spacing:.02em;
-  text-shadow:0 0 18px rgba(94,162,255,.45)
-}
-.splash-msg{color:var(--muted)}
-/* hide when aria-hidden / display none used by JS */
-.splash[aria-hidden="true"], .success-splash[aria-hidden="true"]{display:none}
-
-/* -------------------- Side Menu -------------------- */
-.side-menu{
-  position:fixed;top:0;right:-260px;width:240px;height:100%;
-  background:rgba(11,18,32,.98);
-  border-left:1px solid rgba(255,255,255,.08);
-  box-shadow:-6px 0 24px rgba(0,0,0,.45);
-  z-index:3000;padding-top:4rem;transition:right .28s ease
-}
-.side-menu.visible{ right:0 }
-.menu-nav a,.menu-action{
-  display:block;padding:.78rem 1.25rem;color:#fff;font-weight:600;border-bottom:1px solid rgba(255,255,255,.08)
-}
-.menu-nav a:hover,.menu-action:hover{
-  background:rgba(255,255,255,.1);color:var(--brand-2)
-}
-.menu-nav a[aria-current="page"]{background:rgba(24,119,242,.18);color:#fff}
-
-/* -------------------- Footer -------------------- */
-.footer{margin:3rem 0 2rem;text-align:center;color:var(--muted);font-size:.95rem}
-
-/* -------------------- Toast (shared with app.js shell.js) -------------------- */
-#th-toast{pointer-events:none}
-
-/* -------------------- Responsive -------------------- */
-@media (max-width:700px){
-  .logo{width:52px;height:52px}
-  .brand-text h1{font-size:1.55rem}
-  .container{padding:0 1rem}
-  .card{padding:1.15rem}
+/* micro feedback */
+.streak-bar.shake{animation:shake .14s linear}
+@keyframes shake{
+  0%{transform:translateX(0)}
+  33%{transform:translateX(-3px)}
+  66%{transform:translateX(3px)}
+  100%{transform:translateX(0)}
 }
 
-/* Utility (optional) */
-.fade-out{opacity:0 !important;transition:opacity .6s ease}
+/* --- Level Up Splash --- */
+.level-splash{
+  position:fixed;inset:0;background:radial-gradient(1200px 600px at 50% 20%, rgba(0,120,255,.18), rgba(0,0,0,.85));
+  display:flex;align-items:center;justify-content:center;z-index:9999;opacity:0;pointer-events:none;transition:opacity .35s ease;
+}
+.level-splash.show{opacity:1;pointer-events:auto}
+.level-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.35;filter:blur(1px)}
+.level-text{position:relative;text-align:center}
+.level-text h1{font-size:38px;margin:0 0 6px}
+.level-text p{margin:0;color:var(--muted);font-size:15px}
+.hidden{display:none}
+
+/* Footer and small bits */
+.footer{opacity:.7;text-align:center;padding:24px 12px;font-size:13px}
