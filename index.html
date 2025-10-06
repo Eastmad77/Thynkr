@@ -3,47 +3,31 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Thynkr — Sharpen Your Mind Daily</title>
-
-  <!-- Manifest & Icons -->
-  <link rel="manifest" href="/site.webmanifest" />
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-  <link rel="icon" type="image/png" sizes="192x192" href="/media/thynkr-icon-192.png" />
-  <link rel="apple-touch-icon" sizes="512x512" href="/media/thynkr-icon-512.png" />
-
-  <!-- Styles -->
-  <link rel="stylesheet" href="/style.css?v=9001" />
-
-  <!-- Meta -->
-  <meta name="theme-color" content="#1877F2" />
-  <meta name="description" content="Sharpen your mind daily with Thynkr — fast, smart brain challenges for logic, memory and focus." />
-
-  <!-- Scripts -->
+  <title>Thynkr — Daily Mind Training</title>
+  <link rel="manifest" href="/site.webmanifest">
+  <link rel="icon" href="/media/favicon.svg" />
+  <link rel="stylesheet" href="/style.css?v=9008" />
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js" defer></script>
-  <script src="/shell.js?v=9001" defer></script>
-  <script src="/app.js?v=9001" defer></script>
+  <script src="/shell.js?v=9008" defer></script>
+  <script src="/app.js?v=9008" defer></script>
 </head>
-
 <body>
-  <!-- Start Splash -->
-  <div id="startSplash" class="splash" role="dialog" aria-live="polite">
-    <video autoplay muted playsinline loop poster="/media/poster-start.jpg" id="startVideo">
-      <source src="/media/thynkr-start.webm" type="video/webm">
-      <source src="/media/thynkr-start.mp4" type="video/mp4">
-    </video>
+  <!-- Initial loading splash -->
+  <div id="startSplash" class="splash success-anim" role="dialog" aria-live="polite">
     <div class="splash-inner">
-      <img src="/media/app-icon.svg" alt="Thynkr Logo" class="splash-icon" width="120" height="120">
+      <div class="splash-badge">
+        <img src="/media/app-icon.svg" alt="Thynkr logo" class="splash-bolt" width="110" height="110">
+      </div>
       <div class="splash-title">Thynkr</div>
-      <div class="splash-msg">Preparing today’s challenge…</div>
+      <div class="splash-msg">Loading today’s set…</div>
     </div>
   </div>
 
-  <!-- Header -->
   <header class="topbar">
-    <div class="hero-bg"><img src="/header-graphic.svg" alt=""></div>
+    <div class="hero-bg"><img src="/media/header-graphic.svg" alt=""></div>
     <div class="hero-inner">
       <a class="brand" href="/">
-        <img src="/media/app-icon.svg" alt="Thynkr logo" class="logo" />
+        <img src="/media/thynkr-icon-192.png" alt="" class="logo" />
         <div class="brand-text">
           <div class="kicker">The Daily</div>
           <h1>Thynkr</h1>
@@ -52,18 +36,16 @@
       </a>
       <div class="actions">
         <button id="mmMenuBtn" aria-label="Menu">☰</button>
-        <button id="soundBtn" aria-label="Sound">🔊</button>
       </div>
     </div>
-
     <div class="status">
       <span id="setLabel" class="muted">Ready</span>
       <span id="pillScore" class="muted">Score 0</span>
-      <span id="progressLabel" class="muted">Q 0/12</span>
+      <span id="progressLabel" class="muted">Q 0/36</span>
     </div>
   </header>
 
-  <!-- Side Menu -->
+  <!-- Side menu -->
   <aside id="mmSideMenu" class="side-menu" aria-hidden="true">
     <nav class="menu-nav">
       <a href="/" aria-current="page">🏠 Home</a>
@@ -75,13 +57,25 @@
     </nav>
   </aside>
 
-  <!-- Main Game -->
   <main class="container">
     <section class="card quiz-card">
+      <!-- Global timer & elapsed -->
       <div class="timer-wrapper"><div id="timerBar" class="timer-bar"></div></div>
       <div class="elapsed-time">Time: <span id="elapsedTime">0:00</span></div>
 
-      <div class="streak-vis" id="streakVis"></div>
+      <!-- PREMIUM STREAK BAR (floating, glassy, with mistake pips) -->
+      <div class="streak-wrap" aria-live="polite">
+        <div class="streak-top">
+          <span id="streakLabel">Streak 0/3</span>
+          <span id="mistakesLabel">Mistakes 0</span>
+        </div>
+        <div class="streak-bar" id="streakBar">
+          <div class="streak-fill" id="streakFill"></div>
+        </div>
+        <div class="streak-pips" id="streakPips" aria-hidden="true"></div>
+      </div>
+
+      <!-- Per-question timer -->
       <div class="qtimer-wrapper"><div id="qTimerBar" class="qtimer-bar"></div></div>
 
       <div id="questionBox" class="question-box">Press Start to Play</div>
@@ -100,20 +94,29 @@
     </section>
   </main>
 
-  <!-- Success Splash -->
-  <div id="successSplash" class="success-splash" aria-hidden="true">
-    <video autoplay muted playsinline loop poster="/media/poster-success.jpg" id="successVideo">
-      <source src="/media/thynkr-success.webm" type="video/webm">
-      <source src="/media/thynkr-success.mp4" type="video/mp4">
-    </video>
+  <!-- Success splash (between rounds) -->
+  <div id="successSplash" class="success-splash success-anim" aria-hidden="true">
     <div class="splash-inner">
-      <img src="/media/app-icon.svg" alt="Thynkr Logo" class="splash-icon" width="120" height="120">
+      <div class="splash-badge"><img src="/media/app-icon.svg" alt="" class="splash-bolt" width="110" height="110"></div>
       <div class="splash-title">Nice work!</div>
       <div class="splash-msg">Resetting for the next round…</div>
     </div>
   </div>
 
-  <!-- Footer -->
+  <!-- LEVEL UP SPLASH (between Level 1→2, 2→3) -->
+  <div id="levelUpSplash" class="level-splash hidden" aria-hidden="true">
+    <video id="levelVideo" class="level-video" muted playsinline preload="auto">
+      <source src="/media/thynkr-levelup.mp4" type="video/mp4">
+    </video>
+    <div class="level-text">
+      <h1 id="levelUpTitle">Level 2 Unlocked</h1>
+      <p>Keep your streak alive!</p>
+    </div>
+  </div>
+
+  <!-- Sounds (optional) -->
+  <audio id="sfxLevelUp" src="/media/thynkr-levelup.mp3" preload="auto"></audio>
+
   <footer class="footer">
     <p>© 2025 Thynkr · <a href="/privacy.html">Privacy</a> · <a href="/terms.html">Terms</a></p>
   </footer>
