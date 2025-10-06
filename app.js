@@ -1,77 +1,139 @@
-/* Thynkr — App (levels + premium streak bar + level-up + game-over splash)
-   v9010
-   - 3 Levels: 12 Qs each (total 36)
+/* Thynkr — App v9020
+   - 3 Levels (12 Qs each = 36)
    - Redemption: L1=3, L2=4, L3=5
-   - Lives: 3 total (game ends when mistakes >= lives)
+   - Lives: 3 (game over when exhausted)
+   - Avatars: dynamic per game context + splash integration
 */
 
 (() => {
-  // --- DOM
+  // --- DOM helpers
   const qs = (sel, root = document) => root.querySelector(sel);
   const qsa = (sel, root = document) => [...root.querySelectorAll(sel)];
-  const questionBox = qs('#questionBox');
-  const choicesBox = qs('#choices');
-  const startBtn = qs('#startBtn');
-  const shuffleBtn = qs('#shuffleBtn');
-  const shareBtn = qs('#shareBtn');
-  const progressLabel = qs('#progressLabel');
-  const pillScore = qs('#pillScore');
-  const setLabel = qs('#setLabel');
 
-  // streak UI
-  const streakBar = qs('#streakBar');
+  // Core nodes
+  const questionBox   = qs('#questionBox');
+  const choicesBox    = qs('#choices');
+  const startBtn      = qs('#startBtn');
+  const shuffleBtn    = qs('#shuffleBtn');
+  const shareBtn      = qs('#shareBtn');
+  const progressLabel = qs('#progressLabel');
+  const pillScore     = qs('#pillScore');
+  const setLabel      = qs('#setLabel');
+
+  // Timers (visual only here)
+  const timerBar   = qs('#timerBar');
+  const qTimerBar  = qs('#qTimerBar');
+  const elapsedEl  = qs('#elapsedTime');
+
+  // Streak UI
+  const streakBar  = qs('#streakBar');
   const streakFill = qs('#streakFill');
   const streakPips = qs('#streakPips');
   const streakLabel = qs('#streakLabel');
   const mistakesLabel = qs('#mistakesLabel');
 
-  // overlays
+  // Overlays
   const levelUpSplash = qs('#levelUpSplash');
-  const levelUpTitle = qs('#levelUpTitle');
-  const levelVideo = qs('#levelVideo');
-  const sfxLevelUp = qs('#sfxLevelUp');
+  const levelUpTitle  = qs('#levelUpTitle');
+  const levelVideo    = qs('#levelVideo');
+  const sfxLevelUp    = qs('#sfxLevelUp');
 
   const failSplash = qs('#failSplash');
-  const failVideo = qs('#failVideo');
-  const sfxFail = qs('#sfxFail');
+  const failVideo  = qs('#failVideo');
+  const sfxFail    = qs('#sfxFail');
 
-  // timers (stubs)
-  const timerBar = qs('#timerBar');
-  const qTimerBar = qs('#qTimerBar');
-  const elapsedTime = qs('#elapsedTime');
+  // Avatar node
+  const avatarImg = qs('#avatar');
 
   // --- State
-  let questions = [];      // loaded set of 36
-  let idx = 0;             // 0..35
-  let score = 0;
-
-  // Levels
   const LVL_SIZE = 12;
   const REQUIRED_BY_LEVEL = { 1:3, 2:4, 3:5 };
+  const MAX_LIVES = 3;
 
-  let level = 1;           // 1..3
-  let levelIndexStart = 0; // pointer into 0..35 for the current level
+  let questions = [];           // 36 rows expected
+  let idx = 0;                  // 0..35
+  let score = 0;
+  let level = 1;                // 1..3
+  let levelIndexStart = 0;
 
-  // Streak/Redemption/Lives
   let currentStreak = 0;
   let mistakes = 0;
-  const MAX_LIVES = 3;
   let gameOver = false;
+  let startTime = 0;
+  let elapsedTimer = null;
 
-  // --- Load data (plug in your CSV fetch here)
+  // --- Avatars
+  const AVATARS = {
+    core:      '/media/avatars/thynkr-fox-core.png',
+    curious:   '/media/avatars/thynkr-fox-curious.png',
+    focused:   '/media/avatars/thynkr-fox-focused.png',
+    genius:    '/media/avatars/thynkr-fox-genius.png',
+    playful:   '/media/avatars/thynkr-fox-playful.png',
+    night:     '/media/avatars/thynkr-fox-night.png',
+    relaxed:   '/media/avatars/thynkr-fox-relaxed.png',
+    gameover:  '/media/avatars/thynkr-fox-gameover.png',
+  };
+
+  function setAvatar(key, burst = false) {
+    if (!avatarImg) return;
+    const src = AVATARS[key] || AVATARS.core;
+    // micro enter animation
+    avatarImg.classList.remove('show','pop');
+    avatarImg.classList.add('enter');
+    avatarImg.src = src;
+    requestAnimationFrame(() => {
+      avatarImg.classList.remove('enter');
+      avatarImg.classList.add('show');
+      if (burst) {
+        avatarImg.classList.add('pop');
+        setTimeout(() => avatarImg.classList.remove('pop'), 380);
+      }
+    });
+  }
+
+  // --- Load questions (placeholder; wire your CSV here)
   async function loadQuestions() {
-    // TODO: Replace with Papa.parse of your chosen CSV (36 rows)
+    // Example: fetch('/questions/thynkr-batch1.csv') with Papa.parse, then map to
+    // {Question,OptionA,OptionB,OptionC,OptionD,Answer}
+    // For now, if empty, create 36 placeholders.
     if (!questions.length) {
-      questionBox.textContent = 'Ready — press Start';
+      for (let i=0;i<36;i++){
+        questions.push({
+          Question:`Sample question ${i+1}`,
+          OptionA:'A', OptionB:'B', OptionC:'C', OptionD:'D',
+          Answer:'A'
+        });
+      }
     }
   }
 
+  // --- UI helpers
   function updateHeader() {
     pillScore.textContent = `Score ${score}`;
     progressLabel.textContent = `Q ${idx}/${36}`;
   }
 
-  // --- Streak UI helpers
+  function formatElapsed(ms){
+    const s = Math.floor(ms/1000);
+    const m = Math.floor(s/60);
+    const r = s%60;
+    return `${m}:${String(r).padStart(2,'0')}`;
+  }
+
+  function startElapsed() {
+    stopElapsed();
+    startTime = Date.now();
+    elapsedTimer = setInterval(()=>{
+      const ms = Date.now() - startTime;
+      elapsedEl.textContent = formatElapsed(ms);
+    }, 250);
+  }
+  function stopElapsed() {
+    if (elapsedTimer) clearInterval(elapsedTimer);
+    elapsedTimer = null;
+  }
+
+  // --- Streak UI
   function renderStreakUI() {
     const required = REQUIRED_BY_LEVEL[level];
     const pct = Math.max(0, Math.min(1, currentStreak / required));
@@ -81,7 +143,6 @@
     streakLabel.textContent = `Streak ${currentStreak}/${required}`;
 
     mistakesLabel.textContent = `Mistakes ${Math.min(mistakes, MAX_LIVES)}/${MAX_LIVES}`;
-    // render pips
     streakPips.innerHTML = '';
     const maxShow = Math.min(mistakes, 6);
     for (let i=0;i<maxShow;i++){
@@ -124,24 +185,27 @@
     }
   }
 
+  // --- Answer handlers
   function onCorrect() {
     const required = REQUIRED_BY_LEVEL[level];
     currentStreak++;
+    setAvatar(currentStreak >= required-1 ? 'genius' : 'playful', true);
+
     if (currentStreak >= required) {
-      redeemOneMistake();
-      currentStreak = 0; // reset after redemption
+      redeemOneMistake();       // redemption
+      currentStreak = 0;        // reset after redemption
     }
     renderStreakUI();
   }
 
   function triggerGameOver() {
     gameOver = true;
-    // Splash
+    setAvatar('gameover');
+    // Show splash
     failSplash.classList.remove('hidden');
     try { failVideo.currentTime = 0; failVideo.play().catch(()=>{}); } catch(e){}
     try { sfxFail && sfxFail.play().catch(()=>{}); } catch(e){}
     requestAnimationFrame(()=> failSplash.classList.add('show'));
-    // After 1.6s, show summary
     setTimeout(() => {
       failSplash.classList.remove('show');
       setTimeout(()=>failSplash.classList.add('hidden'), 360);
@@ -153,6 +217,7 @@
     mistakes++;
     currentStreak = 0;
     animateShake();
+    setAvatar('curious');
     renderStreakUI();
 
     if (mistakes >= MAX_LIVES && !gameOver) {
@@ -163,6 +228,7 @@
   // --- Level transitions
   function showLevelUp(nextLevel) {
     levelUpTitle.textContent = nextLevel === 3 ? 'Level 3 Unlocked' : 'Level 2 Unlocked';
+    setAvatar(nextLevel === 3 ? 'night' : 'relaxed', true);
     levelUpSplash.classList.remove('hidden');
     try { levelVideo.currentTime = 0; levelVideo.play().catch(()=>{}); } catch(e){}
     try { sfxLevelUp && sfxLevelUp.play().catch(()=>{}); } catch(e){}
@@ -170,11 +236,13 @@
     setTimeout(()=>{
       levelUpSplash.classList.remove('show');
       setTimeout(()=>levelUpSplash.classList.add('hidden'), 360);
+      // After level-up animation, return to focused mode
+      setAvatar('focused');
     }, 1800);
   }
 
   function gotoNextLevel() {
-    if (level >= 3) return; // finished all
+    if (level >= 3) return;
     level++;
     levelIndexStart = (level-1) * LVL_SIZE;
     currentStreak = 0;
@@ -182,9 +250,10 @@
     showLevelUp(level);
   }
 
-  // --- Quiz engine (minimal)
+  // --- Quiz engine
   function showQuestion() {
     if (gameOver) return;
+
     const q = questions[idx];
     if (!q) {
       questionBox.textContent = 'No question loaded.';
@@ -192,10 +261,12 @@
       return;
     }
 
+    setAvatar('focused'); // default while answering
+
     questionBox.textContent = q.Question;
     choicesBox.innerHTML = '';
-    const opts = [q.OptionA, q.OptionB, q.OptionC, q.OptionD];
 
+    const opts = [q.OptionA, q.OptionB, q.OptionC, q.OptionD];
     opts.forEach(opt => {
       const btn = document.createElement('button');
       btn.className = 'btn';
@@ -218,19 +289,19 @@
       onCorrect();
     } else {
       onWrong();
-      if (gameOver) return; // already finished
+      if (gameOver) return;
     }
 
     // progress
     idx++;
     updateHeader();
 
-    // end-of-level gate
+    // end-of-level gates
     if (!gameOver && idx === levelIndexStart + LVL_SIZE) {
       if (level < 3) gotoNextLevel();
     }
 
-    // end-of-game (completed all 36)
+    // all done
     if (!gameOver && idx >= 36) {
       finishGame(false);
     } else if (!gameOver) {
@@ -239,39 +310,39 @@
   }
 
   function finishGame(fromFail) {
+    stopElapsed();
     const gameOverBox = qs('#gameOverBox');
     const gameOverText = qs('#gameOverText');
     const playAgainBtn = qs('#playAgainBtn');
 
     if (fromFail) {
-      gameOverText.textContent = `Game Over — out of lives. Score ${score} / ${idx}. Mistakes: ${mistakes}/${MAX_LIVES}`;
+      gameOverText.textContent = `Game Over — out of lives. Score ${score} / ${idx}.`;
+      setAvatar('gameover');
     } else {
-      gameOverText.textContent = `Done! Score ${score} / 36. Mistakes cleared: ${Math.max(0, mistakes)}`;
+      gameOverText.textContent = `Done! Score ${score} / 36.`;
+      setAvatar('genius', true);
+      // quick “success” splash you already have:
+      const successSplash = qs('#successSplash');
+      successSplash?.setAttribute('aria-hidden','false');
+      successSplash?.classList.add('show');
+      setTimeout(()=>successSplash?.classList.remove('show'), 1200);
     }
     playAgainBtn.style.display = '';
     gameOverBox.style.display = '';
-
     playAgainBtn.onclick = () => window.location.reload();
   }
 
-  // --- Boot / Controls
+  // --- Controls
   startBtn?.addEventListener('click', async () => {
     await loadQuestions();
-    if (!questions.length) {
-      for (let i=0;i<36;i++){
-        questions.push({
-          Question:`Sample question ${i+1}`,
-          OptionA:'A', OptionB:'B', OptionC:'C', OptionD:'D',
-          Answer:'A'
-        });
-      }
-    }
     // Reset
     level = 1;
     levelIndexStart = 0;
     idx = 0; score = 0; mistakes = 0; currentStreak = 0; gameOver = false;
-    setLabel.textContent = 'Live';
     renderStreakUI();
+    setLabel.textContent = 'Live';
+    setAvatar('focused');
+    startElapsed();
     showQuestion();
   });
 
@@ -282,6 +353,8 @@
     }
     level = 1; levelIndexStart = 0; idx = 0; score = 0; mistakes = 0; currentStreak = 0; gameOver = false;
     renderStreakUI();
+    setAvatar('focused');
+    startElapsed();
     showQuestion();
   });
 
@@ -293,7 +366,8 @@
     } catch(e){}
   });
 
-  // initial UI
+  // boot UI
   updateHeader();
   renderStreakUI();
+  setAvatar('core');
 })();
