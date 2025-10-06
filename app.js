@@ -1,8 +1,5 @@
-/* Thynkr — App v9020
-   - 3 Levels (12 Qs each = 36)
-   - Redemption: L1=3, L2=4, L3=5
-   - Lives: 3 (game over when exhausted)
-   - Avatars: dynamic per game context + splash integration
+/* Thynkr — App (Tap-to-begin splash + avatars + levels + premium streak bar)
+   v9021
 */
 
 (() => {
@@ -10,130 +7,113 @@
   const qs = (sel, root = document) => root.querySelector(sel);
   const qsa = (sel, root = document) => [...root.querySelectorAll(sel)];
 
-  // Core nodes
-  const questionBox   = qs('#questionBox');
-  const choicesBox    = qs('#choices');
-  const startBtn      = qs('#startBtn');
-  const shuffleBtn    = qs('#shuffleBtn');
-  const shareBtn      = qs('#shareBtn');
+  const questionBox = qs('#questionBox');
+  const choicesBox = qs('#choices');
+  const startBtn = qs('#startBtn');
+  const shuffleBtn = qs('#shuffleBtn');
+  const shareBtn = qs('#shareBtn');
   const progressLabel = qs('#progressLabel');
-  const pillScore     = qs('#pillScore');
-  const setLabel      = qs('#setLabel');
+  const pillScore = qs('#pillScore');
+  const setLabel = qs('#setLabel');
 
-  // Timers (visual only here)
-  const timerBar   = qs('#timerBar');
-  const qTimerBar  = qs('#qTimerBar');
-  const elapsedEl  = qs('#elapsedTime');
-
-  // Streak UI
-  const streakBar  = qs('#streakBar');
+  // streak UI
+  const streakBar = qs('#streakBar');
   const streakFill = qs('#streakFill');
   const streakPips = qs('#streakPips');
   const streakLabel = qs('#streakLabel');
   const mistakesLabel = qs('#mistakesLabel');
 
-  // Overlays
+  // overlays
   const levelUpSplash = qs('#levelUpSplash');
-  const levelUpTitle  = qs('#levelUpTitle');
-  const levelVideo    = qs('#levelVideo');
-  const sfxLevelUp    = qs('#sfxLevelUp');
+  const levelUpTitle = qs('#levelUpTitle');
+  const levelVideo = qs('#levelVideo');
+  const sfxLevelUp = qs('#sfxLevelUp');
+  const levelUpAvatar = qs('#levelUpAvatar');
 
   const failSplash = qs('#failSplash');
-  const failVideo  = qs('#failVideo');
-  const sfxFail    = qs('#sfxFail');
+  const failVideo = qs('#failVideo');
+  const sfxFail = qs('#sfxFail');
+  const failAvatar = qs('#failAvatar');
 
-  // Avatar node
-  const avatarImg = qs('#avatar');
+  // avatar
+  const avatarImg = qs('#avatarHero');
+
+  // --- Avatars map
+  const AVATARS = {
+    core:     '/media/avatars/thynkr-fox-core.png',
+    curious:  '/media/avatars/thynkr-fox-curious.png',
+    focused:  '/media/avatars/thynkr-fox-focused.png',
+    genius:   '/media/avatars/thynkr-fox-genius.png',
+    playful:  '/media/avatars/thynkr-fox-playful.png',
+    night:    '/media/avatars/thynkr-fox-night.png',
+    relaxed:  '/media/avatars/thynkr-fox-relaxed.png',
+    gameover: '/media/avatars/thynkr-fox-gameover.png',
+  };
+  Object.values(AVATARS).forEach(src => { const i = new Image(); i.src = src; });
 
   // --- State
+  let questions = [];
+  let idx = 0;
+  let score = 0;
+
   const LVL_SIZE = 12;
   const REQUIRED_BY_LEVEL = { 1:3, 2:4, 3:5 };
-  const MAX_LIVES = 3;
 
-  let questions = [];           // 36 rows expected
-  let idx = 0;                  // 0..35
-  let score = 0;
-  let level = 1;                // 1..3
+  let level = 1;
   let levelIndexStart = 0;
 
   let currentStreak = 0;
   let mistakes = 0;
+  const MAX_LIVES = 3;
   let gameOver = false;
-  let startTime = 0;
-  let elapsedTimer = null;
 
-  // --- Avatars
-  const AVATARS = {
-    core:      '/media/avatars/thynkr-fox-core.png',
-    curious:   '/media/avatars/thynkr-fox-curious.png',
-    focused:   '/media/avatars/thynkr-fox-focused.png',
-    genius:    '/media/avatars/thynkr-fox-genius.png',
-    playful:   '/media/avatars/thynkr-fox-playful.png',
-    night:     '/media/avatars/thynkr-fox-night.png',
-    relaxed:   '/media/avatars/thynkr-fox-relaxed.png',
-    gameover:  '/media/avatars/thynkr-fox-gameover.png',
-  };
+  // --- Start Splash control (Tap-to-begin)
+  (function setupStartSplash(){
+    const splash = document.getElementById('startSplash');
+    if (!splash) return;
 
-  function setAvatar(key, burst = false) {
-    if (!avatarImg) return;
-    const src = AVATARS[key] || AVATARS.core;
-    // micro enter animation
-    avatarImg.classList.remove('show','pop');
-    avatarImg.classList.add('enter');
-    avatarImg.src = src;
-    requestAnimationFrame(() => {
-      avatarImg.classList.remove('enter');
-      avatarImg.classList.add('show');
-      if (burst) {
-        avatarImg.classList.add('pop');
-        setTimeout(() => avatarImg.classList.remove('pop'), 380);
-      }
-    });
-  }
+    const hideSplash = () => {
+      splash.classList.add('splash-hide');
+      setTimeout(() => splash.remove(), 450);
+    };
 
-  // --- Load questions (placeholder; wire your CSV here)
-  async function loadQuestions() {
-    // Example: fetch('/questions/thynkr-batch1.csv') with Papa.parse, then map to
-    // {Question,OptionA,OptionB,OptionC,OptionD,Answer}
-    // For now, if empty, create 36 placeholders.
-    if (!questions.length) {
-      for (let i=0;i<36;i++){
-        questions.push({
-          Question:`Sample question ${i+1}`,
-          OptionA:'A', OptionB:'B', OptionC:'C', OptionD:'D',
-          Answer:'A'
-        });
-      }
-    }
-  }
+    splash.addEventListener('click', () => {
+      hideSplash();
+      // Start immediately
+      startBtn?.click();
+    }, { passive: true });
+  })();
 
-  // --- UI helpers
+  // --- Helpers
   function updateHeader() {
     pillScore.textContent = `Score ${score}`;
-    progressLabel.textContent = `Q ${idx}/${36}`;
+    progressLabel.textContent = `Q ${idx}/36`;
   }
 
-  function formatElapsed(ms){
-    const s = Math.floor(ms/1000);
-    const m = Math.floor(s/60);
-    const r = s%60;
-    return `${m}:${String(r).padStart(2,'0')}`;
+  function setAvatar(key, effect = '') {
+    if (!avatarImg) return;
+    const src = AVATARS[key] || AVATARS.core;
+    if (avatarImg.src.endsWith(src)) {
+      if (effect) pulseAvatar(effect);
+      return;
+    }
+    avatarImg.style.opacity = '0';
+    setTimeout(() => {
+      avatarImg.src = src;
+      if (effect) pulseAvatar(effect);
+      avatarImg.style.opacity = '1';
+    }, 160);
   }
 
-  function startElapsed() {
-    stopElapsed();
-    startTime = Date.now();
-    elapsedTimer = setInterval(()=>{
-      const ms = Date.now() - startTime;
-      elapsedEl.textContent = formatElapsed(ms);
-    }, 250);
-  }
-  function stopElapsed() {
-    if (elapsedTimer) clearInterval(elapsedTimer);
-    elapsedTimer = null;
+  function pulseAvatar(effectName) {
+    const map = { pop:'avatar-pop', glow:'avatar-glow', night:'avatar-night', sad:'avatar-sad' };
+    const cls = map[effectName];
+    if (!cls) return;
+    avatarImg.classList.add(cls);
+    setTimeout(()=>avatarImg.classList.remove(cls), 550);
   }
 
-  // --- Streak UI
+  // streak UI
   function renderStreakUI() {
     const required = REQUIRED_BY_LEVEL[level];
     const pct = Math.max(0, Math.min(1, currentStreak / required));
@@ -164,10 +144,7 @@
     }
   }
 
-  function animateShake() {
-    streakBar.classList.add('shake');
-    setTimeout(()=>streakBar.classList.remove('shake'), 160);
-  }
+  function animateShake(){ streakBar.classList.add('shake'); setTimeout(()=>streakBar.classList.remove('shake'), 160); }
 
   function redeemOneMistake() {
     if (mistakes <= 0) return;
@@ -175,37 +152,33 @@
     const last = pips[pips.length-1];
     if (last) {
       last.classList.add('remove');
-      setTimeout(() => {
-        mistakes--;
-        renderStreakUI();
-      }, 360);
-    } else {
-      mistakes--;
-      renderStreakUI();
-    }
+      setTimeout(() => { mistakes--; renderStreakUI(); }, 360);
+    } else { mistakes--; renderStreakUI(); }
   }
 
-  // --- Answer handlers
   function onCorrect() {
     const required = REQUIRED_BY_LEVEL[level];
     currentStreak++;
-    setAvatar(currentStreak >= required-1 ? 'genius' : 'playful', true);
+    if (currentStreak >= required-1) setAvatar('genius','glow');
+    else setAvatar('playful','pop');
 
     if (currentStreak >= required) {
-      redeemOneMistake();       // redemption
-      currentStreak = 0;        // reset after redemption
+      redeemOneMistake();
+      currentStreak = 0;
     }
     renderStreakUI();
   }
 
   function triggerGameOver() {
     gameOver = true;
-    setAvatar('gameover');
-    // Show splash
+    setAvatar('gameover','sad');
+    if (failAvatar) failAvatar.src = AVATARS.gameover;
+
     failSplash.classList.remove('hidden');
     try { failVideo.currentTime = 0; failVideo.play().catch(()=>{}); } catch(e){}
     try { sfxFail && sfxFail.play().catch(()=>{}); } catch(e){}
     requestAnimationFrame(()=> failSplash.classList.add('show'));
+
     setTimeout(() => {
       failSplash.classList.remove('show');
       setTimeout(()=>failSplash.classList.add('hidden'), 360);
@@ -217,18 +190,14 @@
     mistakes++;
     currentStreak = 0;
     animateShake();
-    setAvatar('curious');
+    setAvatar('core');
     renderStreakUI();
-
-    if (mistakes >= MAX_LIVES && !gameOver) {
-      triggerGameOver();
-    }
+    if (mistakes >= MAX_LIVES && !gameOver) triggerGameOver();
   }
 
-  // --- Level transitions
   function showLevelUp(nextLevel) {
     levelUpTitle.textContent = nextLevel === 3 ? 'Level 3 Unlocked' : 'Level 2 Unlocked';
-    setAvatar(nextLevel === 3 ? 'night' : 'relaxed', true);
+    if (levelUpAvatar) levelUpAvatar.src = AVATARS.genius;
     levelUpSplash.classList.remove('hidden');
     try { levelVideo.currentTime = 0; levelVideo.play().catch(()=>{}); } catch(e){}
     try { sfxLevelUp && sfxLevelUp.play().catch(()=>{}); } catch(e){}
@@ -236,8 +205,6 @@
     setTimeout(()=>{
       levelUpSplash.classList.remove('show');
       setTimeout(()=>levelUpSplash.classList.add('hidden'), 360);
-      // After level-up animation, return to focused mode
-      setAvatar('focused');
     }, 1800);
   }
 
@@ -247,62 +214,60 @@
     levelIndexStart = (level-1) * LVL_SIZE;
     currentStreak = 0;
     renderStreakUI();
+    setAvatar(level === 3 ? 'night' : 'relaxed', level === 3 ? 'night' : 'glow');
     showLevelUp(level);
   }
 
-  // --- Quiz engine
+  // --- Questions (replace with your CSV fetch)
+  async function loadQuestions() {
+    if (!questions.length) {
+      for (let i=0;i<36;i++){
+        questions.push({
+          Question:`Sample question ${i+1}`,
+          OptionA:'Option A', OptionB:'Option B', OptionC:'Option C', OptionD:'Option D',
+          Answer:'Option A'
+        });
+      }
+    }
+  }
+
   function showQuestion() {
     if (gameOver) return;
-
     const q = questions[idx];
-    if (!q) {
-      questionBox.textContent = 'No question loaded.';
-      choicesBox.innerHTML = '';
-      return;
-    }
+    if (!q) { questionBox.textContent = 'No question loaded.'; choicesBox.innerHTML = ''; return; }
 
-    setAvatar('focused'); // default while answering
+    const required = REQUIRED_BY_LEVEL[level];
+    if (currentStreak === required - 1 && required > 1) setAvatar('curious','pop');
+    else setAvatar('focused');
 
     questionBox.textContent = q.Question;
     choicesBox.innerHTML = '';
-
     const opts = [q.OptionA, q.OptionB, q.OptionC, q.OptionD];
+
     opts.forEach(opt => {
       const btn = document.createElement('button');
       btn.className = 'btn';
       btn.textContent = opt;
-      btn.addEventListener('click', () => {
-        const correct = (opt === q.Answer);
-        handleAnswer(correct, q);
-      });
+      btn.addEventListener('click', () => handleAnswer(opt === q.Answer, q));
       choicesBox.appendChild(btn);
     });
 
     updateHeader();
   }
 
-  function handleAnswer(correct, q) {
+  function handleAnswer(correct) {
     if (gameOver) return;
+    if (correct) { score++; onCorrect(); }
+    else { onWrong(); if (gameOver) return; }
 
-    if (correct) {
-      score++;
-      onCorrect();
-    } else {
-      onWrong();
-      if (gameOver) return;
-    }
-
-    // progress
     idx++;
     updateHeader();
 
-    // end-of-level gates
     if (!gameOver && idx === levelIndexStart + LVL_SIZE) {
       if (level < 3) gotoNextLevel();
     }
-
-    // all done
     if (!gameOver && idx >= 36) {
+      setAvatar('playful','glow');
       finishGame(false);
     } else if (!gameOver) {
       showQuestion();
@@ -310,22 +275,16 @@
   }
 
   function finishGame(fromFail) {
-    stopElapsed();
     const gameOverBox = qs('#gameOverBox');
     const gameOverText = qs('#gameOverText');
     const playAgainBtn = qs('#playAgainBtn');
 
     if (fromFail) {
       gameOverText.textContent = `Game Over — out of lives. Score ${score} / ${idx}.`;
-      setAvatar('gameover');
+      setAvatar('gameover','sad');
     } else {
       gameOverText.textContent = `Done! Score ${score} / 36.`;
-      setAvatar('genius', true);
-      // quick “success” splash you already have:
-      const successSplash = qs('#successSplash');
-      successSplash?.setAttribute('aria-hidden','false');
-      successSplash?.classList.add('show');
-      setTimeout(()=>successSplash?.classList.remove('show'), 1200);
+      setAvatar('playful','glow');
     }
     playAgainBtn.style.display = '';
     gameOverBox.style.display = '';
@@ -335,14 +294,11 @@
   // --- Controls
   startBtn?.addEventListener('click', async () => {
     await loadQuestions();
-    // Reset
-    level = 1;
-    levelIndexStart = 0;
+    level = 1; levelIndexStart = 0;
     idx = 0; score = 0; mistakes = 0; currentStreak = 0; gameOver = false;
-    renderStreakUI();
     setLabel.textContent = 'Live';
     setAvatar('focused');
-    startElapsed();
+    renderStreakUI();
     showQuestion();
   });
 
@@ -352,21 +308,17 @@
       [questions[i], questions[j]] = [questions[j], questions[i]];
     }
     level = 1; levelIndexStart = 0; idx = 0; score = 0; mistakes = 0; currentStreak = 0; gameOver = false;
+    setAvatar('core');
     renderStreakUI();
-    setAvatar('focused');
-    startElapsed();
     showQuestion();
   });
 
   shareBtn?.addEventListener('click', async () => {
     const text = `I’m playing Thynkr — score ${score}/${Math.min(idx,36)}!`;
-    try {
-      if (navigator.share) await navigator.share({ text });
-      else navigator.clipboard.writeText(text);
-    } catch(e){}
+    try { if (navigator.share) await navigator.share({ text }); else navigator.clipboard.writeText(text); } catch(e){}
   });
 
-  // boot UI
+  // initial UI
   updateHeader();
   renderStreakUI();
   setAvatar('core');
