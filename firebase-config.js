@@ -1,10 +1,11 @@
-// Firebase Config — Thynkr Edition
-window.FB_CONFIG = {
-  apiKey: "YOUR_REAL_API_KEY",
-  authDomain: "thynkr.firebaseapp.com",
-  projectId: "thynkr",
-  storageBucket: "thynkr.firebasestorage.app",
+// Thynkr — Firebase client config
+// Fill with your real web app config from Firebase Console
+window.THYNKR_FIREBASE_CONFIG = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT.web.app",
+  projectId: "YOUR_PROJECT",
+  storageBucket: "YOUR_PROJECT.appspot.com",
   messagingSenderId: "YOUR_SENDER_ID",
   appId: "YOUR_APP_ID",
-  measurementId: "YOUR_MEASUREMENT_ID"
+  measurementId: "G-XXXXXXX"
 };
