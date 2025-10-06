@@ -21,11 +21,11 @@ messaging.onBackgroundMessage((payload) => {
     body,
     icon: '/media/thynkr-icon-192.png',
     badge: '/media/thynkr-icon-192.png',
-    data: { url: 'https://thynkr.com/' }  // <-- Replace with your real domain or Netlify URL
+    data: { url: 'https://thynkr.com/' } // replace with your actual domain or Netlify URL
   });
 });
 
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
-  event.waitUntil(clients.openWindow('https://thynkr.com/'));  // <-- same domain here
+  event.waitUntil(clients.openWindow('https://thynkr.com/')); // same domain here
 });
