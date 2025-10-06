@@ -6,17 +6,17 @@
   <title>Thynkr — Daily Mind Training</title>
   <link rel="manifest" href="/site.webmanifest">
   <link rel="icon" href="/media/favicon.svg" />
-  <link rel="stylesheet" href="/style.css?v=9010" />
+  <link rel="stylesheet" href="/style.css?v=9020" />
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js" defer></script>
-  <script src="/shell.js?v=9010" defer></script>
-  <script src="/app.js?v=9010" defer></script>
+  <script src="/shell.js?v=9020" defer></script>
+  <script src="/app.js?v=9020" defer></script>
 </head>
 <body>
-  <!-- Initial loading splash -->
+  <!-- Start / loading splash -->
   <div id="startSplash" class="splash success-anim" role="dialog" aria-live="polite">
     <div class="splash-inner">
       <div class="splash-badge">
-        <img src="/media/app-icon.svg" alt="Thynkr logo" class="splash-bolt" width="110" height="110">
+        <img src="/media/avatars/thynkr-fox-core.png" alt="Thynkr Fox" class="splash-bolt" width="120" height="120">
       </div>
       <div class="splash-title">Thynkr</div>
       <div class="splash-msg">Loading today’s set…</div>
@@ -34,6 +34,10 @@
           <div class="tagline">Sharpen your mind — daily.</div>
         </div>
       </a>
+
+      <!-- Live avatar (updates via app.js) -->
+      <img id="avatar" src="/media/avatars/thynkr-fox-core.png" class="avatar" alt="Thynkr Fox avatar" />
+
       <div class="actions">
         <button id="mmMenuBtn" aria-label="Menu">☰</button>
       </div>
@@ -63,7 +67,7 @@
       <div class="timer-wrapper"><div id="timerBar" class="timer-bar"></div></div>
       <div class="elapsed-time">Time: <span id="elapsedTime">0:00</span></div>
 
-      <!-- PREMIUM STREAK BAR (floating, glassy, with mistake pips) -->
+      <!-- PREMIUM STREAK BAR with mistake pips -->
       <div class="streak-wrap" aria-live="polite">
         <div class="streak-top">
           <span id="streakLabel">Streak 0/3</span>
@@ -94,16 +98,16 @@
     </section>
   </main>
 
-  <!-- Success splash (between rounds) -->
+  <!-- Success splash -->
   <div id="successSplash" class="success-splash success-anim" aria-hidden="true">
     <div class="splash-inner">
-      <div class="splash-badge"><img src="/media/app-icon.svg" alt="" class="splash-bolt" width="110" height="110"></div>
+      <div class="splash-badge"><img src="/media/avatars/thynkr-fox-genius.png" alt="" class="splash-bolt" width="120" height="120"></div>
       <div class="splash-title">Nice work!</div>
       <div class="splash-msg">Resetting for the next round…</div>
     </div>
   </div>
 
-  <!-- LEVEL UP SPLASH (between Level 1→2, 2→3) -->
+  <!-- Level Up Splash -->
   <div id="levelUpSplash" class="level-splash hidden" aria-hidden="true">
     <video id="levelVideo" class="level-video" muted playsinline preload="auto">
       <source src="/media/thynkr-levelup.mp4" type="video/mp4">
@@ -114,18 +118,19 @@
     </div>
   </div>
 
-  <!-- GAME OVER SPLASH (out of lives) -->
+  <!-- Game Over Splash -->
   <div id="failSplash" class="fail-splash hidden" aria-hidden="true">
     <video id="failVideo" class="level-video" muted playsinline preload="auto">
       <source src="/media/thynkr-fail.mp4" type="video/mp4">
     </video>
     <div class="level-text">
+      <img src="/media/avatars/thynkr-fox-gameover.png" alt="" class="splash-avatar"/>
       <h1>Game Over</h1>
-      <p>Out of lives — try again tomorrow.</p>
+      <p>Try again</p>
     </div>
   </div>
 
-  <!-- Sounds (optional) -->
+  <!-- Optional sounds -->
   <audio id="sfxLevelUp" src="/media/thynkr-levelup.mp3" preload="auto"></audio>
   <audio id="sfxFail" src="/media/thynkr-fail.mp3" preload="auto"></audio>
 
