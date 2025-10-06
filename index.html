@@ -4,46 +4,46 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Thynkr — Sharpen Your Mind Daily</title>
-  <link rel="manifest" href="/site.webmanifest">
-  <link rel="icon" href="/media/thynkr-icon-192.png" type="image/png" />
-  <link rel="stylesheet" href="/style.css?v=8003" />
 
-  <!-- Firebase + Messaging -->
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js" defer></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js" defer></script>
-  <script src="/firebase-config.js" defer></script>
+  <!-- Manifest & Icons -->
+  <link rel="manifest" href="/site.webmanifest" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="icon" type="image/png" sizes="192x192" href="/media/thynkr-icon-192.png" />
+  <link rel="apple-touch-icon" sizes="512x512" href="/media/thynkr-icon-512.png" />
 
-  <!-- App Logic -->
-  <script src="/shell.js?v=8003" defer></script>
-  <script src="/app.js?v=8003" defer></script>
+  <!-- Styles -->
+  <link rel="stylesheet" href="/style.css?v=9001" />
+
+  <!-- Meta -->
+  <meta name="theme-color" content="#1877F2" />
+  <meta name="description" content="Sharpen your mind daily with Thynkr — fast, smart brain challenges for logic, memory and focus." />
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js" defer></script>
+  <script src="/shell.js?v=9001" defer></script>
+  <script src="/app.js?v=9001" defer></script>
 </head>
+
 <body>
   <!-- Start Splash -->
   <div id="startSplash" class="splash" role="dialog" aria-live="polite">
-    <video id="startVideo" class="splash-video" preload="auto" muted playsinline>
+    <video autoplay muted playsinline loop poster="/media/poster-start.jpg" id="startVideo">
       <source src="/media/thynkr-start.webm" type="video/webm">
       <source src="/media/thynkr-start.mp4" type="video/mp4">
-      <img src="/media/poster-start.jpg" alt="Thynkr splash poster" />
     </video>
-  </div>
-
-  <!-- Success Splash -->
-  <div id="successSplash" class="splash success-splash" aria-hidden="true" style="display:none">
-    <video id="successVideo" class="splash-video" preload="auto" muted playsinline>
-      <source src="/media/thynkr-success.webm" type="video/webm">
-      <source src="/media/thynkr-success.mp4" type="video/mp4">
-      <img src="/media/poster-success.jpg" alt="Thynkr success poster" />
-    </video>
+    <div class="splash-inner">
+      <img src="/media/app-icon.svg" alt="Thynkr Logo" class="splash-icon" width="120" height="120">
+      <div class="splash-title">Thynkr</div>
+      <div class="splash-msg">Preparing today’s challenge…</div>
+    </div>
   </div>
 
   <!-- Header -->
   <header class="topbar">
-    <div class="hero-bg">
-      <img src="/header-graphic.svg" alt="">
-    </div>
+    <div class="hero-bg"><img src="/header-graphic.svg" alt=""></div>
     <div class="hero-inner">
       <a class="brand" href="/">
-        <img src="/media/thynkr-icon-192.png" alt="Thynkr logo" class="logo" />
+        <img src="/media/app-icon.svg" alt="Thynkr logo" class="logo" />
         <div class="brand-text">
           <div class="kicker">The Daily</div>
           <h1>Thynkr</h1>
@@ -55,6 +55,7 @@
         <button id="soundBtn" aria-label="Sound">🔊</button>
       </div>
     </div>
+
     <div class="status">
       <span id="setLabel" class="muted">Ready</span>
       <span id="pillScore" class="muted">Score 0</span>
@@ -71,11 +72,10 @@
       <a href="/privacy.html">🔒 Privacy</a>
       <a href="/terms.html">📄 Terms</a>
       <a href="/contact.html">✉️ Contact</a>
-      <button id="notifyBtn" class="menu-action">🔔 Enable Notifications</button>
     </nav>
   </aside>
 
-  <!-- Main Content -->
+  <!-- Main Game -->
   <main class="container">
     <section class="card quiz-card">
       <div class="timer-wrapper"><div id="timerBar" class="timer-bar"></div></div>
@@ -99,6 +99,19 @@
       </div>
     </section>
   </main>
+
+  <!-- Success Splash -->
+  <div id="successSplash" class="success-splash" aria-hidden="true">
+    <video autoplay muted playsinline loop poster="/media/poster-success.jpg" id="successVideo">
+      <source src="/media/thynkr-success.webm" type="video/webm">
+      <source src="/media/thynkr-success.mp4" type="video/mp4">
+    </video>
+    <div class="splash-inner">
+      <img src="/media/app-icon.svg" alt="Thynkr Logo" class="splash-icon" width="120" height="120">
+      <div class="splash-title">Nice work!</div>
+      <div class="splash-msg">Resetting for the next round…</div>
+    </div>
+  </div>
 
   <!-- Footer -->
   <footer class="footer">
