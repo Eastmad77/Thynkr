@@ -1,9 +1,8 @@
-/* Thynkr — App (levels + premium streak bar + level-up splash)
-   v9008
+/* Thynkr — App (levels + premium streak bar + level-up + game-over splash)
+   v9010
    - 3 Levels: 12 Qs each (total 36)
-   - Redemption: L1 needs 3-in-a-row, L2 needs 4, L3 needs 5
-   - Mistakes tracked as red "pips"; every full streak redeems 1 mistake
-   - Level-up splash between levels (optional sound)
+   - Redemption: L1=3, L2=4, L3=5
+   - Lives: 3 total (game ends when mistakes >= lives)
 */
 
 (() => {
@@ -26,11 +25,15 @@
   const streakLabel = qs('#streakLabel');
   const mistakesLabel = qs('#mistakesLabel');
 
-  // level splash
+  // overlays
   const levelUpSplash = qs('#levelUpSplash');
   const levelUpTitle = qs('#levelUpTitle');
   const levelVideo = qs('#levelVideo');
   const sfxLevelUp = qs('#sfxLevelUp');
+
+  const failSplash = qs('#failSplash');
+  const failVideo = qs('#failVideo');
+  const sfxFail = qs('#sfxFail');
 
   // timers (stubs)
   const timerBar = qs('#timerBar');
@@ -49,15 +52,15 @@
   let level = 1;           // 1..3
   let levelIndexStart = 0; // pointer into 0..35 for the current level
 
-  // Streak/Redemption
+  // Streak/Redemption/Lives
   let currentStreak = 0;
   let mistakes = 0;
+  const MAX_LIVES = 3;
+  let gameOver = false;
 
-  // --- Load data (demo uses a baked-in CSV path; replace with your builder if needed)
+  // --- Load data (plug in your CSV fetch here)
   async function loadQuestions() {
-    // Example: pull one CSV (already 36) — swap to your feed if different
-    // Papa.parse if remote; here we assume a CSV path set elsewhere
-    // For demo just set dummy if not present
+    // TODO: Replace with Papa.parse of your chosen CSV (36 rows)
     if (!questions.length) {
       questionBox.textContent = 'Ready — press Start';
     }
@@ -72,13 +75,12 @@
   function renderStreakUI() {
     const required = REQUIRED_BY_LEVEL[level];
     const pct = Math.max(0, Math.min(1, currentStreak / required));
-    // Use inset-right to animate width
     const right = (1 - pct) * 100;
     streakFill.style.inset = `0 ${right}% 0 0`;
     streakFill.classList.toggle('glow', currentStreak >= required-1 && currentStreak > 0);
     streakLabel.textContent = `Streak ${currentStreak}/${required}`;
 
-    mistakesLabel.textContent = `Mistakes ${mistakes}`;
+    mistakesLabel.textContent = `Mistakes ${Math.min(mistakes, MAX_LIVES)}/${MAX_LIVES}`;
     // render pips
     streakPips.innerHTML = '';
     const maxShow = Math.min(mistakes, 6);
@@ -108,7 +110,6 @@
 
   function redeemOneMistake() {
     if (mistakes <= 0) return;
-    // animate last pip
     const pips = qsa('.streak-pip', streakPips);
     const last = pips[pips.length-1];
     if (last) {
@@ -127,11 +128,25 @@
     const required = REQUIRED_BY_LEVEL[level];
     currentStreak++;
     if (currentStreak >= required) {
-      // redemption
       redeemOneMistake();
-      currentStreak = 0; // reset for next redemption cycle
+      currentStreak = 0; // reset after redemption
     }
     renderStreakUI();
+  }
+
+  function triggerGameOver() {
+    gameOver = true;
+    // Splash
+    failSplash.classList.remove('hidden');
+    try { failVideo.currentTime = 0; failVideo.play().catch(()=>{}); } catch(e){}
+    try { sfxFail && sfxFail.play().catch(()=>{}); } catch(e){}
+    requestAnimationFrame(()=> failSplash.classList.add('show'));
+    // After 1.6s, show summary
+    setTimeout(() => {
+      failSplash.classList.remove('show');
+      setTimeout(()=>failSplash.classList.add('hidden'), 360);
+      finishGame(true);
+    }, 1600);
   }
 
   function onWrong() {
@@ -139,18 +154,19 @@
     currentStreak = 0;
     animateShake();
     renderStreakUI();
+
+    if (mistakes >= MAX_LIVES && !gameOver) {
+      triggerGameOver();
+    }
   }
 
   // --- Level transitions
   function showLevelUp(nextLevel) {
-    // text
     levelUpTitle.textContent = nextLevel === 3 ? 'Level 3 Unlocked' : 'Level 2 Unlocked';
     levelUpSplash.classList.remove('hidden');
-    // play media
     try { levelVideo.currentTime = 0; levelVideo.play().catch(()=>{}); } catch(e){}
     try { sfxLevelUp && sfxLevelUp.play().catch(()=>{}); } catch(e){}
     requestAnimationFrame(()=> levelUpSplash.classList.add('show'));
-    // after 1.8s, hide
     setTimeout(()=>{
       levelUpSplash.classList.remove('show');
       setTimeout(()=>levelUpSplash.classList.add('hidden'), 360);
@@ -161,16 +177,16 @@
     if (level >= 3) return; // finished all
     level++;
     levelIndexStart = (level-1) * LVL_SIZE;
-    // reset streak visuals (mistakes persist; that’s the point)
     currentStreak = 0;
     renderStreakUI();
     showLevelUp(level);
   }
 
-  // --- Quiz engine (minimal; plug into your existing question rendering)
+  // --- Quiz engine (minimal)
   function showQuestion() {
+    if (gameOver) return;
     const q = questions[idx];
-    if (!q) { // guard
+    if (!q) {
       questionBox.textContent = 'No question loaded.';
       choicesBox.innerHTML = '';
       return;
@@ -195,12 +211,14 @@
   }
 
   function handleAnswer(correct, q) {
-    // score
+    if (gameOver) return;
+
     if (correct) {
       score++;
       onCorrect();
     } else {
       onWrong();
+      if (gameOver) return; // already finished
     }
 
     // progress
@@ -208,24 +226,28 @@
     updateHeader();
 
     // end-of-level gate
-    if (idx === levelIndexStart + LVL_SIZE) {
+    if (!gameOver && idx === levelIndexStart + LVL_SIZE) {
       if (level < 3) gotoNextLevel();
     }
 
-    // end-of-game
-    if (idx >= 36) {
-      finishGame();
-    } else {
+    // end-of-game (completed all 36)
+    if (!gameOver && idx >= 36) {
+      finishGame(false);
+    } else if (!gameOver) {
       showQuestion();
     }
   }
 
-  function finishGame() {
+  function finishGame(fromFail) {
     const gameOverBox = qs('#gameOverBox');
     const gameOverText = qs('#gameOverText');
     const playAgainBtn = qs('#playAgainBtn');
 
-    gameOverText.textContent = `Done! Score ${score} / 36. Mistakes cleared: ${Math.max(0, mistakes)}`;
+    if (fromFail) {
+      gameOverText.textContent = `Game Over — out of lives. Score ${score} / ${idx}. Mistakes: ${mistakes}/${MAX_LIVES}`;
+    } else {
+      gameOverText.textContent = `Done! Score ${score} / 36. Mistakes cleared: ${Math.max(0, mistakes)}`;
+    }
     playAgainBtn.style.display = '';
     gameOverBox.style.display = '';
 
@@ -235,10 +257,7 @@
   // --- Boot / Controls
   startBtn?.addEventListener('click', async () => {
     await loadQuestions();
-    // You will likely load CSV with Papa.parse → set `questions` (array of 36 objects)
-    // Below is a placeholder to avoid empty UI if CSV not wired yet:
     if (!questions.length) {
-      // Dummy demo of 36 identical shells — replace with your parsed CSV rows
       for (let i=0;i<36;i++){
         questions.push({
           Question:`Sample question ${i+1}`,
@@ -247,28 +266,27 @@
         });
       }
     }
-    // Reset for level 1
+    // Reset
     level = 1;
     levelIndexStart = 0;
-    idx = 0; score = 0; mistakes = 0; currentStreak = 0;
+    idx = 0; score = 0; mistakes = 0; currentStreak = 0; gameOver = false;
     setLabel.textContent = 'Live';
     renderStreakUI();
     showQuestion();
   });
 
   shuffleBtn?.addEventListener('click', () => {
-    // Keep simple: randomize order of the 36 questions
     for (let i=questions.length-1; i>0; i--){
       const j = Math.floor(Math.random()*(i+1));
       [questions[i], questions[j]] = [questions[j], questions[i]];
     }
-    idx = 0; level = 1; levelIndexStart = 0; score = 0; mistakes = 0; currentStreak = 0;
+    level = 1; levelIndexStart = 0; idx = 0; score = 0; mistakes = 0; currentStreak = 0; gameOver = false;
     renderStreakUI();
     showQuestion();
   });
 
   shareBtn?.addEventListener('click', async () => {
-    const text = `I’m playing Thynkr — score ${score}/36!`;
+    const text = `I’m playing Thynkr — score ${score}/${Math.min(idx,36)}!`;
     try {
       if (navigator.share) await navigator.share({ text });
       else navigator.clipboard.writeText(text);
