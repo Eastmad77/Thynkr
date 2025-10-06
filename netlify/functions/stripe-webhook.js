@@ -1,132 +1,100 @@
-// Handles Stripe events and writes entitlements to Firestore.
-// Requires env: STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, FIREBASE_SERVICE_ACCOUNT (base64 JSON)
+// Stripe webhook → updates Firestore entitlements for Thynkr
+// Requires env:
+//  - STRIPE_WEBHOOK_SECRET
+//  - STRIPE_SECRET_KEY
+//  - FIREBASE_SERVICE_ACCOUNT (base64 of service account JSON)
+//  - FIREBASE_PROJECT_ID (optional if present in SA)
+//  - SITE_URL (for logs)
 
-let admin; // lazy init to avoid cold start penalty multiple times
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
+const admin = require("firebase-admin");
+
+let app;
 function getAdmin() {
-  if (admin) return admin;
-  admin = require("firebase-admin");
-  if (!admin.apps.length) {
-    const json = Buffer.from(process.env.FIREBASE_SERVICE_ACCOUNT || "", "base64").toString("utf8");
-    const creds = JSON.parse(json);
-    admin.initializeApp({
-      credential: admin.credential.cert(creds)
-    });
-  }
+  if (app) return admin;
+  const b64 = process.env.FIREBASE_SERVICE_ACCOUNT;
+  if (!b64) throw new Error("Missing FIREBASE_SERVICE_ACCOUNT");
+  const json = JSON.parse(Buffer.from(b64, "base64").toString("utf8"));
+  app = admin.initializeApp({
+    credential: admin.credential.cert(json),
+    projectId: process.env.FIREBASE_PROJECT_ID || json.project_id,
+  });
   return admin;
-}
-
-function emailDocId(email) {
-  // simple, URL-safe Firestore doc id for email fallback
-  return `email:${String(email || "").trim().toLowerCase()}`;
 }
 
 exports.handler = async (event) => {
   const sig = event.headers["stripe-signature"];
-  const cors = { "Access-Control-Allow-Origin": process.env.SITE_URL || "*" };
+  const secret = process.env.STRIPE_WEBHOOK_SECRET;
 
-  if (event.httpMethod === "OPTIONS") return { statusCode: 200, headers: cors, body: "" };
-  if (event.httpMethod !== "POST")    return { statusCode: 405, headers: cors, body: "Method Not Allowed" };
+  // CORS not required for Stripe -> Function
+  if (event.httpMethod !== "POST") {
+    return { statusCode: 405, body: "Method Not Allowed" };
+  }
+
+  let evt;
+  try {
+    evt = stripe.webhooks.constructEvent(event.body, sig, secret);
+  } catch (err) {
+    console.error("Webhook signature verification failed:", err.message);
+    return { statusCode: 400, body: `Webhook Error: ${err.message}` };
+  }
 
   try {
-    const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
-    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
-    let stripeEvent;
+    const adminSDK = getAdmin();
+    const db = adminSDK.firestore();
+    const now = adminSDK.firestore.FieldValue.serverTimestamp();
 
-    // IMPORTANT: use raw body for signature verification
-    const raw = event.body;
+    // Helpers
+    async function setPlanForSession(session, planName) {
+      const uid = session.metadata?.uid || "";
+      const email = session.customer_details?.email || session.customer_email || "";
+      const stripeCustomerId = session.customer || "";
 
-    if (webhookSecret) {
-      stripeEvent = stripe.webhooks.constructEvent(raw, sig, webhookSecret);
-    } else {
-      // Dev fallback (not recommended for prod)
-      stripeEvent = JSON.parse(raw);
-    }
+      // Prefer UID doc; else email-scoped doc
+      let docRef;
+      if (uid) docRef = db.collection("users").doc(uid);
+      else if (email) docRef = db.collection("users").doc(`email:${email.toLowerCase()}`);
+      else docRef = db.collection("users").doc(`stripe:${stripeCustomerId}`);
 
-    const admin = getAdmin();
-    const db = admin.firestore();
-    const now = admin.firestore.FieldValue.serverTimestamp();
-
-    // Helper: write entitlement
-    async function setEntitlement({ uid, email, plan, stripeCustomerId }) {
-      const base = {
-        plan,                  // "pro_monthly" | "pro_yearly" | "free"
-        stripeCustomerId: stripeCustomerId || null,
+      await docRef.set({
+        plan: planName,                          // "pro_monthly" | "pro_yearly"
+        stripeCustomerId,
         updatedAt: now,
-      };
-
-      if (uid) {
-        await db.collection("users").doc(uid).set(base, { merge: true });
-        return;
-      }
-      if (email) {
-        await db.collection("users").doc(emailDocId(email)).set(
-          { email, ...base }, { merge: true }
-        );
-      }
+        brand: "thynkr"
+      }, { merge: true });
     }
 
-    switch (stripeEvent.type) {
+    switch (evt.type) {
       case "checkout.session.completed": {
-        const s = stripeEvent.data.object;
-
-        // Determine plan from metadata or price lookup (subscription mode)
-        let plan = "pro_monthly";
-        const metaPlan = (s.metadata && s.metadata.plan) || "";
-        if (metaPlan === "yearly") plan = "pro_yearly";
-
-        await setEntitlement({
-          uid:   s.metadata?.uid || null,
-          email: s.customer_details?.email || s.customer_email || null,
-          plan,
-          stripeCustomerId: s.customer || null,
-        });
-
-        console.log("✅ Entitlement set from checkout.session.completed", {
-          plan,
-          uid: s.metadata?.uid || null,
-          email: s.customer_details?.email || s.customer_email || null,
-          customer: s.customer || null,
-          session: s.id,
-        });
+        const session = evt.data.object;
+        // Determine plan from metadata or line_items
+        const plan = (session.metadata?.plan || "").toLowerCase(); // "monthly"/"yearly"
+        const planName = plan === "yearly" ? "pro_yearly" : "pro_monthly";
+        await setPlanForSession(session, planName);
         break;
       }
-
-      case "customer.subscription.deleted": {
-        const sub = stripeEvent.data.object;
-        // Fetch customer to get email if needed
-        let email = null;
-        try {
-          const customer = await stripe.customers.retrieve(sub.customer);
-          email = customer.email || null;
-        } catch (_) {}
-
-        await setEntitlement({
-          uid: null, // no uid on this event; we fall back to email doc
-          email,
-          plan: "free",
-          stripeCustomerId: sub.customer || null,
-        });
-
-        console.log("🛑 Subscription canceled → set free", {
-          email, customer: sub.customer
-        });
-        break;
-      }
-
       case "invoice.payment_succeeded": {
-        // Useful for renewals; you might confirm still pro here if desired
-        console.log("🔁 invoice.payment_succeeded");
+        // Useful for renewal confirmation
         break;
       }
-
+      case "customer.subscription.deleted": {
+        const sub = evt.data.object;
+        // Find user by customer ID and set to free
+        const stripeCustomerId = sub.customer;
+        const q = await db.collection("users").where("stripeCustomerId", "==", stripeCustomerId).limit(1).get();
+        if (!q.empty) {
+          await q.docs[0].ref.set({ plan: "free", updatedAt: now }, { merge: true });
+        }
+        break;
+      }
       default:
-        // console.log("Unhandled event:", stripeEvent.type);
+        // ignore
         break;
     }
 
-    return { statusCode: 200, headers: cors, body: JSON.stringify({ received: true }) };
+    return { statusCode: 200, body: JSON.stringify({ received: true }) };
   } catch (err) {
-    console.error("Webhook error:", err);
-    return { statusCode: 400, headers: cors, body: `Webhook Error: ${err.message}` };
+    console.error("Webhook handler error:", err);
+    return { statusCode: 500, body: "Webhook processing error" };
   }
 };
