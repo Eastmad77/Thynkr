@@ -1,78 +1,59 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- Primary Meta -->
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Thynkr — Sharpen your mind daily</title>
-  <meta name="description" content="Sharpen your mind — daily with Thynkr. Play intelligent quizzes, track your progress, and upgrade to Pro for more challenges." />
-  <meta name="theme-color" content="#0A2A43" />
-  <link rel="icon" href="/favicon.svg" />
-  <link rel="manifest" href="/site.webmanifest" />
-  <link rel="apple-touch-icon" href="/icon-512.png" />
+  <title>Thynkr — Sharpen Your Mind Daily</title>
+  <link rel="manifest" href="/site.webmanifest">
+  <link rel="icon" href="/media/thynkr-icon-192.png" type="image/png" />
+  <link rel="stylesheet" href="/style.css?v=8003" />
 
-  <!-- Open Graph -->
-  <meta property="og:type" content="website" />
-  <meta property="og:title" content="Thynkr — Sharpen your mind daily" />
-  <meta property="og:description" content="Play, learn, and challenge your brain every day with Thynkr." />
-  <meta property="og:url" content="https://thynkr.netlify.app/" />
-  <meta property="og:image" content="https://thynkr.netlify.app/thynkr-social-card.png" />
+  <!-- Firebase + Messaging -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js" defer></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js" defer></script>
+  <script src="/firebase-config.js" defer></script>
 
-  <!-- Twitter -->
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Thynkr — Sharpen your mind daily" />
-  <meta name="twitter:description" content="Play, learn, and challenge your brain every day with Thynkr." />
-  <meta name="twitter:image" content="https://thynkr.netlify.app/thynkr-social-card.png" />
-
-  <!-- Schema -->
-  <script type="application/ld+json">
-  {
-    "@context":"https://schema.org",
-    "@type":"WebApplication",
-    "name":"Thynkr",
-    "url":"https://thynkr.netlify.app/",
-    "description":"Sharpen your mind — daily with Thynkr.",
-    "operatingSystem":"All",
-    "applicationCategory":"EducationalApplication",
-    "offers":{"@type":"Offer","price":"0","priceCurrency":"NZD"}
-  }
-  </script>
-
-  <link rel="stylesheet" href="/style.css?v=8000" />
-  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js" defer></script>
-  <script src="/shell.js?v=8000" defer></script>
-  <script src="/app.js?v=8000" defer></script>
+  <!-- App Logic -->
+  <script src="/shell.js?v=8003" defer></script>
+  <script src="/app.js?v=8003" defer></script>
 </head>
-<body class="level-1">
-  <!-- START SPLASH (shown ONLY after Start is pressed) -->
-  <div id="startSplash" class="splash" aria-hidden="true">
-    <div class="splash-inner">
-      <div class="video-wrap">
-        <video id="startVid" class="splash-video" playsinline muted loop preload="auto" aria-hidden="true" poster="/icon-512.png">
-          <source src="/media/thynkr-start.webm" type="video/webm" />
-          <source src="/media/thynkr-start.mp4" type="video/mp4" />
-        </video>
-        <img src="/app-icon.svg" alt="Thynkr" class="splash-fallback" />
-      </div>
-      <div class="splash-title">Welcome to <strong>Thynkr</strong></div>
-      <div class="countdown-circle"><span id="countNum">3</span></div>
-      <div class="splash-msg" id="countMsg">Starting in 3</div>
-    </div>
+<body>
+  <!-- Start Splash -->
+  <div id="startSplash" class="splash" role="dialog" aria-live="polite">
+    <video id="startVideo" class="splash-video" preload="auto" muted playsinline>
+      <source src="/media/thynkr-start.webm" type="video/webm">
+      <source src="/media/thynkr-start.mp4" type="video/mp4">
+      <img src="/media/poster-start.jpg" alt="Thynkr splash poster" />
+    </video>
   </div>
 
-  <!-- HEADER -->
+  <!-- Success Splash -->
+  <div id="successSplash" class="splash success-splash" aria-hidden="true" style="display:none">
+    <video id="successVideo" class="splash-video" preload="auto" muted playsinline>
+      <source src="/media/thynkr-success.webm" type="video/webm">
+      <source src="/media/thynkr-success.mp4" type="video/mp4">
+      <img src="/media/poster-success.jpg" alt="Thynkr success poster" />
+    </video>
+  </div>
+
+  <!-- Header -->
   <header class="topbar">
-    <div class="hero-bg"><img src="/header-graphic.svg" alt=""></div>
+    <div class="hero-bg">
+      <img src="/header-graphic.svg" alt="">
+    </div>
     <div class="hero-inner">
       <a class="brand" href="/">
-        <img src="/app-icon.svg" alt="" class="logo" />
+        <img src="/media/thynkr-icon-192.png" alt="Thynkr logo" class="logo" />
         <div class="brand-text">
           <div class="kicker">The Daily</div>
-          <h1>Thynkr <span class="zap">⚡</span></h1>
+          <h1>Thynkr</h1>
           <div class="tagline">Sharpen your mind — daily.</div>
         </div>
       </a>
-      <div class="actions"><button id="mmMenuBtn" aria-label="Menu">☰</button></div>
+      <div class="actions">
+        <button id="mmMenuBtn" aria-label="Menu">☰</button>
+        <button id="soundBtn" aria-label="Sound">🔊</button>
+      </div>
     </div>
     <div class="status">
       <span id="setLabel" class="muted">Ready</span>
@@ -81,7 +62,7 @@
     </div>
   </header>
 
-  <!-- SIDE MENU -->
+  <!-- Side Menu -->
   <aside id="mmSideMenu" class="side-menu" aria-hidden="true">
     <nav class="menu-nav">
       <a href="/" aria-current="page">🏠 Home</a>
@@ -90,18 +71,18 @@
       <a href="/privacy.html">🔒 Privacy</a>
       <a href="/terms.html">📄 Terms</a>
       <a href="/contact.html">✉️ Contact</a>
+      <button id="notifyBtn" class="menu-action">🔔 Enable Notifications</button>
     </nav>
   </aside>
 
-  <!-- MAIN -->
+  <!-- Main Content -->
   <main class="container">
     <section class="card quiz-card">
       <div class="timer-wrapper"><div id="timerBar" class="timer-bar"></div></div>
       <div class="elapsed-time">Time: <span id="elapsedTime">0:00</span></div>
 
       <div class="streak-vis" id="streakVis"></div>
-
-      <div id="qTimerBar" class="qtimer-bar"></div>
+      <div class="qtimer-wrapper"><div id="qTimerBar" class="qtimer-bar"></div></div>
 
       <div id="questionBox" class="question-box">Press Start to Play</div>
       <div id="choices" class="choices"></div>
@@ -117,27 +98,11 @@
         <button id="playAgainBtn" class="btn primary" style="display:none">Play Again</button>
       </div>
     </section>
-
-    <div id="adContainer" class="hidden"></div>
   </main>
 
-  <!-- SUCCESS SPLASH -->
-  <div id="successSplash" class="success-splash" aria-hidden="true">
-    <div class="splash-inner">
-      <div class="video-wrap">
-        <video id="successVid" class="splash-video" playsinline muted preload="auto" aria-hidden="true" poster="/icon-512.png">
-          <source src="/media/thynkr-success.webm" type="video/webm" />
-          <source src="/media/thynkr-success.mp4" type="video/mp4" />
-        </video>
-        <img src="/app-icon.svg" alt="Thynkr" class="splash-fallback" />
-      </div>
-      <div class="splash-title">Nice work!</div>
-      <div class="splash-msg">Resetting for the next round…</div>
-    </div>
-  </div>
-
+  <!-- Footer -->
   <footer class="footer">
-    <p>© 2025 <strong>Thynkr</strong> · <a href="/privacy.html">Privacy</a> · <a href="/terms.html">Terms</a></p>
+    <p>© 2025 Thynkr · <a href="/privacy.html">Privacy</a> · <a href="/terms.html">Terms</a></p>
   </footer>
 </body>
 </html>
