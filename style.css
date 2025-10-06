@@ -9,7 +9,6 @@
   --glass: rgba(255,255,255,0.08);
   --glass2: rgba(255,255,255,0.04);
   --red:#ff6b6b;
-  --burg:#5a1f2a;
 }
 
 *{box-sizing:border-box}
@@ -33,15 +32,19 @@ h1{margin:0;font-size:28px;letter-spacing:.4px}
 
 /* Avatar */
 .avatar{
-  width:96px;height:96px;object-fit:contain;border-radius:16px;
-  filter: drop-shadow(0 0 12px rgba(0,150,255,.45));
+  width:120px;height:120px;object-fit:contain;border-radius:20px;
+  filter: drop-shadow(0 0 14px rgba(0,150,255,.45));
   transition: opacity .45s ease, transform .45s ease, filter .45s ease;
 }
-.avatar.enter{opacity:0;transform:translateY(-4px) scale(.98)}
-.avatar.show{opacity:1;transform:translateY(0) scale(1)}
-.avatar.pop{filter: drop-shadow(0 0 18px rgba(0,180,255,.6))}
+.avatar-hero{position:absolute;right:14px;top:-18px;z-index:2}
+.avatar-splash{width:120px;height:120px;border-radius:22px}
 
-/* Streak / timers */
+.avatar-pop{transform:scale(1.06)}
+.avatar-glow{filter: drop-shadow(0 0 18px rgba(0,180,255,.6)) drop-shadow(0 0 40px rgba(0,120,255,.35))}
+.avatar-night{filter: drop-shadow(0 0 16px rgba(50,120,255,.65))}
+.avatar-sad{filter: drop-shadow(0 0 16px rgba(255,60,60,.45))}
+
+/* Timers */
 .timer-wrapper,.qtimer-wrapper{position:relative;height:6px;background:rgba(255,255,255,.06);border-radius:999px;margin-bottom:8px;overflow:hidden}
 .timer-bar,.qtimer-bar{height:100%;width:0;background:linear-gradient(90deg,var(--blue1),var(--blue2));transition:width .4s ease}
 
@@ -50,43 +53,88 @@ h1{margin:0;font-size:28px;letter-spacing:.4px}
 .choices button{background:rgba(255,255,255,.05);color:var(--text);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:12px 10px;text-align:left}
 .choices button:hover{border-color:rgba(255,255,255,.25)}
 
-/* Premium streak bar */
+/* --- Premium streak bar --- */
 .streak-wrap{position:relative;margin:10px 0 14px}
 .streak-top{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin-bottom:6px}
+
 .streak-bar{
-  position:relative;height:12px;border-radius:999px;
+  position:relative;
+  height:12px;border-radius:999px;
   background:linear-gradient(180deg,var(--glass),var(--glass2));
-  box-shadow:0 8px 24px rgba(0,0,0,.25);
-  overflow:hidden;backdrop-filter: blur(6px);
+  box-shadow:0 8px 24px rgba(0,0,0,.25);overflow:hidden;
+  backdrop-filter: blur(6px);
 }
 .streak-fill{
-  position:absolute;inset:0 100% 0 0;
+  position:absolute;inset:0 100% 0 0; /* width via inset */
   background:linear-gradient(90deg,var(--blue1),var(--blue2));
   box-shadow:0 0 0 rgba(0,0,0,0);
   transition:inset .6s cubic-bezier(.2,.7,.2,1), box-shadow .3s ease;
   border-radius:999px;
 }
-.streak-fill.glow{ box-shadow:0 0 18px rgba(0,150,255,.45), 0 0 40px rgba(0,100,255,.25) }
+.streak-fill.glow{box-shadow:0 0 18px rgba(0,150,255,.45), 0 0 40px rgba(0,100,255,.25)}
+
+/* Incorrect “pips” */
 .streak-pips{position:absolute;top:-16px;right:4px;display:flex;gap:6px;pointer-events:none}
-.streak-pip{width:10px;height:10px;border-radius:999px;background:var(--red);box-shadow:0 2px 10px rgba(255,0,0,.35);opacity:.95;transform:translateY(0);transition:transform .4s ease, opacity .4s ease}
+.streak-pip{
+  width:10px;height:10px;border-radius:999px;background:var(--red);
+  box-shadow:0 2px 10px rgba(255,0,0,.35);
+  opacity:.95;transform:translateY(0);transition:transform .4s ease, opacity .4s ease;
+}
 .streak-pip.remove{opacity:0;transform:translateY(-10px) scale(.9);filter:drop-shadow(0 0 10px rgba(0,150,255,.6))}
 .streak-bar.shake{animation:shake .14s linear}
 @keyframes shake{0%{transform:translateX(0)}33%{transform:translateX(-3px)}66%{transform:translateX(3px)}100%{transform:translateX(0)}}
 
-/* Overlays */
+/* --- Overlays (Level Up + Fail) --- */
 .level-splash,.fail-splash{
   position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
   z-index:9999;opacity:0;pointer-events:none;transition:opacity .35s ease;
 }
 .level-splash{background:radial-gradient(1200px 600px at 50% 20%, rgba(0,120,255,.18), rgba(0,0,0,.85))}
-.fail-splash{background:radial-gradient(1200px 600px at 50% 20%, rgba(200,40,70,.20), rgba(0,0,0,.90))}
+.fail-splash{background:radial-gradient(1200px 600px at 50% 20%, rgba(255,60,60,.16), rgba(0,0,0,.88))}
 .level-splash.show,.fail-splash.show{opacity:1;pointer-events:auto}
 .level-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.35;filter:blur(1px)}
 .level-text{position:relative;text-align:center}
-.level-text h1{font-size:38px;margin:10px 0 6px}
+.level-text h1{font-size:38px;margin:8px 0 6px}
 .level-text p{margin:0;color:var(--muted);font-size:15px}
-.hidden{display:none}
-.splash-avatar{width:110px;height:110px;object-fit:contain;filter:drop-shadow(0 0 18px rgba(255,80,120,.55))}
+
+/* --- Start Splash (Tap to Begin) --- */
+.splash {
+  position: fixed; inset: 0; display: grid; place-items: center;
+  background: radial-gradient(1000px 600px at 50% 30%, rgba(30,120,255,.18), rgba(5,10,20,.96));
+  z-index: 9999; opacity: 0; pointer-events: none; transition: opacity .45s ease;
+}
+.splash-show { opacity: 1; pointer-events: auto; }
+.splash-inner { text-align: center; transform: translateY(8px); animation: splashIn .7s cubic-bezier(.2,.8,.2,1) forwards; }
+.splash-title { font-size: 34px; letter-spacing: .3px; margin: 10px 0 6px; animation: glowPulse 3s ease-in-out infinite; }
+.splash-msg   { color: var(--muted); font-size: 14px; opacity: .92; }
+.splash-cta   { margin-top: 10px; font-size: 13px; letter-spacing: .4px; color:#cfe2ff; opacity:.9; animation: ctaPulse 1.6s ease-in-out infinite; }
+
+.splash-badge .avatar-splash {
+  border-radius: 22px;
+  filter: drop-shadow(0 0 16px rgba(0,150,255,.5));
+  animation: floatY 4s ease-in-out infinite;
+}
+.splash::before, .splash::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background:
+    radial-gradient(2px 2px at 20% 40%, rgba(255,255,255,.14), transparent 40%),
+    radial-gradient(2px 2px at 70% 60%, rgba(255,255,255,.10), transparent 40%),
+    radial-gradient(1.5px 1.5px at 40% 70%, rgba(255,255,255,.12), transparent 40%);
+  animation: drift 12s linear infinite;
+  opacity: .35;
+}
+@keyframes splashIn { from { opacity:.0; transform: translateY(18px) scale(.98); } to { opacity:1; transform: translateY(0) scale(1); } }
+@keyframes glowPulse { 0%,100% { text-shadow: 0 0 0 rgba(80,150,255,.0); } 50% { text-shadow: 0 0 22px rgba(80,150,255,.35); } }
+@keyframes floatY { 0% { transform: translateY(0); } 50% { transform: translateY(-6px); } 100% { transform: translateY(0); } }
+@keyframes drift { 0% { transform: translateY(0); } 100% { transform: translateY(-12px); } }
+@keyframes ctaPulse { 0%,100% { opacity:.5 } 50% { opacity:1 } }
+.splash-hide { opacity: 0 !important; pointer-events: none !important; }
 
 /* Footer */
 .footer{opacity:.7;text-align:center;padding:24px 12px;font-size:13px}
+
+/* Responsive tweaks */
+@media (max-width:640px){
+  .avatar-hero{width:90px;height:90px;top:-12px;right:10px}
+  .avatar-splash{width:100px;height:100px}
+}
