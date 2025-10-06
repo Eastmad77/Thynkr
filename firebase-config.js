@@ -1,10 +1,10 @@
-// Thynkr Firebase Web SDK config — replace with your real keys if using Auth/Firestore.
-export const firebaseConfig = {
-  apiKey:        "YOUR_API_KEY",
-  authDomain:    "YOUR_PROJECT_ID.firebaseapp.com",
-  projectId:     "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT_ID.appspot.com",
+// Firebase Config — Thynkr Edition
+window.FB_CONFIG = {
+  apiKey: "YOUR_REAL_API_KEY",
+  authDomain: "thynkr.firebaseapp.com",
+  projectId: "thynkr",
+  storageBucket: "thynkr.firebasestorage.app",
   messagingSenderId: "YOUR_SENDER_ID",
-  appId:         "YOUR_APP_ID",
-  measurementId: "G-XXXXXXXXXX"
+  appId: "YOUR_APP_ID",
+  measurementId: "YOUR_MEASUREMENT_ID"
 };
