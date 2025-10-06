@@ -1,12 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <!-- Background gradient -->
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1b4fe0"/>
+      <stop offset="100%" stop-color="#0b2975"/>
+    </linearGradient>
 
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="96" fill="#1877F2"/>
+    <!-- Cloud gradient -->
+    <linearGradient id="cloud" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="1"/>
+      <stop offset="100%" stop-color="#d7eaff" stop-opacity="0.95"/>
+    </linearGradient>
 
-  <!-- Simplified cloud -->
-  <path d="M176 320c-38 0-70-30-70-68s32-68 70-68c8-38 46-68 94-68s86 30 94 68c38 0 70 30 70 68s-32 68-70 68H176z"
-        fill="#ffffff"/>
+    <!-- Soft drop shadow for premium 3D look -->
+    <filter id="depth" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" flood-color="#000" flood-opacity="0.25"/>
+    </filter>
+  </defs>
 
-  <!-- Thought bubble tail -->
-  <circle cx="200" cy="380" r="20" fill="#ffffff" opacity="0.9"/>
-  <circle cx="165" cy="420" r="12" fill="#ffffff" opacity="0.9"/>
+  <!-- Rounded background -->
+  <rect width="64" height="64" rx="14" fill="url(#bg)"/>
+
+  <!-- Refined cloud -->
+  <path d="M20 40c-6 0-11-5-11-10.8 0-5.2 4.5-9.7 10.1-10.6 1.3-6.5 7.8-11.2 16-11.2 8.2 0 14.7 4.7 16 11.2 6 0.9 10.9 5.4 10.9 10.6C62 35 56.5 40 50 40H20z"
+        fill="url(#cloud)" filter="url(#depth)"/>
+
+  <!-- Thought bubbles -->
+  <circle cx="26" cy="47" r="3.2" fill="url(#cloud)" opacity="0.95"/>
+  <circle cx="21" cy="52" r="2" fill="url(#cloud)" opacity="0.9"/>
 </svg>
+
