@@ -6,10 +6,10 @@
   <title>Thynkr — Daily Mind Training</title>
   <link rel="manifest" href="/site.webmanifest">
   <link rel="icon" href="/media/favicon.svg" />
-  <link rel="stylesheet" href="/style.css?v=9008" />
+  <link rel="stylesheet" href="/style.css?v=9010" />
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js" defer></script>
-  <script src="/shell.js?v=9008" defer></script>
-  <script src="/app.js?v=9008" defer></script>
+  <script src="/shell.js?v=9010" defer></script>
+  <script src="/app.js?v=9010" defer></script>
 </head>
 <body>
   <!-- Initial loading splash -->
@@ -67,7 +67,7 @@
       <div class="streak-wrap" aria-live="polite">
         <div class="streak-top">
           <span id="streakLabel">Streak 0/3</span>
-          <span id="mistakesLabel">Mistakes 0</span>
+          <span id="mistakesLabel">Mistakes 0/3</span>
         </div>
         <div class="streak-bar" id="streakBar">
           <div class="streak-fill" id="streakFill"></div>
@@ -114,8 +114,20 @@
     </div>
   </div>
 
+  <!-- GAME OVER SPLASH (out of lives) -->
+  <div id="failSplash" class="fail-splash hidden" aria-hidden="true">
+    <video id="failVideo" class="level-video" muted playsinline preload="auto">
+      <source src="/media/thynkr-fail.mp4" type="video/mp4">
+    </video>
+    <div class="level-text">
+      <h1>Game Over</h1>
+      <p>Out of lives — try again tomorrow.</p>
+    </div>
+  </div>
+
   <!-- Sounds (optional) -->
   <audio id="sfxLevelUp" src="/media/thynkr-levelup.mp3" preload="auto"></audio>
+  <audio id="sfxFail" src="/media/thynkr-fail.mp3" preload="auto"></audio>
 
   <footer class="footer">
     <p>© 2025 Thynkr · <a href="/privacy.html">Privacy</a> · <a href="/terms.html">Terms</a></p>
