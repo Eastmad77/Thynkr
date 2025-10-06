@@ -3,97 +3,125 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="theme-color" content="#1b4fe0" />
-  <title>Thynkr — Sharpen Your Mind</title>
+  <title>Thynkr — Sharpen your mind daily</title>
 
-  <!-- Favicon & App Icons -->
-  <link rel="icon" type="image/svg+xml" href="/media/favicon.svg" />
-  <link rel="alternate icon" href="/media/favicon-32.png" sizes="32x32" type="image/png" />
-  <link rel="alternate icon" href="/media/favicon-48.png" sizes="48x48" type="image/png" />
-  <link rel="apple-touch-icon" sizes="192x192" href="/media/favicon-192.png" />
-  <link rel="apple-touch-icon" sizes="512x512" href="/media/favicon-512.png" />
+  <!-- Manifest & Favicons -->
   <link rel="manifest" href="/site.webmanifest" />
+  <link rel="icon" type="image/svg+xml" href="/media/favicon.svg" />
+  <link rel="alternate icon" href="/media/thynkr-icon-192.png" sizes="192x192" />
+  <link rel="apple-touch-icon" href="/media/thynkr-icon-512.png" sizes="512x512" />
+  <meta name="theme-color" content="#1a4dd9" />
 
-  <!-- Styles & Fonts -->
-  <link rel="stylesheet" href="/style.css?v=9002" />
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <!-- Styles & Scripts -->
+  <link rel="stylesheet" href="/style.css?v=9004" />
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js" defer></script>
+  <script src="/shell.js?v=9004" defer></script>
+  <script src="/app.js?v=9004" defer></script>
 
-  <!-- Preload splash media -->
-  <link rel="preload" as="video" href="/media/thynkr-start.mp4" type="video/mp4">
-  <link rel="preload" as="video" href="/media/thynkr-success.mp4" type="video/mp4">
-
-  <script src="/app.js?v=9002" defer></script>
+  <!-- Meta -->
+  <meta name="description" content="Thynkr — a daily brain challenge to keep your mind sharp and curious. Play free or go Pro for more levels and no ads." />
+  <meta property="og:title" content="Thynkr" />
+  <meta property="og:description" content="Sharpen your mind — daily." />
+  <meta property="og:image" content="/media/thynkr-icon-512.png" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
 </head>
 
 <body>
-  <!-- Start Splash Screen -->
-  <section id="splash-screen" class="splash active">
-    <video id="splashVideo" autoplay muted playsinline preload="auto" poster="/media/poster-start.jpg">
-      <source src="/media/thynkr-start.mp4" type="video/mp4">
-      <source src="/media/thynkr-start.webm" type="video/webm">
+  <!-- Start Splash -->
+  <div id="startSplash" class="splash" role="dialog" aria-live="polite">
+    <video autoplay muted playsinline loop poster="/media/poster-start.jpg" class="splash-bg">
+      <source src="/media/thynkr-start.webm" type="video/webm" />
+      <source src="/media/thynkr-start.mp4" type="video/mp4" />
     </video>
-    <div class="splash-overlay">
-      <img src="/media/thynkr-icon-192.png" alt="Thynkr Icon" class="splash-icon" />
-      <h1 class="splash-title">Thynkr</h1>
-      <button id="startButton" class="btn-start">Tap to Begin</button>
+    <div class="splash-inner">
+      <img src="/media/thynkr-icon-192.png" alt="Thynkr logo" width="120" height="120" class="splash-logo" />
+      <div class="splash-title">Thynkr</div>
+      <div class="splash-msg">Tap to begin</div>
     </div>
-  </section>
+  </div>
 
-  <!-- Main Game Wrapper -->
-  <main id="game-container" class="hidden">
-    <header class="topbar">
-      <div class="brand">
-        <img src="/media/thynkr-icon-192.png" alt="Thynkr" class="brand-icon">
-        <span class="brand-text">Thynkr</span>
+  <!-- Header -->
+  <header class="topbar">
+    <div class="hero-bg"><img src="/header-graphic.svg" alt="" /></div>
+    <div class="hero-inner">
+      <a class="brand" href="/">
+        <img src="/media/thynkr-icon-192.png" alt="Thynkr logo" class="logo" />
+        <div class="brand-text">
+          <div class="kicker">The Daily</div>
+          <h1>Thynkr</h1>
+          <div class="tagline">Sharpen your mind — daily.</div>
+        </div>
+      </a>
+      <div class="actions">
+        <button id="mmMenuBtn" aria-label="Menu">☰</button>
+        <button id="soundBtn" aria-label="Sound">🔊</button>
       </div>
-      <nav class="nav-actions">
-        <button id="menuBtn" class="btn-icon">☰</button>
-      </nav>
-    </header>
+    </div>
+    <div class="status">
+      <span id="setLabel" class="muted">Ready</span>
+      <span id="pillScore" class="muted">Score 0</span>
+      <span id="progressLabel" class="muted">Q 0/12</span>
+    </div>
+  </header>
 
-    <section id="quiz-area">
-      <div class="streak-bar">
-        <div id="streak-progress" class="progress-fill"></div>
+  <!-- Side Menu -->
+  <aside id="mmSideMenu" class="side-menu" aria-hidden="true">
+    <nav class="menu-nav">
+      <a href="/" aria-current="page">🏠 Home</a>
+      <a href="/about.html">ℹ️ About</a>
+      <a href="/pro.html">⭐ Pro</a>
+      <a href="/privacy.html">🔒 Privacy</a>
+      <a href="/terms.html">📄 Terms</a>
+      <a href="/contact.html">✉️ Contact</a>
+    </nav>
+  </aside>
+
+  <!-- Main Game -->
+  <main class="container">
+    <section class="card quiz-card">
+      <div class="timer-wrapper"><div id="timerBar" class="timer-bar"></div></div>
+      <div class="elapsed-time">Time: <span id="elapsedTime">0:00</span></div>
+      <div class="streak-vis" id="streakVis"></div>
+      <div id="questionBox" class="question-box">Tap to begin your Thynkr challenge</div>
+      <div id="choices" class="choices"></div>
+      <div class="controls">
+        <button id="startBtn" class="btn primary">Start</button>
+        <button id="shuffleBtn" class="btn ghost">Shuffle Set</button>
+        <button id="shareBtn" class="btn ghost">Share</button>
       </div>
-      <div class="quiz-card">
-        <h2 id="question">Loading question...</h2>
-        <div id="options" class="options-grid"></div>
+      <div id="gameOverBox" class="footer" style="display:none">
+        <p id="gameOverText"></p>
+        <button id="playAgainBtn" class="btn primary" style="display:none">Play Again</button>
       </div>
-      <div id="feedback" class="feedback hidden"></div>
     </section>
-
-    <section id="avatars" class="avatar-bar">
-      <img src="/media/avatar-core.png" alt="Core Fox" class="avatar active" id="avatar-core">
-      <img src="/media/avatar-curious.png" alt="Curious Fox" class="avatar" id="avatar-curious">
-      <img src="/media/avatar-focused.png" alt="Focused Fox" class="avatar" id="avatar-focused">
-      <img src="/media/avatar-genius.png" alt="Genius Fox" class="avatar" id="avatar-genius">
-      <img src="/media/avatar-playful.png" alt="Playful Fox" class="avatar" id="avatar-playful">
-      <img src="/media/avatar-night.png" alt="Night Fox" class="avatar" id="avatar-night">
-      <img src="/media/avatar-relaxed.png" alt="Relaxed Fox" class="avatar" id="avatar-relaxed">
-      <img src="/media/avatar-gameover.png" alt="Game Over Fox" class="avatar" id="avatar-gameover">
-    </section>
-
-    <!-- Level transition splashes -->
-    <video id="successSplash" class="level-splash hidden" preload="auto" poster="/media/poster-success.jpg">
-      <source src="/media/thynkr-success.mp4" type="video/mp4">
-      <source src="/media/thynkr-success.webm" type="video/webm">
-    </video>
-
-    <video id="failSplash" class="level-splash hidden" preload="auto" poster="/media/poster-fail.jpg">
-      <source src="/media/thynkr-fail.mp4" type="video/mp4">
-      <source src="/media/thynkr-fail.webm" type="video/webm">
-    </video>
-
-    <footer class="footer">
-      <p>© 2025 Thynkr · <a href="/privacy.html">Privacy</a> · <a href="/terms.html">Terms</a></p>
-    </footer>
   </main>
 
-  <!-- Sound effects -->
-  <audio id="sound-correct" src="/media/thynkr-sound-correct.mp3" preload="auto"></audio>
-  <audio id="sound-wrong" src="/media/thynkr-sound-wrong.mp3" preload="auto"></audio>
-  <audio id="sound-levelup" src="/media/thynkr-levelup.mp3" preload="auto"></audio>
+  <!-- Success Splash -->
+  <div id="successSplash" class="success-splash success-anim" aria-hidden="true">
+    <video autoplay muted playsinline loop poster="/media/poster-success.jpg" class="splash-bg">
+      <source src="/media/thynkr-success.webm" type="video/webm" />
+      <source src="/media/thynkr-success.mp4" type="video/mp4" />
+    </video>
+    <div class="splash-inner">
+      <img src="/media/thynkr-icon-192.png" alt="Thynkr logo" width="100" height="100" />
+      <div class="splash-title">Level Complete!</div>
+      <div class="splash-msg">Onward to the next challenge.</div>
+    </div>
+  </div>
+
+  <!-- Game Over Splash -->
+  <div id="gameOverSplash" class="gameover-splash" aria-hidden="true">
+    <div class="splash-inner">
+      <img src="/media/fox-gameover.png" alt="Game Over Fox" width="110" height="110" />
+      <div class="splash-title">Game Over</div>
+      <div class="splash-msg">Keep training that brain, Thynkr!</div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <p>© 2025 Thynkr · <a href="/privacy.html">Privacy</a> · <a href="/terms.html">Terms</a></p>
+  </footer>
 </body>
 </html>
