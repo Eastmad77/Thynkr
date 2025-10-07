@@ -1,33 +1,43 @@
-<!-- Whylee Icon (fixed W) — Azure rounded square + playful white W -->
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Whylee icon" shape-rendering="geometricPrecision">
+<!-- Whylee Icon — Premium Refined Version -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Whylee premium icon">
   <defs>
-    <!-- Azure background gradient -->
+    <!-- Dual gradient background for premium depth -->
     <linearGradient id="bg" x1="50%" y1="0%" x2="50%" y2="100%">
-      <stop offset="0%"  stop-color="#3aa0ff"/>
-      <stop offset="55%" stop-color="#1f6df0"/>
-      <stop offset="100%" stop-color="#0d3fb0"/>
+      <stop offset="0%" stop-color="#47b0ff"/>
+      <stop offset="50%" stop-color="#1e74f1"/>
+      <stop offset="100%" stop-color="#0a2a66"/>
     </linearGradient>
-    <!-- Subtle bloom behind the W -->
-    <radialGradient id="bloom" cx="50%" cy="40%" r="55%">
-      <stop offset="0%" stop-color="rgba(255,255,255,0.25)"/>
-      <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
+
+    <!-- Soft highlight at top -->
+    <radialGradient id="highlight" cx="50%" cy="25%" r="60%">
+      <stop offset="0%" stop-color="rgba(255,255,255,0.25)" />
+      <stop offset="100%" stop-color="rgba(255,255,255,0)" />
+    </radialGradient>
+
+    <!-- Shadow glow behind the W -->
+    <radialGradient id="glow" cx="50%" cy="50%" r="65%">
+      <stop offset="0%" stop-color="rgba(0,0,0,0.15)" />
+      <stop offset="100%" stop-color="rgba(0,0,0,0)" />
     </radialGradient>
   </defs>
 
   <!-- Rounded square background -->
-  <rect x="0" y="0" width="512" height="512" rx="104" fill="url(#bg)"/>
+  <rect width="512" height="512" rx="104" fill="url(#bg)" />
 
-  <!-- Gentle highlight -->
-  <circle cx="256" cy="210" r="180" fill="url(#bloom)"/>
+  <!-- Soft top highlight -->
+  <ellipse cx="256" cy="140" rx="200" ry="120" fill="url(#highlight)" />
 
-  <!-- Playful, symmetrical W (stroke so it scales & reads at favicon sizes) -->
-  <!-- Top-left -> bottom valley 1 -> top peak -> bottom valley 2 -> top-right -->
+  <!-- Subtle inner glow for realism -->
+  <circle cx="256" cy="270" r="200" fill="url(#glow)" />
+
+  <!-- Premium symmetrical W with confident weight -->
   <path
-    d="M120 140 L184 360 L256 188 L328 360 L392 140"
+    d="M120 150 L185 360 L256 200 L327 360 L392 150"
     fill="none"
     stroke="#ffffff"
-    stroke-width="88"
+    stroke-width="82"
     stroke-linecap="round"
     stroke-linejoin="round"
+    filter="drop-shadow(0px 6px 10px rgba(0,0,0,0.25))"
   />
 </svg>
