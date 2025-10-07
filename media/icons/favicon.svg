@@ -1,18 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+<svg xmlns="http://www.w3.org/2000/svg"
+     viewBox="0 0 512 512"
+     width="512" height="512"
+     preserveAspectRatio="xMidYMid meet">
   <defs>
+    <!-- smooth vertical gradient -->
     <linearGradient id="grad" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#2da8ff" stop-opacity="1" />
-      <stop offset="100%" stop-color="#006eff" stop-opacity="1" />
+      <stop offset="0%"  stop-color="#2DA8FF" stop-opacity="1"/>
+      <stop offset="60%" stop-color="#149AFF" stop-opacity="1"/>
+      <stop offset="100%" stop-color="#006EFF" stop-opacity="1"/>
     </linearGradient>
   </defs>
 
-  <!-- Rounded square background -->
-  <rect width="512" height="512" rx="112" fill="url(#grad)" />
+  <!-- rounded square background -->
+  <rect x="0" y="0" width="512" height="512" rx="88" ry="88" fill="url(#grad)"/>
 
-  <!-- White "W" -->
-  <path fill="#ffffff" d="M160 340l30-168h50l26 100 26-100h50l30 168h-44l-20-108-28 108h-28l-28-108-20 108z"/>
+  <!-- bold "W" built as a stroked path for clean, consistent geometry at small sizes -->
+  <path d="M100 160 L170 380 L250 140 L330 380 L400 160"
+        fill="none"
+        stroke="#ffffff"
+        stroke-width="72"
+        stroke-linecap="round"
+        stroke-linejoin="round"/>
 
-  <!-- Flame-like curve -->
-  <path fill="#ffffff" d="M360 172c40 30 20 64-4 88 10-24 12-52-12-88z"/>
+  <!-- flame shape on the top-right -->
+  <path d="M395 110
+           C430 98, 478 140, 448 188
+           C420 234, 440 210, 388 260
+           C416 228, 410 186, 395 110 Z"
+        fill="#ffffff"/>
 </svg>
