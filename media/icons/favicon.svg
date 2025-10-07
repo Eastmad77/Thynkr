@@ -1,23 +1,25 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+# Create an SVG replicating the original favicon (gradient blue background, rounded corners, and flame-style W)
+
+svg_content = '''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#35a4ff"/>
-      <stop offset="1" stop-color="#1260ff"/>
-    </linearGradient>
-    <linearGradient id="edge" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#ffffff" stop-opacity=".16"/>
-      <stop offset=".5" stop-color="#ffffff" stop-opacity="0"/>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#2da8ff;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#006eff;stop-opacity:1" />
     </linearGradient>
   </defs>
+  <!-- Rounded square background with gradient -->
+  <rect width="512" height="512" rx="112" fill="url(#grad)" />
 
-  <!-- rounded square -->
-  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
-  <rect width="512" height="512" rx="112" fill="url(#edge)"/>
+  <!-- White "W" shape -->
+  <path fill="#ffffff" d="M160 340l30-168h50l26 100 26-100h50l30 168h-44l-20-108-28 108h-28l-28-108-20 108z"/>
 
-  <!-- W with fox-tail terminal -->
-  <g fill="#fff">
-    <path d="M120 160c21 0 35 10 40 31l52 230c3 13 11 21 27 21h2c16 0 24-8 27-21l44-198 44 198c3 13 11 21 27 21h2c16 0 24-8 27-21l40-183c6-27 26-40 44-40-10 18-15 38-34 62-22 27-34 57-50 110-6 19-24 28-44 28h-2c-17 0-31-9-35-26l-31-121-27 121c-4 17-18 26-35 26h-2c-20 0-38-9-44-28l-54-208c-2-7-4-12-8-17z"/>
-    <!-- subtle inner lift -->
-    <path d="M128 150h256c-18 8-36 25-45 48-2 6-9 8-15 6-31-13-93-13-124 0-6 2-13 0-15-6-9-23-27-40-45-48z" fill="#fff" opacity=".10"/>
-  </g>
-</svg>
+  <!-- Flame element on top right -->
+  <path fill="#ffffff" d="M360 172c40 30 20 64-4 88 10-24 12-52-12-88z"/>
+</svg>'''
+
+# Save to file
+svg_path = "/mnt/data/favicon_w_flame.svg"
+with open(svg_path, "w") as f:
+    f.write(svg_content)
+
+print("SVG saved to:", svg_path)
