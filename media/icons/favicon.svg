@@ -1,25 +1,18 @@
-# Create an SVG replicating the original favicon (gradient blue background, rounded corners, and flame-style W)
-
-svg_content = '''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
   <defs>
-    <linearGradient id="grad" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" style="stop-color:#2da8ff;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#006eff;stop-opacity:1" />
+    <linearGradient id="grad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#2da8ff" stop-opacity="1" />
+      <stop offset="100%" stop-color="#006eff" stop-opacity="1" />
     </linearGradient>
   </defs>
-  <!-- Rounded square background with gradient -->
+
+  <!-- Rounded square background -->
   <rect width="512" height="512" rx="112" fill="url(#grad)" />
 
-  <!-- White "W" shape -->
+  <!-- White "W" -->
   <path fill="#ffffff" d="M160 340l30-168h50l26 100 26-100h50l30 168h-44l-20-108-28 108h-28l-28-108-20 108z"/>
 
-  <!-- Flame element on top right -->
+  <!-- Flame-like curve -->
   <path fill="#ffffff" d="M360 172c40 30 20 64-4 88 10-24 12-52-12-88z"/>
-</svg>'''
-
-# Save to file
-svg_path = "/mnt/data/favicon_w_flame.svg"
-with open(svg_path, "w") as f:
-    f.write(svg_content)
-
-print("SVG saved to:", svg_path)
+</svg>
