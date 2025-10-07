@@ -1,32 +1,33 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg"
-     viewBox="0 0 512 512"
-     width="512" height="512"
-     preserveAspectRatio="xMidYMid meet">
+<!-- Whylee Icon (fixed W) — Azure rounded square + playful white W -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Whylee icon" shape-rendering="geometricPrecision">
   <defs>
-    <!-- smooth vertical gradient -->
-    <linearGradient id="grad" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%"  stop-color="#2DA8FF" stop-opacity="1"/>
-      <stop offset="60%" stop-color="#149AFF" stop-opacity="1"/>
-      <stop offset="100%" stop-color="#006EFF" stop-opacity="1"/>
+    <!-- Azure background gradient -->
+    <linearGradient id="bg" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%"  stop-color="#3aa0ff"/>
+      <stop offset="55%" stop-color="#1f6df0"/>
+      <stop offset="100%" stop-color="#0d3fb0"/>
     </linearGradient>
+    <!-- Subtle bloom behind the W -->
+    <radialGradient id="bloom" cx="50%" cy="40%" r="55%">
+      <stop offset="0%" stop-color="rgba(255,255,255,0.25)"/>
+      <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
+    </radialGradient>
   </defs>
 
-  <!-- rounded square background -->
-  <rect x="0" y="0" width="512" height="512" rx="88" ry="88" fill="url(#grad)"/>
+  <!-- Rounded square background -->
+  <rect x="0" y="0" width="512" height="512" rx="104" fill="url(#bg)"/>
 
-  <!-- bold "W" built as a stroked path for clean, consistent geometry at small sizes -->
-  <path d="M100 160 L170 380 L250 140 L330 380 L400 160"
-        fill="none"
-        stroke="#ffffff"
-        stroke-width="72"
-        stroke-linecap="round"
-        stroke-linejoin="round"/>
+  <!-- Gentle highlight -->
+  <circle cx="256" cy="210" r="180" fill="url(#bloom)"/>
 
-  <!-- flame shape on the top-right -->
-  <path d="M395 110
-           C430 98, 478 140, 448 188
-           C420 234, 440 210, 388 260
-           C416 228, 410 186, 395 110 Z"
-        fill="#ffffff"/>
+  <!-- Playful, symmetrical W (stroke so it scales & reads at favicon sizes) -->
+  <!-- Top-left -> bottom valley 1 -> top peak -> bottom valley 2 -> top-right -->
+  <path
+    d="M120 140 L184 360 L256 188 L328 360 L392 140"
+    fill="none"
+    stroke="#ffffff"
+    stroke-width="88"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
 </svg>
