@@ -1,25 +1,25 @@
-# Netlify config for Thynkr — SPA + functions + headers
+# Netlify config — Whylee SPA + functions + headers
 
 [build]
   publish = "."
   command = ""
   functions = "netlify/functions"
 
-# Ensure functions aren't caught by SPA fallback
+# Functions must not be caught by SPA fallback
 [[redirects]]
   from = "/.netlify/functions/*"
   to   = "/.netlify/functions/:splat"
   status = 200
   force = true
 
-# Optional pretty path for Stripe Checkout session creation
+# Optional pretty endpoint
 [[redirects]]
   from = "/pro-checkout"
   to   = "/.netlify/functions/create-checkout-session"
   status = 200
   force = true
 
-# Pass-through real files
+# Pass through real files
 [[redirects]]
   from = "/:file.:ext"
   to   = "/:file.:ext"
@@ -31,12 +31,6 @@
   to   = "/index.html"
   status = 200
 
-# 404 (optional for crawlers)
-[[redirects]]
-  from = "/404.html"
-  to   = "/404.html"
-  status = 404
-
 # Security headers
 [[headers]]
   for = "/*"
@@ -46,7 +40,7 @@
     Referrer-Policy = "strict-origin-when-cross-origin"
     Permissions-Policy = "geolocation=(), microphone=(), camera=()"
 
-# Keep core app assets fresh (cache-busted via ?v=)
+# No-cache on core app files while iterating
 [[headers]]
   for = "/service-worker.js"
   [headers.values]
@@ -58,12 +52,11 @@
     Cache-Control = "no-cache"
 
 [[headers]]
-  for = "/style.css"
+  for = "/shell.js"
   [headers.values]
     Cache-Control = "no-cache"
 
-# Posters/icons: allow caching
 [[headers]]
-  for = "/media/*"
+  for = "/style.css"
   [headers.values]
-    Cache-Control = "public, max-age=604800, immutable"
+    Cache-Control = "no-cache"
