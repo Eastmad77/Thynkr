@@ -5,25 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Whylee — Sharpen your mind daily</title>
 
-  <!-- PWA -->
   <link rel="manifest" href="/site.webmanifest" />
+  <link rel="icon" href="/media/icons/favicon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="/media/icons/apple-touch-icon.png" />
   <meta name="theme-color" content="#0a1224" />
 
-  <!-- Icons -->
-  <link rel="icon" href="/media/icons/favicon.svg" type="image/svg+xml" />
-  <link rel="apple-touch-icon" href="/media/icons/whylee-icon-192.png" />
-
-  <!-- Preloads (nice-to-have) -->
+  <!-- Preload hero assets -->
   <link rel="preload" as="image" href="/media/posters/poster-start.jpg" />
   <link rel="preload" as="image" href="/media/avatars/whylee-core.png" />
 
-  <!-- Styles & App -->
-  <link rel="stylesheet" href="/style.css?v=9400" />
-  <script>window.__GAS_URL__="https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec";</script>
-  <script defer src="/shell.js?v=9400"></script>
-  <script defer src="/app.js?v=9400"></script>
+  <link rel="stylesheet" href="/style.css?v=9600" />
+  <script defer src="/shell.js?v=9600"></script>
+  <script defer src="/app.js?v=9600"></script>
 </head>
-
 <body class="theme-level1">
   <!-- Top bar -->
   <header class="topbar">
@@ -41,19 +35,28 @@
       <button id="btnCloseMenu" class="icon-btn close" aria-label="Close">✕</button>
       <nav class="menu-nav">
         <a href="/" aria-current="page">🏠 Home</a>
-        <a href="/privacy.html">🔒 Privacy</a>
-        <a href="/terms.html">📄 Terms</a>
         <a href="/about.html">ℹ️ About</a>
         <a href="/pro.html">⭐ Go Pro</a>
+        <a href="/privacy.html">🔒 Privacy</a>
+        <a href="/terms.html">📄 Terms</a>
+        <a href="/contact.html">✉️ Contact</a>
+        <a href="/admin.html">🛠️ Admin</a>
       </nav>
     </div>
   </aside>
   <div id="menuScrim" class="scrim" hidden></div>
 
-  <!-- Cinematic hero rail -->
+  <!-- Cinematic rail -->
   <section class="hero-rail">
     <div class="hero-media">
-      <img id="heroPoster" src="/media/posters/poster-start.jpg" alt="Start" />
+      <img id="heroPoster" src="/media/posters/poster-start.jpg" alt="Start splash" />
+      <!-- Pro swaps to video with same IDs via app.js -->
+      <!--
+      <video id="heroVideo" playsinline muted autoplay loop poster="/media/posters/poster-start.jpg">
+        <source src="/media/posters/poster-start.webm" type="video/webm" />
+        <source src="/media/posters/poster-start.mp4" type="video/mp4" />
+      </video>
+      -->
       <div class="hero-vignette"></div>
     </div>
 
@@ -65,7 +68,7 @@
       </div>
 
       <div class="cta-row">
-        <button id="btnStartLevel" class="btn primary big">Play today’s quiz</button>
+        <button id="btnStart" class="btn primary big"><span>Play today’s quiz</span></button>
         <button id="btnHow" class="btn soft big">How it works</button>
       </div>
 
@@ -73,67 +76,92 @@
         <div class="status-pill" id="statusPill">Loading…</div>
       </div>
 
-      <!-- Continuous streak bar w/ redemption pip -->
-      <div class="streak-wrap" aria-label="Session progress">
-        <div class="streak-bar">
-          <div id="streakFill" class="streak-fill"></div>
-          <div id="streakPip" class="streak-pip" title="Redemption at 3-in-a-row"></div>
+      <!-- Continuous streak bar (level-colored), with redemption pip marker -->
+      <div class="streak-wrap" aria-label="Daily streak">
+        <div class="streak-bar-cont">
+          <div class="streak-fill" id="streakFill"></div>
+          <div class="streak-redemption" title="Redemption at 3-in-a-row"></div>
         </div>
         <div class="streak-meta">
-          <span id="progressText">Q 1/12</span>
-          <span id="levelLabel" class="level-pill">Level 1</span>
           <span id="streakLabel">Streak: 0 days</span>
+          <span id="levelLabel" class="level-pill">Level 1</span>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- HUD row -->
-  <section class="hud-row">
-    <div class="hud-pill">
-      <span class="label">Time</span>
-      <span id="timerText" class="value">0:10</span>
-    </div>
-    <div class="hud-pill">
-      <span class="label">Score</span>
-      <span id="scoreText" class="value">Score 0</span>
-    </div>
-    <div class="hud-pill mini-streak" title="Consecutive daily plays">
-      <span class="label">Daily</span>
-      <span class="value"><span id="miniStreakDays">0</span>🔥</span>
-    </div>
-  </section>
-
-  <!-- GAME: Level 1 & 3 (MCQ) -->
-  <main class="container">
-    <section id="cardMCQ" class="card">
-      <div id="qStem" class="q-stem">Press “Play today’s quiz” to begin</div>
-      <div id="qAnswers" class="q-answers"></div>
-      <div class="row-actions">
-        <button id="btnShuffle" class="btn ghost">Shuffle</button>
+  <!-- Main panels -->
+  <main class="panel-grid">
+    <section class="panel card">
+      <div class="avatar-area">
+        <img id="avatarImg" src="/media/avatars/whylee-core.png" alt="Whylee Fox" />
+      </div>
+      <div class="panel-body">
+        <h2>Meet your guide</h2>
+        <p>Whylee Fox pops in with tips, cheers and gentle nudges as you play.</p>
+        <div class="chip-row">
+          <span class="chip">Curiosity</span><span class="chip">Focus</span><span class="chip">Wisdom</span>
+        </div>
       </div>
     </section>
 
-    <!-- GAME: Level 2 (Matching pairs) -->
-    <section id="cardPairs" class="card" hidden>
-      <header class="pairs-hdr">
-        <div id="pairsProgress">Pairs 0/12</div>
-        <div id="pairsScore">Score 0</div>
-      </header>
-      <div id="pairsGrid" class="pairs-grid"></div>
+    <section class="panel card">
+      <h2 class="panel-title">Today’s flow</h2>
+      <ul class="flow-list">
+        <li><strong>Level 1</strong> — warm-up · 12 questions</li>
+        <li><strong>Level 2</strong> — matching pairs (redemption 3-in-a-row)</li>
+        <li><strong>Level 3</strong> — mixed trivia (redemption 3-in-a-row)</li>
+      </ul>
+      <div class="panel-cta">
+        <button class="btn primary" id="btnResume">Resume</button>
+        <button class="btn ghost" id="btnReset">Reset</button>
+      </div>
     </section>
 
-    <!-- Post-level -->
-    <section id="postLevel" class="card" style="display:none">
-      <div id="postMsg" class="post-msg">Level complete!</div>
-      <div class="row-actions">
-        <button id="btnPlayAgain" class="btn soft">Replay level</button>
-        <button id="btnNextLevel" class="btn primary">Next level</button>
+    <section class="panel card pro-teaser">
+      <h2 class="panel-title">Whylee Pro</h2>
+      <p>No ads, cinematic animations, early features, and more.</p>
+      <div class="teaser-media">
+        <img src="/media/posters/poster-level3.jpg" alt="" />
       </div>
+      <a class="btn pro" href="/pro.html">See Pro options</a>
     </section>
   </main>
 
-  <!-- Perfect-level burst overlay -->
+  <!-- Quiz Card -->
+  <section class="quiz-layer" id="quizLayer" hidden>
+    <section class="card quiz-card">
+      <div class="top-controls">
+        <button id="btnQuit" class="btn ghost small">Quit</button>
+        <span class="elapsed">Time: <span id="elapsedTime">0:00</span></span>
+        <span class="progress" id="progressLabel">Q 0/12</span>
+      </div>
+
+      <!-- Level-colored streak fill (per-level) -->
+      <div class="qtimer-wrapper"><div id="qTimerBar" class="qtimer-bar"></div></div>
+
+      <!-- 3..2..1..Go countdown overlay -->
+      <div id="countdownOverlay" class="countdown hidden" aria-hidden="true">
+        <div class="bubble" id="countNum">3</div>
+      </div>
+
+      <div id="questionBox" class="question-box">Press Start to Play</div>
+      <div id="choices" class="choices"></div>
+
+      <div class="controls">
+        <button id="startBtn" class="btn primary">Start</button>
+        <button id="shuffleBtn" class="btn ghost">Shuffle Set</button>
+        <button id="shareBtn" class="btn ghost">Share</button>
+      </div>
+
+      <div id="gameOverBox" class="footer" hidden>
+        <p id="gameOverText"></p>
+        <button id="playAgainBtn" class="btn primary">Play Again</button>
+      </div>
+    </section>
+  </section>
+
+  <!-- Perfect Level Overlay -->
   <div id="perfectBurst" aria-hidden="true">
     <div class="burst-core"></div>
     <div class="sparkles">
@@ -147,9 +175,5 @@
   <footer class="footer">
     <p>© <span id="yy"></span> Whylee • <a href="/terms.html">Terms</a> • <a href="/privacy.html">Privacy</a></p>
   </footer>
-
-  <!-- SFX -->
-  <audio id="sfxCorrect" preload="auto" src="/media/audio/correct.mp3"></audio>
-  <audio id="sfxWrong" preload="auto" src="/media/audio/wrong.mp3"></audio>
 </body>
 </html>
