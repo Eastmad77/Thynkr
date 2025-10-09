@@ -1,1 +1,68 @@
+<!-- Whylee Fox Head — scalable, premium SVG (blue/cyan theme) -->  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">  
+  <title id="title">Whylee Fox Head</title>  
+  <desc id="desc">Stylized fox head logo with blue/cyan gradients and white facial mask.</desc>    <!-- ========== Palette (edit stops to re-theme) ========== -->    <defs>  
+    <!-- Primary blue body -->  
+    <linearGradient id="gBody" x1="0" y1="0" x2="1" y2="1">  
+      <stop offset="0%" stop-color="#1e74f1"/>  
+      <stop offset="100%" stop-color="#0a2a66"/>  
+    </linearGradient>  <!-- Cyan edge highlight -->  
+<linearGradient id="gEdge" x1="0" y1="0" x2="1" y2="1">  
+  <stop offset="0%" stop-color="#47b0ff"/>  
+  <stop offset="100%" stop-color="#1e74f1"/>  
+</linearGradient>  
 
+<!-- Inner glow (subtle) -->  
+<radialGradient id="gGlow" cx="50%" cy="45%" r="60%">  
+  <stop offset="0%" stop-color="rgba(255,255,255,0.25)"/>  
+  <stop offset="100%" stop-color="rgba(255,255,255,0)"/>  
+</radialGradient>  
+
+<!-- Shadow for depth -->  
+<filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">  
+  <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="rgba(0,0,0,0.25)"/>  
+</filter>
+
+  </defs>    <!-- Optional backdrop circle (comment out if overlaying on posters) -->    <!-- <circle cx="256" cy="256" r="240" fill="#0f1a38"/> -->    <!-- ========== Fox Head Group ========== -->    <g filter="url(#softShadow)">  
+    <!-- Ears (outer) -->  
+    <path d="M120 165c40-30 80-42 120-48c-14 28-24 59-26 88c-34-5-64-17-94-40z"  
+          fill="url(#gBody)"/>  
+    <path d="M392 165c-40-30-80-42-120-48c14 28 24 59 26 88c34-5 64-17 94-40z"  
+          fill="url(#gBody)"/>  <!-- Ear inner highlights -->  
+<path d="M158 172c26-21 52-31 78-36c-8 16-14 35-16 54c-22-3-42-9-62-18z"  
+      fill="url(#gEdge)" opacity=".85"/>  
+<path d="M354 172c-26-21-52-31-78-36c8 16 14 35 16 54c22-3 42-9 62-18z"  
+      fill="url(#gEdge)" opacity=".85"/>  
+
+<!-- Crown / forehead -->  
+<path d="M256 112c88 0 144 64 144 132c0 86-78 144-144 144s-144-58-144-144c0-68 56-132 144-132z"  
+      fill="url(#gBody)"/>  
+
+<!-- Inner glow (subtle sheen) -->  
+<ellipse cx="256" cy="200" rx="140" ry="90" fill="url(#gGlow)"/>  
+
+<!-- White face mask -->  
+<path d="M256 206c-64 0-112 48-112 92c0 20 10 40 26 53c34 29 62 31 86 31s52-2 86-31c16-13 26-33 26-53c0-44-48-92-112-92z"  
+      fill="#ffffff"/>  
+
+<!-- Cheek cyan trims -->  
+<path d="M140 300c8 20 22 34 34 43c-18-6-34-16-46-34c-6-9-4-20 4-26c6-5 12-7 26-9c-10 8-16 16-18 26z"  
+      fill="url(#gEdge)"/>  
+<path d="M372 300c-8 20-22 34-34 43c18-6 34-16 46-34c6-9 4-20-4-26c-6-5-12-7-26-9c10 8 16 16 18 26z"  
+      fill="url(#gEdge)"/>  
+
+<!-- Nose / snout -->  
+<path d="M256 232c-22 0-40 18-40 40c0 14 10 28 24 34c10 4 22 4 32 0c14-6 24-20 24-34c0-22-18-40-40-40z"  
+      fill="#e9f2ff"/>  
+<circle cx="256" cy="274" r="10" fill="#0a2a66"/>  
+
+<!-- Eyes (minimal/techy) -->  
+<rect x="196" y="244" width="36" height="10" rx="5" fill="#0a2a66"/>  
+<rect x="280" y="244" width="36" height="10" rx="5" fill="#0a2a66"/>  
+
+<!-- Jaw/neck line (definition) -->  
+<path d="M168 344c42 32 134 32 176 0" fill="none" stroke="#cfe6ff" stroke-width="6" stroke-linecap="round" opacity=".7"/>
+
+  </g>    <!-- Outline stroke (subtle crispness) -->  <path d="M256 112c88 0 144 64 144 132c0 86-78 144-144 144s-144-58-144-144c0-68 56-132 144-132z"  
+fill="none" stroke="#6fc2ff" stroke-opacity=".45" stroke-width="8"/>
+
+</svg>
