@@ -1,25 +1,40 @@
-/* Whylee Achievements v6004 */
-(() => {
-  const RULES = [
-    { id:'streak-3',   label:'3-Day Streak',        test: s => s.streak >= 3,   icon:'🔥' },
-    { id:'streak-7',   label:'7-Day Streak',        test: s => s.streak >= 7,   icon:'🏅' },
-    { id:'perfect-l1', label:'Perfect Level 1',     test: s => s.l1 === 12,     icon:'🦊' },
-    { id:'perfect-l2', label:'Perfect Level 2',     test: s => s.l2 === 12,     icon:'🧠' },
-    { id:'perfect-l3', label:'Perfect Level 3',     test: s => s.l3 === 12,     icon:'⚡' },
-    { id:'session-36', label:'All 36 Answered',     test: s => s.total === 36,  icon:'🎯' },
-    { id:'accuracy-90',label:'90% Accuracy+',       test: s => s.acc >= 0.9,    icon:'💎' }
-  ];
+// achievements.js — XP + badges
+window.WhyleeAchievements = (function(){
+  const XPKEY = 'wl_xp';
+  const BADGEKEY = 'wl_badges';
 
-  function evaluate(currentBadges, snapshot){
-    const have = new Set(currentBadges);
-    RULES.forEach(r => { if (r.test(snapshot)) have.add(r.id); });
-    return Array.from(have);
+  const BADGES = {
+    streak3: { id:'streak3', icon:'🔥', label:'3-Day Streak' },
+    streak7: { id:'streak7', icon:'🌙', label:'7-Day Streak' },
+    perfectL1: { id:'perfectL1', icon:'✅', label:'Perfect Level 1' },
+    perfectL2: { id:'perfectL2', icon:'💠', label:'Perfect Level 2' },
+    perfectL3: { id:'perfectL3', icon:'🏆', label:'Perfect Level 3' },
+    firstClear: { id:'firstClear', icon:'🎉', label:'First Clear' }
+  };
+
+  function xp(){ return Number(localStorage.getItem(XPKEY)||0); }
+  function addXP(n){ const v = xp()+n; localStorage.setItem(XPKEY, String(v)); return v; }
+
+  function getBadges(){ try{ return JSON.parse(localStorage.getItem(BADGEKEY)||'[]'); } catch { return []; } }
+  function has(id){ return getBadges().includes(id); }
+  function award(id){
+    if (has(id)) return false;
+    const next = [...getBadges(), id];
+    localStorage.setItem(BADGEKEY, JSON.stringify(next));
+    return true;
+  }
+  function pretty(ids){ return ids.map(id => BADGES[id]).filter(Boolean); }
+
+  // helpers used by game.js
+  function maybeAwardStreak(streakDays){
+    if (streakDays>=3) award('streak3');
+    if (streakDays>=7) award('streak7');
+  }
+  function maybeAwardPerfect(level){
+    if (level===1) award('perfectL1');
+    if (level===2) award('perfectL2');
+    if (level===3) award('perfectL3');
   }
 
-  function pretty(badges){
-    const map = Object.fromEntries(RULES.map(r=>[r.id, r]));
-    return badges.map(id => ({ id, ...map[id] })).filter(Boolean);
-  }
-
-  window.WhyleeAchievements = { evaluate, pretty };
+  return { xp, addXP, getBadges, has, award, pretty, maybeAwardStreak, maybeAwardPerfect };
 })();
