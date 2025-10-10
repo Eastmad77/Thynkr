@@ -1,11 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://YOUR_DOMAIN_OR_SUBDOMAIN/</loc></url>
-  <url><loc>https://YOUR_DOMAIN_OR_SUBDOMAIN/about.html</loc></url>
-  <url><loc>https://YOUR_DOMAIN_OR_SUBDOMAIN/pro.html</loc></url>
-  <url><loc>https://YOUR_DOMAIN_OR_SUBDOMAIN/privacy.html</loc></url>
-  <url><loc>https://YOUR_DOMAIN_OR_SUBDOMAIN/terms.html</loc></url>
-  <url><loc>https://YOUR_DOMAIN_OR_SUBDOMAIN/contact.html</loc></url>
-  <url><loc>https://YOUR_DOMAIN_OR_SUBDOMAIN/signin.html</loc></url>
-  <url><loc>https://YOUR_DOMAIN_OR_SUBDOMAIN/404.html</loc></url>
+  <url><loc>https://your-domain.example/</loc></url>
+  <url><loc>https://your-domain.example/about.html</loc></url>
+  <url><loc>https://your-domain.example/privacy.html</loc></url>
+  <url><loc>https://your-domain.example/terms.html</loc></url>
+  <url><loc>https://your-domain.example/pro.html</loc></url>
 </urlset>
