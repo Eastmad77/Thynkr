@@ -2,14 +2,20 @@
   publish = "."
   command = ""
 
-# Service worker must not be cached aggressively
+# Service worker should never be cached by proxies
 [[headers]]
   for = "/service-worker.js"
   [headers.values]
-    Cache-Control = "no-store"
+    Cache-Control = "no-store, no-cache, must-revalidate, proxy-revalidate"
     Service-Worker-Allowed = "/"
 
-# Ensure videos are served with correct MIME + CORS
+# Proper manifest MIME
+[[headers]]
+  for = "/site.webmanifest"
+  [headers.values]
+    Content-Type = "application/manifest+json; charset=utf-8"
+
+# Helpful media headers (optional)
 [[headers]]
   for = "/media/posters/*.mp4"
   [headers.values]
@@ -22,7 +28,20 @@
     Content-Type = "video/webm"
     Access-Control-Allow-Origin = "*"
 
-# Default SPA routing
+# Force HTTPS + www on the current domain (change to whylee.com later)
+[[redirects]]
+  from = "http://dailybrainbolt.com/*"
+  to = "https://www.dailybrainbolt.com/:splat"
+  status = 301!
+  force = true
+
+[[redirects]]
+  from = "https://dailybrainbolt.com/*"
+  to = "https://www.dailybrainbolt.com/:splat"
+  status = 301!
+  force = true
+
+# Primary SPA redirect
 [[redirects]]
   from = "/*"
   to = "/index.html"
