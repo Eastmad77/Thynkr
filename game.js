@@ -1,146 +1,237 @@
-/* Whylee Core Game v6004 — Levels, XP, Badges, Reflection */
-(() => {
-  const $ = s => document.querySelector(s);
+/* Whylee — core game glue (v6004)
+   Levels: 1 warm-up, 2 pairs, 3 trivia
+   - 12 Q per level (36 total)
+   - 3-in-a-row redemption removes one wrong
+   - Daily streak tracked (>=1 level clears)
+   - Posters & reflections at milestones
+*/
 
-  const state = {
-    level: 1, idxInLevel: 0, set: [],
-    totalAsked: 0, totalCorrect: 0, correctInRow: 0, wrong: 0,
-    levelCounts: {1:0,2:0,3:0}, levelCorrects: {1:0,2:0,3:0},
-    running: false, startedAt: 0, timer: null,
-    xp: Number(localStorage.getItem('wl_xp')||0),
-    badges: JSON.parse(localStorage.getItem('wl_badges')||'[]')
+(function(){
+  const $ = s => document.querySelector(s);
+  const $$ = s => Array.from(document.querySelectorAll(s));
+
+  // UI elements created by shell route '#/play'
+  function cachePlayEls(){
+    return {
+      root: $('#quizRoot'),
+      levelLabel: $('#levelLabel'),
+      streakLabel: $('#streakLabel'),
+      progressLabel: $('#progressLabel'),
+      questionBox: $('#questionBox'),
+      choices: $('#choices'),
+      qTimerBar: $('#qTimerBar'),
+      elapsed: $('#elapsedTime'),
+      badgeBox: $('#badgeBox'),
+    };
+  }
+
+  // Sounds (optional; ignore if missing)
+  const sfx = {
+    correct: new Audio('/media/audio/correct.mp3'),
+    wrong: new Audio('/media/audio/wrong.mp3'),
+    levelUp: new Audio('/media/audio/level-up.mp3'),
+    start: new Audio('/media/audio/start-chime.mp3'),
+    gameOver: new Audio('/media/audio/game-over-low.mp3')
+  };
+  Object.values(sfx).forEach(a=> a && (a.volume = 0.6));
+
+  let state = {
+    level: 1,
+    qIndex: 0,
+    correctInRow: 0,
+    wrongCount: 0,
+    totalCorrect: 0,
+    totalAsked: 0,
+    startedAt: 0,
+    timerHandle: null,
+    running: false,
+    levelCounts: {1:0,2:0,3:0},
+    levelCorrects: {1:0,2:0,3:0},
+    currentSet: []
   };
 
-  const el = { screen:null,q:null,choices:null,progress:null,time:null,bar:null, levelTitle:null,streakText:null,badgeBox:null };
-
-  const dayKey = () => new Date().toISOString().slice(0,10);
-  function getStreak(){ return Number(localStorage.getItem('wl_streak')||0); }
-  function markTodayDone(){
-    const today = dayKey(); const last = localStorage.getItem('wl_last_date'); let s = getStreak();
-    if (last !== today){ if (last){ const y = new Date(last); y.setDate(y.getDate()+1); s = (y.toISOString().slice(0,10)===today) ? s+1 : 1; } else s=1;
-      localStorage.setItem('wl_streak', String(s)); localStorage.setItem('wl_last_date', today); }
+  function fmtTime(ms){
+    const s = Math.floor(ms/1000), m = Math.floor(s/60), r = s%60;
+    return `${m}:${r<10?'0':''}${r}`;
   }
 
-  function fmtTime(ms){ const s=Math.floor(ms/1000), m=Math.floor(s/60), r=s%60; return `${m}:${r<10?'0':''}${r}`; }
-  function vibrate(ms){ if (navigator.vibrate) try{navigator.vibrate(ms);}catch{} }
-  function setThemeForLevel(lv){ document.body.classList.remove('theme-level1','theme-level2','theme-level3'); document.body.classList.add(`theme-level${lv}`); }
-
-  function addXP(n){ state.xp+=n; localStorage.setItem('wl_xp', String(state.xp)); }
-  function applyBadges(){
-    const snapshot = {
-      streak: getStreak(),
-      l1: state.levelCorrects[1], l2: state.levelCorrects[2], l3: state.levelCorrects[3],
-      total: state.totalAsked,
-      acc: state.totalAsked ? (state.totalCorrect/state.totalAsked) : 0
-    };
-    state.badges = window.WhyleeAchievements.evaluate(state.badges, snapshot);
-    localStorage.setItem('wl_badges', JSON.stringify(state.badges));
-    paintBadges();
+  // Daily streak tracking
+  function getDailyKey(){ return new Date().toISOString().slice(0,10); }
+  function getStreak(){ return Number(localStorage.getItem('wl_streak')||'0'); }
+  function setStreak(v){ localStorage.setItem('wl_streak', String(v)); }
+  function markTodayComplete(){
+    const today = getDailyKey();
+    const lastDate = localStorage.getItem('wl_last_date');
+    let streak = getStreak();
+    if (lastDate === today) return;
+    const prev = new Date((lastDate||today)); prev.setDate(prev.getDate()+1);
+    const prevStr = prev.toISOString().slice(0,10);
+    if (!lastDate || prevStr === today) streak += 1; else streak = 1;
+    setStreak(streak);
+    localStorage.setItem('wl_last_date', today);
+    // Achievements hook
+    if (window.WhyleeAchievements) window.WhyleeAchievements.maybeAwardStreak(streak);
   }
 
-  function paintHeader(){
-    el.levelTitle.textContent = `Level ${state.level}`;
-    el.streakText.textContent = `Streak: ${getStreak()} • XP: ${state.xp}`;
+  // Posters (image or video for Pro)
+  function showPoster(name, {autohide=0}={}){
+    const urlImg = `/media/posters/${name}.jpg`;
+    const urlVid = `/media/posters/${name}.mp4`;
+    const overlay = document.createElement('div');
+    overlay.className = 'overlay-poster';
+    // Pro tries video first
+    if (window.WhyleePro?.isPro()){
+      const v = document.createElement('video');
+      Object.assign(v, { playsInline:true, muted:true, autoplay:true, src:urlVid });
+      v.addEventListener('error', ()=> swapToImage());
+      v.addEventListener('ended', ()=> overlay.remove(), { once:true });
+      overlay.appendChild(v);
+    } else {
+      swapToImage();
+    }
+    function swapToImage(){
+      overlay.innerHTML = `<img src="${urlImg}" alt="" />`;
+    }
+    document.body.appendChild(overlay);
+    if (autohide>0) setTimeout(()=> overlay.remove(), autohide);
   }
-  function paintBadges(){
-    if (!el.badgeBox) return;
-    const list = window.WhyleeAchievements.pretty(state.badges);
-    el.badgeBox.innerHTML = list.length
-      ? list.map(b=>`<span class="badge"><span class="i">${b.icon}</span>${b.label}</span>`).join('')
-      : '<span class="muted">No badges yet</span>';
-  }
-  function paintProgress(){ el.progress.textContent = `Q ${state.idxInLevel+1}/12`; }
 
-  function paintQuestion(q){
-    el.q.textContent = q.Question;
-    el.choices.innerHTML = '';
-    q.Answers.forEach((t,i)=>{
+  function setThemeForLevel(level){
+    document.body.classList.remove('theme-level1','theme-level2','theme-level3');
+    document.body.classList.add(`theme-level${level}`);
+    const hero = $('#heroPoster');
+    if (hero){
+      hero.src = {
+        1:'/media/posters/poster-start.jpg',
+        2:'/media/posters/poster-level2.jpg',
+        3:'/media/posters/poster-level3.jpg'
+      }[level] || '/media/posters/poster-start.jpg';
+    }
+  }
+
+  function updateHeader(){
+    const els = cachePlayEls();
+    if (!els.root) return;
+    const pct = Math.min(100, Math.floor((state.totalAsked/36)*100));
+    els.qTimerBar && (els.qTimerBar.style.width = Math.floor((state.qIndex/12)*100)+'%');
+    const streak = getStreak();
+    els.levelLabel.textContent = `Level ${state.level}`;
+    els.streakLabel.textContent = `Streak: ${streak} • XP: ${window.WhyleeAchievements?.xp()||0}`;
+  }
+
+  function elapsedTick(){
+    const els = cachePlayEls();
+    if (!state.running || !els.elapsed) return;
+    els.elapsed.textContent = fmtTime(Date.now()-state.startedAt);
+    state.timerHandle = setTimeout(elapsedTick, 250);
+  }
+
+  function beginLevel(level){
+    state.level = level;
+    state.qIndex = 0;
+    state.correctInRow = 0;
+    state.levelCounts[level] = 0;
+    state.levelCorrects[level] = 0;
+    setThemeForLevel(level);
+    updateHeader();
+    // posters
+    if (level===1) showPoster('poster-countdown', {autohide:1600});
+    if (level>1) try{ sfx.levelUp.play().catch(()=>{});}catch{}
+  }
+
+  function paintQuestion(){
+    const els = cachePlayEls();
+    const lv = state.level;
+    const subset = state.currentSet.filter(q=> q.Level===lv);
+    const q = subset[state.qIndex] || null;
+    if (!q){
+      // Level done
+      const perfect = (state.levelCounts[lv]===12 && state.levelCorrects[lv]===12);
+      if (perfect && window.WhyleeAchievements) window.WhyleeAchievements.maybeAwardPerfect(lv);
+      if (perfect) showPoster('poster-success', {autohide:1500});
+
+      if (lv<3){
+        beginLevel(lv+1);
+        paintQuestion();
+        return;
+      }
+      // All done
+      endSession();
+      return;
+    }
+
+    els.progressLabel.textContent = `Q ${state.qIndex+1}/12`;
+    els.questionBox.textContent = q.Question;
+    els.choices.innerHTML = '';
+
+    q.Answers.forEach((t,idx)=>{
       const b = document.createElement('button');
       b.className = 'choice';
       b.textContent = t;
-      b.addEventListener('click', ()=> onAnswer(i === q.CorrectIndex));
-      el.choices.appendChild(b);
+      b.addEventListener('click', ()=> onAnswer(idx===0, q));
+      els.choices.appendChild(b);
     });
-    qTimerStart();
   }
 
-  function qTimerStart(){
-    const start = performance.now(); const dur = 10000;
-    el.bar.style.width='0%';
-    function step(ts){ if (!state.running) return;
-      const p = Math.min(1,(ts-start)/dur); el.bar.style.width=(p*100)+'%'; if (p<1) requestAnimationFrame(step); }
-    requestAnimationFrame(step);
-  }
+  function onAnswer(isCorrect, q){
+    const els = cachePlayEls();
+    state.totalAsked++;
+    state.levelCounts[state.level]++;
 
-  function nextQuestion(){
-    const lvlQs = state.set.filter(q=>q.Level===state.level);
-    const q = lvlQs[state.idxInLevel];
-    if (!q){ // level end
-      const perfect = state.levelCorrects[state.level] === 12;
-      if (perfect) addXP(25);
-      applyBadges();
-      if (state.level < 3){
-        state.level += 1; state.idxInLevel = 0; setThemeForLevel(state.level); paintHeader();
-        showPoster(`/media/posters/poster-level${state.level}.jpg`, 1500, () => nextQuestion());
-        return;
-      }
-      // session end
-      addXP(50);
-      markTodayDone(); applyBadges();
-      const wisdom = window.WhyleeReflections.getTodayReflection();
-      showPoster('/media/posters/poster-success.jpg', 1200, ()=> {
-        showReflection(wisdom, ()=> showPoster('/media/posters/poster-tomorrow.jpg', 1500, ()=> goHome()));
-      });
-      state.running = false; return;
+    if (isCorrect){
+      state.totalCorrect++; state.levelCorrects[state.level]++;
+      state.correctInRow++;
+      try{ sfx.correct.play().catch(()=>{});}catch{}
+      if (state.correctInRow>=3 && state.wrongCount>0) state.wrongCount = Math.max(0, state.wrongCount-1);
+      blink(true);
+      if (window.WhyleeAchievements) window.WhyleeAchievements.addXP(10);
+    } else {
+      state.correctInRow = 0;
+      state.wrongCount++;
+      try{ sfx.wrong.play().catch(()=>{});}catch{}
+      blink(false);
     }
-    paintProgress(); paintQuestion(q);
+
+    updateHeader();
+    state.qIndex++;
+    setTimeout(paintQuestion, 320);
+
+    function blink(ok){
+      els.choices.classList.remove('blink-ok','blink-bad');
+      void els.choices.offsetWidth; // reflow
+      els.choices.classList.add(ok ? 'blink-ok':'blink-bad');
+      setTimeout(()=> els.choices.classList.remove('blink-ok','blink-bad'), 260);
+    }
   }
 
-  function onAnswer(ok){
-    state.totalAsked++; state.levelCounts[state.level]++;
-    if (ok){ state.totalCorrect++; state.levelCorrects[state.level]++; state.correctInRow++; addXP(2);
-      if (state.correctInRow>=3 && state.wrong>0) state.wrong--; flash(true);
-    } else { state.correctInRow=0; state.wrong++; vibrate(40); flash(false); }
-    el.time.textContent = fmtTime(Date.now()-state.startedAt);
-    state.idxInLevel++; setTimeout(nextQuestion, 320);
-  }
-  function flash(ok){ el.choices.classList.remove('blink-ok','blink-bad'); void el.choices.offsetWidth; el.choices.classList.add(ok?'blink-ok':'blink-bad'); setTimeout(()=> el.choices.classList.remove('blink-ok','blink-bad'),260); }
-  function goHome(){ location.hash = '#/home'; }
-  function showPoster(src,ms=1200,cb){ const o=document.createElement('div'); o.className='overlay-poster'; o.innerHTML=`<img src="${src}" alt="">`; document.body.appendChild(o); setTimeout(()=>{o.remove(); cb&&cb();},ms); }
-
-  function showReflection(text, done){
-    const box = document.createElement('div');
-    box.className = 'reflection';
-    box.innerHTML = `
-      <div class="reflection-card">
-        <div class="fox"><img src="/media/icons/whylee-fox.svg" alt="" width="56" height="56"/></div>
-        <h3>Whylee’s Wisdom</h3>
-        <p>${text}</p>
-        <button class="primary" id="ref-continue">Continue</button>
-      </div>`;
-    document.body.appendChild(box);
-    document.getElementById('ref-continue').addEventListener('click', ()=>{ box.remove(); done && done(); }, { once:true });
+  function endSession(){
+    state.running = false;
+    clearTimeout(state.timerHandle);
+    markTodayComplete();
+    // Posters at end
+    if (state.totalCorrect >= 24) showPoster('poster-success', {autohide:2000});
+    else showPoster('poster-night', {autohide:2000});
+    // Reflection card
+    window.WhyleeReflections?.showCard({});
   }
 
-  async function start(elRoot){
-    el.screen = elRoot;
-    el.q = elRoot.querySelector('#questionBox'); el.choices = elRoot.querySelector('#choices');
-    el.progress = elRoot.querySelector('#progressLabel'); el.time = elRoot.querySelector('#elapsedTime');
-    el.bar = elRoot.querySelector('#qTimerBar'); el.levelTitle = elRoot.querySelector('#levelLabel');
-    el.streakText = elRoot.querySelector('#streakLabel'); el.badgeBox = elRoot.querySelector('#badgeBox');
+  // Public start (called by shell when #/play route renders)
+  async function start(rootEl){
+    const els = cachePlayEls();
+    if (!rootEl || !els.questionBox) return;
+    state.startedAt = Date.now();
+    state.running = true;
+    elapsedTick();
 
-    setThemeForLevel(1); paintHeader(); paintBadges();
+    try {
+      state.currentSet = await window.WhyleeQuestions.load();
+    } catch {
+      state.currentSet = [];
+    }
 
-    state.set = await window.WhyleeQuestions.getTodaysSet();
-    state.level = 1; state.idxInLevel = 0; state.totalAsked = 0; state.totalCorrect = 0;
-    state.correctInRow = 0; state.wrong = 0; state.levelCounts = {1:0,2:0,3:0}; state.levelCorrects = {1:0,2:0,3:0};
-    state.running = true; state.startedAt = Date.now();
-    tickElapsed();
-
-    showPoster('/media/posters/poster-countdown.jpg', 1100, ()=> nextQuestion());
+    beginLevel(1);
+    paintQuestion();
   }
-
-  function tickElapsed(){ if (!state.running) return; el.time.textContent = fmtTime(Date.now()-state.startedAt); state.timer = setTimeout(tickElapsed, 250); }
 
   window.WhyleeGame = { start };
 })();
