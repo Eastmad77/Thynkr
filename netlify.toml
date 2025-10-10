@@ -1,62 +1,29 @@
-# Netlify config — Whylee SPA + functions + headers
-
 [build]
   publish = "."
   command = ""
-  functions = "netlify/functions"
 
-# Functions must not be caught by SPA fallback
-[[redirects]]
-  from = "/.netlify/functions/*"
-  to   = "/.netlify/functions/:splat"
-  status = 200
-  force = true
-
-# Optional pretty endpoint
-[[redirects]]
-  from = "/pro-checkout"
-  to   = "/.netlify/functions/create-checkout-session"
-  status = 200
-  force = true
-
-# Pass through real files
-[[redirects]]
-  from = "/:file.:ext"
-  to   = "/:file.:ext"
-  status = 200
-
-# SPA fallback
-[[redirects]]
-  from = "/*"
-  to   = "/index.html"
-  status = 200
-
-# Security headers
-[[headers]]
-  for = "/*"
-  [headers.values]
-    X-Frame-Options = "DENY"
-    X-Content-Type-Options = "nosniff"
-    Referrer-Policy = "strict-origin-when-cross-origin"
-    Permissions-Policy = "geolocation=(), microphone=(), camera=()"
-
-# No-cache on core app files while iterating
+# Service worker must not be cached aggressively
 [[headers]]
   for = "/service-worker.js"
   [headers.values]
-    Cache-Control = "no-cache"
+    Cache-Control = "no-store"
+    Service-Worker-Allowed = "/"
+
+# Ensure videos are served with correct MIME + CORS
+[[headers]]
+  for = "/media/posters/*.mp4"
+  [headers.values]
+    Content-Type = "video/mp4"
+    Access-Control-Allow-Origin = "*"
 
 [[headers]]
-  for = "/app.js"
+  for = "/media/posters/*.webm"
   [headers.values]
-    Cache-Control = "no-cache"
+    Content-Type = "video/webm"
+    Access-Control-Allow-Origin = "*"
 
-[[headers]]
-  for = "/shell.js"
-  [headers.values]
-    Cache-Control = "no-cache"
-
-[[headers]]
-  for = "/style.css"
-  [headers.values]
-    Cache-Control = "no-cache"
+# Default SPA routing
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
