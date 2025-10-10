@@ -1,9 +1,8 @@
-// questions.js v6003 — inline 36 questions, no CSV fetch
+// questions.js — inline demo set (36) so no CSV fetch needed
 window.WhyleeQuestions = (function(){
-  // 12 per level, quick sample set — swap these with your real questions anytime
   const L1 = Array.from({length:12}, (_,i)=>({
     Question:`Warm-up ${i+1}: 2 + ${i+1} = ?`,
-    Answers:[`${i+3}`,`${i+2}`,`${i+4}`,`${i}`], // first is correct
+    Answers:[`${i+3}`,`${i+2}`,`${i+4}`,`${i}`],
     Correct:0, Explanation:`Because 2 + ${i+1} = ${i+3}.`, Level:1
   }));
 
@@ -30,8 +29,5 @@ window.WhyleeQuestions = (function(){
   ].map(x=>({Question:x.Q, Answers:x.A, Correct:0, Explanation:x.E, Level:3}));
 
   const ALL = [...L1, ...L2, ...L3];
-
-  return {
-    async load(){ return ALL; } // API used by game.js
-  };
+  return { async load(){ return ALL; } };
 })();
