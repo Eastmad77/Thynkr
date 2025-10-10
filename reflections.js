@@ -1,26 +1,28 @@
-/* Whylee Reflections v6004 — lightweight, local list; can swap to Firestore later */
-(() => {
-  const LINES = [
-    "Small, steady focus beats big, rare effort.",
-    "Curiosity is a muscle—ask one more question today.",
-    "Your brain loves patterns. Notice one new pattern now.",
-    "Breathe in for four, out for six. Think clearer.",
-    "Repetition with variation builds mastery.",
-    "Write one sentence to remember today’s insight.",
-    "A tiny improvement repeated becomes momentum.",
-    "Switch perspective: explain it to a friend."
+// reflections.js — small wisdom card after a session
+window.WhyleeReflections = (function(){
+  const TIPS = [
+    "Short bursts beat marathon sessions. Come back tomorrow!",
+    "Repetition is how neurons say hello again. Nice work.",
+    "If you felt stuck, that’s learning showing up.",
+    "Celebrate the tries, not just the wins.",
+    "Consistency compounds. Even 5 minutes counts."
   ];
+  function randomTip(){ return TIPS[Math.floor(Math.random()*TIPS.length)]; }
 
-  function seed(str){
-    let h = 2166136261>>>0; for (let i=0;i<str.length;i++){ h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); }
-    return h>>>0;
+  function showCard({title="Whylee’s Wisdom", tip=randomTip() }={}){
+    const wrap = document.createElement('div');
+    wrap.className = 'reflection';
+    wrap.innerHTML = `
+      <div class="reflection-card">
+        <img class="fox" src="/media/icons/whylee-fox.svg" width="48" height="48" alt="" />
+        <h3>${title}</h3>
+        <p>${tip}</p>
+        <button id="refClose" class="primary">Nice</button>
+      </div>
+    `;
+    document.body.appendChild(wrap);
+    document.getElementById('refClose').addEventListener('click', ()=> wrap.remove(), { once:true });
   }
 
-  function getTodayReflection(){
-    const d = new Date().toISOString().slice(0,10);
-    const s = seed(d); const idx = s % LINES.length;
-    return LINES[idx];
-  }
-
-  window.WhyleeReflections = { getTodayReflection };
+  return { showCard, randomTip };
 })();
