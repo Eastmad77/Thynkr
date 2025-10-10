@@ -1,179 +1,44 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Whylee — Sharpen your mind daily</title>
-
-  <link rel="manifest" href="/site.webmanifest" />
-  <link rel="icon" href="/media/icons/favicon.svg" type="image/svg+xml" />
-  <link rel="apple-touch-icon" href="/media/icons/apple-touch-icon.png" />
-  <meta name="theme-color" content="#0a1224" />
-
-  <!-- Preload hero assets -->
-  <link rel="preload" as="image" href="/media/posters/poster-start.jpg" />
-  <link rel="preload" as="image" href="/media/avatars/whylee-core.png" />
-
-  <link rel="stylesheet" href="/style.css?v=9600" />
-  <script defer src="/shell.js?v=9600"></script>
-  <script defer src="/app.js?v=9600"></script>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="theme-color" content="#1e74f1"/>
+  <title>Whylee — Your Smart Companion</title>
+  <link rel="manifest" href="/site.webmanifest?v=6003"/>
+  <link rel="icon" href="/media/icons/whylee-fox.svg" type="image/svg+xml"/>
+  <link rel="apple-touch-icon" href="/media/icons/whylee-icon-192.png"/>
+  <meta name="description" content="Whylee — your smart companion for daily cognitive focus and learning."/>
+  <link rel="stylesheet" href="/style.css?v=6003"/>
 </head>
-<body class="theme-level1">
-  <!-- Top bar -->
-  <header class="topbar">
-    <button id="btnMenu" class="icon-btn" aria-label="Menu">☰</button>
-    <a class="brand" href="/" aria-label="Whylee home">
-      <img class="brand-mark" src="/media/icons/whylee-icon-192.png" alt="" />
-      <span class="brand-name">Whylee</span>
-    </a>
-    <button id="btnSound" class="icon-btn" aria-label="Sound" title="Sound on" data-state="on">🔊</button>
+<body class="theme-blue">
+  <!-- Splash is injected by shell.js -->
+  <header class="app-header" role="banner" aria-label="Whylee">
+    <div class="brand">
+      <img src="/media/icons/whylee-fox.svg" alt="" class="logo" width="32" height="32" />
+      <h1>Whylee</h1>
+    </div>
+    <nav class="actions" aria-label="Quick actions">
+      <button id="btn-refresh" class="secondary">Refresh</button>
+      <button id="btn-install" class="primary" hidden>Install</button>
+    </nav>
   </header>
 
-  <!-- Side menu -->
-  <aside id="sideMenu" class="side-menu" aria-hidden="true">
-    <div class="side-menu-inner">
-      <button id="btnCloseMenu" class="icon-btn close" aria-label="Close">✕</button>
-      <nav class="menu-nav">
-        <a href="/" aria-current="page">🏠 Home</a>
-        <a href="/about.html">ℹ️ About</a>
-        <a href="/pro.html">⭐ Go Pro</a>
-        <a href="/privacy.html">🔒 Privacy</a>
-        <a href="/terms.html">📄 Terms</a>
-        <a href="/contact.html">✉️ Contact</a>
-        <a href="/admin.html">🛠️ Admin</a>
-      </nav>
-    </div>
-  </aside>
-  <div id="menuScrim" class="scrim" hidden></div>
-
-  <!-- Cinematic rail -->
-  <section class="hero-rail">
-    <div class="hero-media">
-      <img id="heroPoster" src="/media/posters/poster-start.jpg" alt="Start splash" />
-      <!-- Pro swaps to video with same IDs via app.js -->
-      <!--
-      <video id="heroVideo" playsinline muted autoplay loop poster="/media/posters/poster-start.jpg">
-        <source src="/media/posters/poster-start.webm" type="video/webm" />
-        <source src="/media/posters/poster-start.mp4" type="video/mp4" />
-      </video>
-      -->
-      <div class="hero-vignette"></div>
-    </div>
-
-    <div class="hero-content">
-      <div class="lockup">
-        <img class="lockup-mark" src="/media/icons/app-icon.svg" alt="" />
-        <h1 class="lockup-title">Sharpen your mind — daily.</h1>
-        <p class="lockup-kicker">Quick brain teasers. Beautiful flow. Zero friction.</p>
-      </div>
-
-      <div class="cta-row">
-        <button id="btnStart" class="btn primary big"><span>Play today’s quiz</span></button>
-        <button id="btnHow" class="btn soft big">How it works</button>
-      </div>
-
-      <div class="status-row" id="statusRow" hidden>
-        <div class="status-pill" id="statusPill">Loading…</div>
-      </div>
-
-      <!-- Continuous streak bar (level-colored), with redemption pip marker -->
-      <div class="streak-wrap" aria-label="Daily streak">
-        <div class="streak-bar-cont">
-          <div class="streak-fill" id="streakFill"></div>
-          <div class="streak-redemption" title="Redemption at 3-in-a-row"></div>
-        </div>
-        <div class="streak-meta">
-          <span id="streakLabel">Streak: 0 days</span>
-          <span id="levelLabel" class="level-pill">Level 1</span>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Main panels -->
-  <main class="panel-grid">
-    <section class="panel card">
-      <div class="avatar-area">
-        <img id="avatarImg" src="/media/avatars/whylee-core.png" alt="Whylee Fox" />
-      </div>
-      <div class="panel-body">
-        <h2>Meet your guide</h2>
-        <p>Whylee Fox pops in with tips, cheers and gentle nudges as you play.</p>
-        <div class="chip-row">
-          <span class="chip">Curiosity</span><span class="chip">Focus</span><span class="chip">Wisdom</span>
-        </div>
-      </div>
-    </section>
-
-    <section class="panel card">
-      <h2 class="panel-title">Today’s flow</h2>
-      <ul class="flow-list">
-        <li><strong>Level 1</strong> — warm-up · 12 questions</li>
-        <li><strong>Level 2</strong> — matching pairs (redemption 3-in-a-row)</li>
-        <li><strong>Level 3</strong> — mixed trivia (redemption 3-in-a-row)</li>
-      </ul>
-      <div class="panel-cta">
-        <button class="btn primary" id="btnResume">Resume</button>
-        <button class="btn ghost" id="btnReset">Reset</button>
-      </div>
-    </section>
-
-    <section class="panel card pro-teaser">
-      <h2 class="panel-title">Whylee Pro</h2>
-      <p>No ads, cinematic animations, early features, and more.</p>
-      <div class="teaser-media">
-        <img src="/media/posters/poster-level3.jpg" alt="" />
-      </div>
-      <a class="btn pro" href="/pro.html">See Pro options</a>
-    </section>
+  <main id="app" class="app-shell" role="main" aria-live="polite">
+    <!-- shell.js routes fill here -->
   </main>
 
-  <!-- Quiz Card -->
-  <section class="quiz-layer" id="quizLayer" hidden>
-    <section class="card quiz-card">
-      <div class="top-controls">
-        <button id="btnQuit" class="btn ghost small">Quit</button>
-        <span class="elapsed">Time: <span id="elapsedTime">0:00</span></span>
-        <span class="progress" id="progressLabel">Q 0/12</span>
-      </div>
-
-      <!-- Level-colored streak fill (per-level) -->
-      <div class="qtimer-wrapper"><div id="qTimerBar" class="qtimer-bar"></div></div>
-
-      <!-- 3..2..1..Go countdown overlay -->
-      <div id="countdownOverlay" class="countdown hidden" aria-hidden="true">
-        <div class="bubble" id="countNum">3</div>
-      </div>
-
-      <div id="questionBox" class="question-box">Press Start to Play</div>
-      <div id="choices" class="choices"></div>
-
-      <div class="controls">
-        <button id="startBtn" class="btn primary">Start</button>
-        <button id="shuffleBtn" class="btn ghost">Shuffle Set</button>
-        <button id="shareBtn" class="btn ghost">Share</button>
-      </div>
-
-      <div id="gameOverBox" class="footer" hidden>
-        <p id="gameOverText"></p>
-        <button id="playAgainBtn" class="btn primary">Play Again</button>
-      </div>
-    </section>
-  </section>
-
-  <!-- Perfect Level Overlay -->
-  <div id="perfectBurst" aria-hidden="true">
-    <div class="burst-core"></div>
-    <div class="sparkles">
-      <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
-      <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+  <footer class="app-footer">
+    <div class="tabs">
+      <a href="#/home" data-tab>Home</a>
+      <a href="#/tasks" data-tab>Tasks</a>
+      <a href="#/about" data-tab>About</a>
     </div>
-    <div class="perfect-text">Perfect!</div>
-    <audio id="sfxPerfect" preload="auto" src="/media/audio/thynkr-victory.mp3"></audio>
-  </div>
-
-  <footer class="footer">
-    <p>© <span id="yy"></span> Whylee • <a href="/terms.html">Terms</a> • <a href="/privacy.html">Privacy</a></p>
+    <small id="app-version" class="muted">v6003 • Qsrc: init…</small>
   </footer>
+
+  <!-- Core scripts -->
+  <script src="/shell.js?v=6003" defer></script>
+  <script src="/app.js?v=6003" defer></script>
 </body>
 </html>
