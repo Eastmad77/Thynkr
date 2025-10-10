@@ -1,87 +1,101 @@
-/* Whylee SW v6003 — cache-first shell + cautious media handling */
-const VERSION = '6003';
+/* Whylee SW — robust caching with safe navigation preload handling */
+
+const VERSION = '6006';                 // ⬅️ bumped
 const CACHE = `whylee-cache-v${VERSION}`;
 const CORE = [
-  '/', '/index.html',
-  '/style.css?v=6003', '/app.js?v=6003', '/shell.js?v=6003',
-  // Posters (static only; video is network-first)
-  '/media/posters/poster-start.jpg',
-  '/media/posters/poster-menu.jpg',
-  '/media/posters/poster-quiz.jpg',
-  '/media/posters/poster-countdown.jpg',
-  '/media/posters/poster-success.jpg',
-  '/media/posters/poster-gameover.jpg',
-  '/media/posters/poster-level2.jpg',
-  '/media/posters/poster-level3.jpg',
-  '/media/posters/poster-tomorrow.jpg',
-  '/media/posters/poster-stats.jpg',
-  '/media/posters/poster-profile.jpg',
-  // Icons
+  '/',
+  '/index.html',
+  '/style.css?v=6006',
+  '/app.js?v=6006',
+  '/shell.js?v=6006',
   '/media/icons/whylee-icon-192.png',
   '/media/icons/whylee-icon-512.png',
-  '/media/icons/whylee-fox.svg'
+  '/media/icons/favicon.svg'
 ];
 
-self.addEventListener('install', e=>{
-  e.waitUntil(caches.open(CACHE).then(c=>c.addAll(CORE)));
+self.addEventListener('install', event => {
+  event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(CORE)));
   self.skipWaiting();
 });
-self.addEventListener('activate', e=>{
-  e.waitUntil((async()=>{
+
+self.addEventListener('activate', event => {
+  event.waitUntil((async () => {
     const keys = await caches.keys();
-    await Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)));
-    if (self.registration.navigationPreload) { try{ await self.registration.navigationPreload.enable(); }catch{} }
+    await Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)));
+    if (self.registration.navigationPreload) {
+      try { await self.registration.navigationPreload.enable(); } catch {}
+    }
   })());
   self.clients.claim();
 });
 
-const isHTML = req => req.mode === 'navigate' || req.destination === 'document';
+const isHTML = req => req.mode === 'navigate' || (req.destination === 'document');
+const isCore = url => CORE.some(path => url.endsWith(path.replace(/^\//, '')));
 const isRange = req => req.headers.has('range');
 
-self.addEventListener('fetch', e=>{
-  const req = e.request;
+self.addEventListener('fetch', event => {
+  const req = event.request;
   if (req.method !== 'GET') return;
-  if (isRange(req)) return; // let browser handle partial content
+  if (isRange(req)) return;
 
-  if (isHTML(req)){
-    e.respondWith((async()=>{
+  if (isHTML(req)) {
+    event.respondWith((async () => {
       const cache = await caches.open(CACHE);
-      const cached = await cache.match('/index.html', {ignoreSearch:true});
-      if (cached){
-        e.waitUntil((async()=>{ try{ const fresh=await fetch('/index.html',{cache:'no-store'}); if (fresh.ok) await cache.put('/index.html', fresh.clone()); }catch{} })());
+      const cached = await cache.match('/index.html', { ignoreSearch: true });
+      if (cached) {
+        event.waitUntil((async () => {
+          try {
+            const fresh = await fetch('/index.html', { cache: 'no-store' });
+            if (fresh && fresh.ok) await cache.put('/index.html', fresh.clone());
+          } catch {}
+        })());
         return cached;
       }
-      try{
-        const preload = await e.preloadResponse; const res = preload || await fetch(req);
+      try {
+        const preload = await event.preloadResponse;
+        const res = preload || await fetch(req);
         if (res && res.ok) cache.put('/index.html', res.clone());
         return res;
-      }catch{
-        return new Response('<!doctype html><title>Offline</title><meta charset=utf-8><style>body{background:#08142c;color:#e9f2ff;font:16px system-ui;margin:0;padding:24px}</style><h1>Offline</h1><p>Whylee is offline. Try again later.</p>', {headers:{'Content-Type':'text/html; charset=utf-8'}});
+      } catch {
+        return new Response(
+          '<!doctype html><title>Offline</title><style>body{background:#0b1220;color:#e6eef8;font:16px system-ui;margin:0;padding:24px}</style><h1>Offline</h1><p>Whylee is offline. Try again once you\'re connected.</p>',
+          { headers: { 'Content-Type': 'text/html; charset=utf-8' } }
+        );
       }
     })());
     return;
   }
 
-  // Media/video network-first; static assets cache-first
-  const url = new URL(req.url);
-  const media = ['video','audio'].includes(req.destination);
-  e.respondWith((async()=>{
+  event.respondWith((async () => {
+    const url = new URL(req.url);
     const cache = await caches.open(CACHE);
-    if (!media){
-      const cached = await cache.match(req, {ignoreSearch:true});
+    const isSameOrigin = url.origin === location.origin;
+    const isMedia = ['video','audio'].includes(req.destination);
+
+    if (isSameOrigin && (isCore(url.pathname) || ['style','script','image'].includes(req.destination))) {
+      const cached = await cache.match(req, { ignoreSearch: true });
       if (cached) return cached;
-      try{
+      try {
         const res = await fetch(req);
-        if (res && res.ok && res.status === 200) cache.put(req, res.clone());
+        if (res && res.ok && res.status === 200 && res.type !== 'opaqueredirect') {
+          cache.put(req, res.clone());
+        }
         return res;
-      }catch(err){
+      } catch {
         const fallback = await cache.match(req.url.split('?')[0]);
         if (fallback) return fallback;
         throw err;
       }
     } else {
-      try{ return await fetch(req, {cache:'no-store'}); }
-      catch{ const cached = await cache.match(req, {ignoreSearch:true}); if (cached) return cached; return new Response(null,{status:504,statusText:'Offline'}); }
+      try {
+        const res = await fetch(req, { cache: 'no-store' });
+        return res;
+      } catch {
+        const cached = await cache.match(req, { ignoreSearch: true });
+        if (cached) return cached;
+        if (isMedia) return new Response(null, { status: 504, statusText: 'Offline' });
+        throw err;
+      }
     }
   })());
 });
