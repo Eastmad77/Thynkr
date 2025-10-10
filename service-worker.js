@@ -1,81 +1,87 @@
-/* Thynkr SW — v9030: safe caching (no partials), no nav preload noise */
-
-const CACHE_NAME = 'thynkr-static-v9030';
-const ASSETS = [
+/* Whylee SW v6003 — cache-first shell + cautious media handling */
+const VERSION = '6003';
+const CACHE = `whylee-cache-v${VERSION}`;
+const CORE = [
   '/', '/index.html',
-  '/style.css', '/app.js',
-  '/media/favicon.svg',
-  '/media/avatars/thynkr-fox-core.png',
-  '/media/avatars/thynkr-fox-focused.png',
-  '/media/avatars/thynkr-fox-curious.png',
-  '/media/avatars/thynkr-fox-genius.png',
-  '/media/avatars/thynkr-fox-playful.png',
-  '/media/avatars/thynkr-fox-night.png',
-  '/media/avatars/thynkr-fox-relaxed.png',
-  '/media/avatars/thynkr-fox-gameover.png'
+  '/style.css?v=6003', '/app.js?v=6003', '/shell.js?v=6003',
+  // Posters (static only; video is network-first)
+  '/media/posters/poster-start.jpg',
+  '/media/posters/poster-menu.jpg',
+  '/media/posters/poster-quiz.jpg',
+  '/media/posters/poster-countdown.jpg',
+  '/media/posters/poster-success.jpg',
+  '/media/posters/poster-gameover.jpg',
+  '/media/posters/poster-level2.jpg',
+  '/media/posters/poster-level3.jpg',
+  '/media/posters/poster-tomorrow.jpg',
+  '/media/posters/poster-stats.jpg',
+  '/media/posters/poster-profile.jpg',
+  // Icons
+  '/media/icons/whylee-icon-192.png',
+  '/media/icons/whylee-icon-512.png',
+  '/media/icons/whylee-fox.svg'
 ];
 
-self.addEventListener('install', (event) => {
-  event.waitUntil((async () => {
-    const cache = await caches.open(CACHE_NAME);
-    try { await cache.addAll(ASSETS); } catch(e) { /* ignore missing */ }
-    self.skipWaiting();
-  })());
+self.addEventListener('install', e=>{
+  e.waitUntil(caches.open(CACHE).then(c=>c.addAll(CORE)));
+  self.skipWaiting();
 });
-
-self.addEventListener('activate', (event) => {
-  event.waitUntil((async () => {
-    // Disable navigation preload to avoid preloadResponse warnings
-    if ('navigationPreload' in self.registration) {
-      try { await self.registration.navigationPreload.disable(); } catch(e){}
-    }
+self.addEventListener('activate', e=>{
+  e.waitUntil((async()=>{
     const keys = await caches.keys();
-    await Promise.all(keys.map(k => k !== CACHE_NAME && caches.delete(k)));
-    self.clients.claim();
+    await Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)));
+    if (self.registration.navigationPreload) { try{ await self.registration.navigationPreload.enable(); }catch{} }
   })());
+  self.clients.claim();
 });
 
-function isMedia(req) {
-  return ['video','audio'].some(t => req.destination === t) ||
-         /\.(mp4|webm|mp3|wav|ogg)$/i.test(new URL(req.url).pathname);
-}
+const isHTML = req => req.mode === 'navigate' || req.destination === 'document';
+const isRange = req => req.headers.has('range');
 
-self.addEventListener('fetch', (event) => {
-  const req = event.request;
-
-  // Don’t touch range requests (prevents 206 caching errors)
-  if (req.headers.has('range') || isMedia(req)) return;
-
-  // Only handle GET
+self.addEventListener('fetch', e=>{
+  const req = e.request;
   if (req.method !== 'GET') return;
+  if (isRange(req)) return; // let browser handle partial content
 
-  event.respondWith((async () => {
-    // Try cache first
-    const cached = await caches.match(req);
-    if (cached) return cached;
-
-    try {
-      const netRes = await fetch(req);
-      // Only cache safe responses
-      const okToCache =
-        netRes &&
-        netRes.status === 200 &&
-        !netRes.headers.get('Content-Range') &&
-        !req.headers.get('range');
-
-      if (okToCache) {
-        const cache = await caches.open(CACHE_NAME);
-        // Clone before storing
-        cache.put(req, netRes.clone()).catch(()=>{});
+  if (isHTML(req)){
+    e.respondWith((async()=>{
+      const cache = await caches.open(CACHE);
+      const cached = await cache.match('/index.html', {ignoreSearch:true});
+      if (cached){
+        e.waitUntil((async()=>{ try{ const fresh=await fetch('/index.html',{cache:'no-store'}); if (fresh.ok) await cache.put('/index.html', fresh.clone()); }catch{} })());
+        return cached;
       }
-      return netRes;
-    } catch (err) {
-      // Offline fallback for root
-      if (req.mode === 'navigate') {
-        const cachedRoot = await caches.match('/index.html');
-        if (cachedRoot) return cachedRoot;
+      try{
+        const preload = await e.preloadResponse; const res = preload || await fetch(req);
+        if (res && res.ok) cache.put('/index.html', res.clone());
+        return res;
+      }catch{
+        return new Response('<!doctype html><title>Offline</title><meta charset=utf-8><style>body{background:#08142c;color:#e9f2ff;font:16px system-ui;margin:0;padding:24px}</style><h1>Offline</h1><p>Whylee is offline. Try again later.</p>', {headers:{'Content-Type':'text/html; charset=utf-8'}});
       }
-      throw err;
+    })());
+    return;
+  }
+
+  // Media/video network-first; static assets cache-first
+  const url = new URL(req.url);
+  const media = ['video','audio'].includes(req.destination);
+  e.respondWith((async()=>{
+    const cache = await caches.open(CACHE);
+    if (!media){
+      const cached = await cache.match(req, {ignoreSearch:true});
+      if (cached) return cached;
+      try{
+        const res = await fetch(req);
+        if (res && res.ok && res.status === 200) cache.put(req, res.clone());
+        return res;
+      }catch(err){
+        const fallback = await cache.match(req.url.split('?')[0]);
+        if (fallback) return fallback;
+        throw err;
+      }
+    } else {
+      try{ return await fetch(req, {cache:'no-store'}); }
+      catch{ const cached = await cache.match(req, {ignoreSearch:true}); if (cached) return cached; return new Response(null,{status:504,statusText:'Offline'}); }
     }
   })());
 });
