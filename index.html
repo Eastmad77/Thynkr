@@ -1,56 +1,57 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="theme-color" content="#0a2a43" />
-  <meta name="description" content="Whylee — your smart daily quiz companion. Fast, offline-ready, and installable." />
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="theme-color" content="#1e74f1"/>
+  <meta name="description" content="Whylee — your smart companion for daily cognitive focus and learning."/>
+  <link rel="canonical" href="https://dailybrainbolt.com/"/>
 
-  <title>Whylee – Your Smart Companion</title>
+  <title>Whylee — Your Smart Companion</title>
 
-  <!-- Canonical (swap to https://whylee.com/ after domain transfer) -->
-  <link rel="canonical" href="https://dailybrainbolt.com/" />
+  <link rel="manifest" href="/site.webmanifest?v=6006"/>
+  <link rel="icon" href="/media/icons/whylee-fox.svg" type="image/svg+xml"/>
+  <link rel="apple-touch-icon" href="/media/icons/whylee-icon-192.png"/>
 
-  <!-- PWA -->
-  <link rel="manifest" href="/site.webmanifest?v=6006" />
-  <link rel="icon" href="/media/icons/favicon.svg" type="image/svg+xml" />
-  <link rel="apple-touch-icon" href="/media/icons/whylee-icon-192.png" />
-
-  <!-- Preloads + styles -->
-  <link rel="preload" href="/style.css?v=6006" as="style" />
-  <link rel="preload" href="/shell.js?v=6006" as="script" />
-  <link rel="preload" href="/app.js?v=6006" as="script" />
-  <link rel="stylesheet" href="/style.css?v=6006" />
+  <link rel="preload" href="/style.css?v=6006" as="style"/>
+  <link rel="preload" href="/shell.js?v=6006" as="script"/>
+  <link rel="preload" href="/app.js?v=6006" as="script"/>
+  <link rel="stylesheet" href="/style.css?v=6006"/>
 </head>
-<body>
-  <noscript>You need JavaScript enabled to run Whylee.</noscript>
+<body class="theme-blue">
+  <!-- Splash is injected by shell.js -->
 
-  <!-- App Header -->
-  <header class="app-header">
-    <button class="icon" id="btn-menu" aria-label="Toggle menu" title="Menu" hidden>☰</button>
-    <h1 class="brand">Whylee</h1>
-    <div class="header-actions">
+  <header class="app-header" role="banner" aria-label="Whylee">
+    <div class="brand">
+      <img src="/media/icons/whylee-fox.svg" alt="" class="logo" width="32" height="32" />
+      <h1>Whylee</h1>
+    </div>
+    <nav class="actions" aria-label="Quick actions">
       <button id="btn-refresh" class="secondary">Refresh</button>
       <button id="btn-install" class="primary" hidden>Install</button>
-    </div>
+    </nav>
   </header>
 
-  <!-- App Shell: shell.js swaps content based on hash routes -->
   <main id="app" class="app-shell" role="main" aria-live="polite">
-    <!-- Initial content rendered by shell.js -->
+    <!-- shell.js routes render here -->
   </main>
 
-  <!-- Footer / primary tabs -->
   <footer class="app-footer">
     <nav class="tabs" aria-label="Primary">
       <a href="#/home" data-tab>Home</a>
       <a href="#/tasks" data-tab>Tasks</a>
       <a href="#/about" data-tab>About</a>
     </nav>
-    <small id="app-version" class="muted"></small>
+    <small id="app-version" class="muted">v6006 • Phase 2</small>
   </footer>
 
-  <!-- Scripts -->
+  <!-- helpers → data → game → shell/app -->
+  <script src="/pro.js?v=6004" defer></script>
+  <script src="/achievements.js?v=6004" defer></script>
+  <script src="/reflections.js?v=6004" defer></script>
+  <script src="/questions.js?v=6003" defer></script>
+  <script src="/game.js?v=6004" defer></script>
+
   <script src="/shell.js?v=6006" defer></script>
   <script src="/app.js?v=6006" defer></script>
 </body>
