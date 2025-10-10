@@ -5,7 +5,7 @@
   if ('serviceWorker' in navigator){
     window.addEventListener('load', async () => {
       try {
-        const reg = await navigator.serviceWorker.register('/service-worker.js?v=6006', { scope: '/' });
+        const reg = await navigator.serviceWorker.register('/service-worker.js?v=6007', { scope: '/' });
         if ('navigationPreload' in reg) {
           try { await reg.navigationPreload.enable(); } catch {}
         }
