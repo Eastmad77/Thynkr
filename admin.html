@@ -1,53 +1,57 @@
-
----
-
-# admin.html  *(simple rebranded admin panel stub — safe to keep or remove)*
-```html
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Admin — Thynkr</title>
-  <link rel="manifest" href="/site.webmanifest" />
-  <link rel="icon" href="/media/thynkr-icon-192.png" type="image/png" />
-  <link rel="stylesheet" href="/style.css?v=8002" />
-  <script src="/shell.js?v=8002" defer></script>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="theme-color" content="#1e74f1"/>
+  <title>Admin · Whylee</title>
+  <link rel="manifest" href="/site.webmanifest?v=6007"/>
+  <link rel="icon" href="/media/icons/favicon.svg" type="image/svg+xml"/>
+  <link rel="stylesheet" href="/style.css?v=6007"/>
 </head>
 <body>
-  <header class="topbar">
-    <div class="hero-inner">
-      <a class="brand" href="/"><img src="/media/thynkr-icon-192.png" class="logo" alt="" />
-        <div class="brand-text"><div class="kicker">The Daily</div><h1>Thynkr</h1><div class="tagline">Sharpen your mind — daily.</div></div>
-      </a>
-      <div class="actions"><button id="mmMenuBtn" aria-label="Menu">☰</button></div>
-    </div>
+  <header class="app-header">
+    <div class="brand"><img class="logo" src="/media/icons/whylee-fox.svg" alt="" width="28" height="28"/><h1>Whylee Admin</h1></div>
   </header>
-
-  <aside id="mmSideMenu" class="side-menu" aria-hidden="true">
-    <nav class="menu-nav">
-      <a href="/">🏠 Home</a>
-      <a href="/about.html">ℹ️ About</a>
-      <a href="/pro.html">⭐ Pro</a>
-      <a href="/privacy.html">🔒 Privacy</a>
-      <a href="/terms.html">📄 Terms</a>
-      <a href="/contact.html">✉️ Contact</a>
-      <a href="/admin.html" aria-current="page">🛠️ Admin</a>
-    </nav>
-  </aside>
-
-  <main class="container">
-    <section class="card quiz-card" style="text-align:left">
-      <h2>Admin Tools (Lightweight)</h2>
-      <p>Use this page to manage your <code>questions.csv</code> file.</p>
-      <ol style="margin-left:1rem;line-height:1.7">
-        <li>Edit questions locally (see README format).</li>
-        <li>Upload <code>questions.csv</code> to site root (same level as <code>index.html</code>).</li>
-        <li>Hard refresh (Ctrl/Cmd + Shift + R).</li>
-      </ol>
-      <p style="margin-top:.75rem">For now, this is a static site — no direct upload here.</p>
+  <main class="app-shell">
+    <section class="card">
+      <h2>Local Admin</h2>
+      <div class="list">
+        <button id="btn-export" class="secondary">Export Tasks (JSON)</button>
+        <button id="btn-import" class="secondary">Import Tasks (JSON)</button>
+        <input id="file-import" type="file" accept="application/json" hidden />
+      </div>
+      <pre id="admin-log" class="muted" style="white-space:pre-wrap"></pre>
     </section>
   </main>
+  <footer class="app-footer">
+    <nav class="tabs">
+      <a href="/#/home">Home</a>
+      <a href="/#/tasks">Tasks</a>
+      <a class="active" href="/admin.html">Admin</a>
+    </nav>
+  </footer>
 
-  <footer class="footer"><p>© 2025 Thynkr · <a href="/privacy.html">Privacy</a> · <a href="/terms.html">Terms</a></p></footer>
+  <script>
+    const key = 'whylee:tasks';
+    const log = (m)=> document.getElementById('admin-log').textContent = m;
+    document.getElementById('btn-export')?.addEventListener('click', ()=>{
+      const data = localStorage.getItem(key) || '[]';
+      const blob = new Blob([data], {type:'application/json'});
+      const a = Object.assign(document.createElement('a'), {href:URL.createObjectURL(blob), download:'whylee-tasks.json'});
+      a.click(); URL.revokeObjectURL(a.href);
+      log('Exported tasks.');
+    });
+    document.getElementById('btn-import')?.addEventListener('click', ()=> document.getElementById('file-import').click());
+    document.getElementById('file-import')?.addEventListener('change', async (e)=>{
+      const f = e.target.files[0]; if(!f) return;
+      const text = await f.text();
+      try{ JSON.parse(text); localStorage.setItem(key, text); log('Imported tasks.'); }
+      catch{ log('Invalid JSON.'); }
+    });
+  </script>
+
+  <script src="/app.js?v=6007" defer></script>
+  <script src="/shell.js?v=6007" defer></script>
 </body>
 </html>
