@@ -1,97 +1,37 @@
-/* Whylee Questions Loader v6003
-   Source order: Firebase (optional) -> Netlify Function (optional) -> local CSV fallback.
-   CSV columns: Level,Question,OptionA,OptionB,OptionC,OptionD,Answer,Explanation,Category,Difficulty
-*/
-(() => {
-  const CSV_FALLBACK = '/media/questions/sample-questions.csv';
+// questions.js v6003 — inline 36 questions, no CSV fetch
+window.WhyleeQuestions = (function(){
+  // 12 per level, quick sample set — swap these with your real questions anytime
+  const L1 = Array.from({length:12}, (_,i)=>({
+    Question:`Warm-up ${i+1}: 2 + ${i+1} = ?`,
+    Answers:[`${i+3}`,`${i+2}`,`${i+4}`,`${i}`], // first is correct
+    Correct:0, Explanation:`Because 2 + ${i+1} = ${i+3}.`, Level:1
+  }));
 
-  async function fetchText(url){
-    const res = await fetch(url, { cache: 'no-store' });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    return await res.text();
-  }
+  const flags = [["🇧🇷","Brazil"],["🇨🇦","Canada"],["🇪🇸","Spain"],["🇮🇹","Italy"],["🇯🇵","Japan"],["🇫🇷","France"]];
+  const L2 = Array.from({length:12}, (_,i)=>({
+    Question:`Match the pair: Which country uses this flag? ${flags[i%flags.length][0]}`,
+    Answers:[flags[i%flags.length][1],"Germany","Norway","Chile"],
+    Correct:0, Explanation:`That flag is ${flags[i%flags.length][1]}.`, Level:2
+  }));
 
-  function parseCSV(text){
-    const lines = text.trim().split(/\r?\n/);
-    const header = lines.shift().split(',');
-    return lines.map(row => {
-      // naive split; your CSV should avoid unescaped commas in fields
-      const c = row.split(',');
-      const obj = {};
-      header.forEach((h,i)=> obj[h.trim()] = (c[i]||'').trim());
-      return normalizeRow(obj);
-    });
-  }
+  const L3 = [
+    {Q:"Which planet is known as the Red Planet?", A:["Mars","Venus","Jupiter","Saturn"], E:"Iron oxide makes Mars look red."},
+    {Q:"The largest ocean on Earth?", A:["Pacific","Atlantic","Indian","Arctic"], E:"The Pacific is the largest."},
+    {Q:"Speed of light is about…", A:["300,000 km/s","150,000 km/s","3,000 km/s","30,000 km/s"], E:"~3×10⁵ km/s."},
+    {Q:"H2O is…", A:["Water","Hydrogen","Oxygen","Salt"], E:"H₂O is water."},
+    {Q:"Primary source of Earth’s energy?", A:["Sun","Core","Moon","Tides"], E:"Solar radiation."},
+    {Q:"Who painted the Mona Lisa?", A:["Leonardo da Vinci","Michelangelo","Raphael","Monet"], E:"Leonardo da Vinci."},
+    {Q:"DNA stands for…", A:["Deoxyribonucleic acid","Dicarboxylic nitro acid","Dinucleic amino acid","None"], E:"Deoxyribonucleic acid."},
+    {Q:"Capital of Canada?", A:["Ottawa","Toronto","Vancouver","Montreal"], E:"Ottawa."},
+    {Q:"The chemical symbol for gold?", A:["Au","Ag","Gd","Go"], E:"Au."},
+    {Q:"Which gas do plants absorb?", A:["CO₂","O₂","N₂","H₂"], E:"Carbon dioxide."},
+    {Q:"Largest mammal?", A:["Blue whale","Elephant","Giraffe","Hippo"], E:"Blue whale."},
+    {Q:"Continent with the Sahara?", A:["Africa","Asia","Australia","South America"], E:"Africa."},
+  ].map(x=>({Question:x.Q, Answers:x.A, Correct:0, Explanation:x.E, Level:3}));
 
-  function normalizeRow(r){
-    const level = Number(r.Level || r.level || 1);
-    const answers = [r.OptionA, r.OptionB, r.OptionC, r.OptionD].filter(Boolean);
-    const correctIndex = Math.max(0, Math.min(answers.length-1, Number(r.Answer||0)));
-    return {
-      Level: [1,2,3].includes(level) ? level : 1,
-      Question: r.Question || 'Untitled question',
-      Answers: answers,
-      CorrectIndex: correctIndex,
-      Explanation: r.Explanation || '',
-      Category: r.Category || 'General',
-      Difficulty: r.Difficulty || 'Normal'
-    };
-  }
+  const ALL = [...L1, ...L2, ...L3];
 
-  function shuffle(a){
-    const arr = a.slice();
-    for (let i = arr.length - 1; i > 0; i--){
-      const j = Math.floor(Math.random() * (i + 1));
-      [arr[i], arr[j]] = [arr[j], arr[i]];
-    }
-    return arr;
-  }
-
-  function pickPerLevel(items, per = 12){
-    const out = [];
-    [1,2,3].forEach(l=>{
-      const pool = shuffle(items.filter(q => q.Level === l));
-      out.push(...pool.slice(0, per));
-    });
-    return out;
-  }
-
-  async function tryFirebaseFirst(){
-    // Hook for future: if you expose a Netlify function or Firestore endpoint, try it here.
-    // Example:
-    // const text = await fetchText('/.netlify/functions/get-todays-questions');
-    // return parseCSV(text);
-    throw new Error('No remote source configured');
-  }
-
-  async function loadQuestions(){
-    try { return await tryFirebaseFirst(); }
-    catch { /* fall through */ }
-    try { const csv = await fetchText(CSV_FALLBACK); return parseCSV(csv); }
-    catch (e) {
-      console.warn('[Whylee] Failed to load CSV fallback:', e);
-      // generate tiny mock so app is still usable
-      const mk = (i,l)=>({Level:l,Question:`Sample question #${i} (L${l})?`,Answers:['Correct','Alt A','Alt B','Alt C'],CorrectIndex:0,Explanation:''});
-      const base = [];
-      for(let l=1;l<=3;l++) for(let i=1;i<=12;i++) base.push(mk(i,l));
-      return base;
-    }
-  }
-
-  async function getTodaysSet(){
-    const all = await loadQuestions();
-    // If CSV already capped, skip pickPerLevel
-    const haveAll = [1,2,3].every(l => all.filter(q=>q.Level===l).length >= 12);
-    const picked = haveAll ? pickPerLevel(all, 12) : all;
-    // Shuffle each question's answers but keep CorrectIndex accurate
-    return picked.map(q => {
-      const pairs = q.Answers.map((t,i)=>({t,i}));
-      const sh = shuffle(pairs);
-      const correctNewIndex = sh.findIndex(p=>p.i === q.CorrectIndex);
-      return {...q, Answers: sh.map(p=>p.t), CorrectIndex: correctNewIndex};
-    });
-  }
-
-  // Expose globally for game.js
-  window.WhyleeQuestions = { getTodaysSet };
+  return {
+    async load(){ return ALL; } // API used by game.js
+  };
 })();
