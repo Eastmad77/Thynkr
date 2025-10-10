@@ -1,5 +1,26 @@
+# Whylee / DailyBrainbolt App Robots Configuration
+# Controls crawler behaviour and ensures sitemap indexing for your PWA
+
 User-agent: *
 Allow: /
 
-# Current canonical domain (swap to https://whylee.com/sitemap.xml after transfer)
+# Disallow service worker, cache, and private build directories
+Disallow: /service-worker.js
+Disallow: /shell.js
+Disallow: /app.js
+Disallow: /admin/
+Disallow: /api/
+Disallow: /media/temp/
+Disallow: /node_modules/
+
+# Allow essential PWA and static assets
+Allow: /site.webmanifest
+Allow: /media/icons/
+Allow: /style.css
+Allow: /index.html
+
+# Sitemap — primary domain (change when domain switches)
 Sitemap: https://dailybrainbolt.com/sitemap.xml
+
+# Host directive (optional but good for SEO clarity)
+Host: dailybrainbolt.com
