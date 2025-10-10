@@ -1,50 +1,39 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>About — Thynkr</title>
-  <meta name="description" content="Learn what Thynkr is about and how it sharpens your mind daily." />
-  <link rel="manifest" href="/site.webmanifest" />
-  <link rel="icon" href="/media/thynkr-icon-192.png" type="image/png" />
-  <link rel="stylesheet" href="/style.css?v=8001" />
-  <script src="/shell.js?v=8001" defer></script>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="theme-color" content="#1e74f1"/>
+  <title>About · Whylee</title>
+  <link rel="manifest" href="/site.webmanifest?v=6007"/>
+  <link rel="icon" href="/media/icons/favicon.svg" type="image/svg+xml"/>
+  <link rel="stylesheet" href="/style.css?v=6007"/>
 </head>
 <body>
-  <header class="topbar">
-    <div class="hero-inner">
-      <a class="brand" href="/"><img src="/media/thynkr-icon-192.png" class="logo" alt="" />
-        <div class="brand-text"><div class="kicker">The Daily</div><h1>Thynkr</h1><div class="tagline">Sharpen your mind — daily.</div></div>
-      </a>
-      <div class="actions"><button id="mmMenuBtn" aria-label="Menu">☰</button></div>
-    </div>
+  <header class="app-header">
+    <div class="brand"><img class="logo" src="/media/icons/whylee-fox.svg" alt="" width="28" height="28"/><h1>Whylee</h1></div>
   </header>
-
-  <aside id="mmSideMenu" class="side-menu" aria-hidden="true">
-    <nav class="menu-nav">
-      <a href="/">🏠 Home</a>
-      <a href="/about.html" aria-current="page">ℹ️ About</a>
-      <a href="/pro.html">⭐ Pro</a>
-      <a href="/privacy.html">🔒 Privacy</a>
-      <a href="/terms.html">📄 Terms</a>
-      <a href="/contact.html">✉️ Contact</a>
-    </nav>
-  </aside>
-
-  <main class="container">
-    <section class="card quiz-card" style="text-align:left">
-      <h2>What is Thynkr?</h2>
-      <p>Thynkr is a daily mental-fitness game. Play short, focused sets that challenge memory, logic, and attention — and build a streak over time.</p>
-      <h3>How it works</h3>
-      <ul style="margin:.75rem 0 0 1rem; line-height:1.7">
-        <li>Progress through <strong>three levels</strong> per set (12 questions each).</li>
-        <li>Redemption streaks get tougher by level (3 → 4 → 5 correct in a row).</li>
-        <li>Ad intermissions on free; ad-free on Pro.</li>
+  <main class="app-shell">
+    <section class="card">
+      <h2>About</h2>
+      <p>Whylee is your smart, offline-ready daily quiz companion with a cinematic blue theme and a gentle learning loop.</p>
+      <ul>
+        <li>Installable PWA</li>
+        <li>Offline-first cache & posters</li>
+        <li>XP, badges, streaks</li>
+        <li>Optional Pro animations</li>
       </ul>
-      <h3 style="margin-top:1.25rem">What’s coming</h3>
-      <p>We’re building premium packs, stats, difficulty curves, and more. Got ideas? We’d love to hear them — <a href="/contact.html">contact us</a>.</p>
+      <p class="muted">Build v6007</p>
     </section>
   </main>
-
-  <footer class="footer"><p>© 2025 Thynkr · <a href="/privacy.html">Privacy</a> · <a href="/terms.html">Terms</a></p></footer>
+  <footer class="app-footer">
+    <nav class="tabs">
+      <a href="/#/home" data-tab>Home</a>
+      <a href="/#/tasks" data-tab>Tasks</a>
+      <a href="/about.html" data-tab class="active">About</a>
+    </nav>
+  </footer>
+  <script src="/app.js?v=6007" defer></script>
+  <script src="/shell.js?v=6007" defer></script>
 </body>
 </html>
