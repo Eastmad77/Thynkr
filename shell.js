@@ -1,4 +1,4 @@
-// Whylee Shell v6003 — routes, splash, install, basic tasks demo
+// Whylee Shell v6003 — +Play route
 (() => {
   const VERSION = '6003';
   const app = document.getElementById('app');
@@ -6,7 +6,7 @@
   const $ver = document.getElementById('app-version');
   $ver.textContent = `Whylee v${VERSION} • Qsrc: ready`;
 
-  // ---- Splash (static; Pro swaps to video) ----
+  // Splash
   function showSplash(){
     const splash = document.createElement('div');
     splash.id='splash'; splash.className='splash';
@@ -14,7 +14,6 @@
       <img id="splashImg" src="/media/posters/poster-start.jpg" alt="Whylee splash"/>
       <div id="tapHint">Tap to Begin</div>`;
     document.body.prepend(splash);
-
     const isPro = localStorage.getItem('whylee:pro')==='1';
     if (isPro){
       const v = document.createElement('video');
@@ -26,20 +25,33 @@
     splash.addEventListener('click', removeSplash, {once:true});
     setTimeout(removeSplash, 6500);
   }
-  function removeSplash(){
-    const s = document.getElementById('splash');
-    if (!s) return; s.classList.add('hide'); setTimeout(()=> s.remove(), 350);
-  }
+  function removeSplash(){ const s=document.getElementById('splash'); if (!s) return; s.classList.add('hide'); setTimeout(()=> s.remove(), 350); }
   document.addEventListener('DOMContentLoaded', showSplash);
 
-  // ---- Simple hash routes (placeholder) ----
+  // Routes
   const routes = {
     '#/home': () => `
       <section class="card">
         <h2>Welcome to Whylee</h2>
         <p class="muted">Your smart companion for daily focus and learning.</p>
-        <div class="row"><input id="task-input" type="text" placeholder="Add a task…"/><button id="task-add" class="primary">Add</button></div>
-        <div id="task-list" class="list" aria-live="polite"></div>
+        <div class="list">
+          <button class="primary" onclick="location.hash='#/play'">Play Today’s Quiz</button>
+          <div class="row"><input id="task-input" type="text" placeholder="Add a task…"/><button id="task-add" class="secondary">Add</button></div>
+          <div id="task-list" class="list" aria-live="polite"></div>
+        </div>
+      </section>`,
+    '#/play': () => `
+      <section class="card" id="quizRoot">
+        <div class="row" style="justify-content:space-between">
+          <strong id="levelLabel">Level 1</strong>
+          <span id="streakLabel" class="muted">Streak: 0 • XP: 0</span>
+        </div>
+        <div id="progressLabel" class="muted">Q 0/12</div>
+        <div id="questionBox" style="font-size:1.25rem; text-align:center; margin:10px 0;">Loading…</div>
+        <div id="choices" class="choices"></div>
+        <div id="qTimer"><div id="qTimerBar"></div></div>
+        <div id="elapsedTime" class="muted" style="text-align:center;margin-top:6px">0:00</div>
+        <div id="badgeBox" class="list" style="margin-top:12px"></div>
       </section>`,
     '#/tasks': () => `
       <section class="card">
@@ -59,6 +71,7 @@
         </ul>
       </section>`
   };
+
   function render(){
     const hash = location.hash || '#/home';
     const view = routes[hash] ? routes[hash]() : `<section class="card"><h2>Not found</h2></section>`;
@@ -66,11 +79,15 @@
     tabs.forEach(a => a.classList.toggle('active', a.getAttribute('href')===hash));
     if (hash.startsWith('#/home')) initHome();
     if (hash.startsWith('#/tasks')) initTasks();
+    if (hash.startsWith('#/play')) {
+      // kick off the game once UI exists
+      setTimeout(()=> window.WhyleeGame?.start(document.getElementById('quizRoot')), 0);
+    }
   }
   addEventListener('hashchange', render);
   addEventListener('DOMContentLoaded', render);
 
-  // ---- Install prompt ----
+  // Install prompt + refresh
   let deferredPrompt;
   const installBtn = document.getElementById('btn-install');
   addEventListener('beforeinstallprompt', (e)=>{ e.preventDefault(); deferredPrompt = e; installBtn.hidden = false; });
@@ -83,7 +100,7 @@
   });
   document.getElementById('btn-refresh')?.addEventListener('click', ()=> location.reload());
 
-  // ---- Tiny local tasks demo ----
+  // Tiny local tasks demo
   const store = { key:'whylee:tasks', all(){ try{return JSON.parse(localStorage.getItem(this.key))||[]}catch{return[]} }, save(v){ localStorage.setItem(this.key, JSON.stringify(v)); } };
   function paintTasks(listEl, items){
     listEl.innerHTML = items.map((t,i)=>`
