@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="theme-color" content="#1e74f1"/>
+  <title>Profile · Whylee</title>
+  <link rel="manifest" href="/site.webmanifest?v=6007"/>
+  <link rel="icon" href="/media/icons/favicon.svg" type="image/svg+xml"/>
+  <link rel="stylesheet" href="/style.css?v=6007"/>
+</head>
+<body>
+  <header class="app-header">
+    <div class="brand"><img class="logo" src="/media/icons/whylee-fox.svg" alt="" width="28" height="28"/><h1>Your Profile</h1></div>
+  </header>
+  <main class="app-shell">
+    <section class="card" id="profileCard">
+      <h2>Stats</h2>
+      <div class="row"><strong>XP</strong><span id="pXP">0</span></div>
+      <div class="row"><strong>Streak</strong><span id="pStreak">0 days</span></div>
+      <h3>Badges</h3>
+      <div id="pBadges" class="badge-grid"><span class="muted">No badges yet</span></div>
+    </section>
+  </main>
+  <footer class="app-footer">
+    <nav class="tabs">
+      <a href="/#/home">Home</a>
+      <a href="/#/tasks">Tasks</a>
+      <a class="active" href="/profile.html">Profile</a>
+    </nav>
+  </footer>
+
+  <script src="/achievements.js?v=6004" defer></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', ()=>{
+      const xp = Number(localStorage.getItem('wl_xp')||0);
+      const badges = JSON.parse(localStorage.getItem('wl_badges')||'[]');
+      const streak = Number(localStorage.getItem('wl_streak')||0);
+      document.getElementById('pXP').textContent = xp;
+      document.getElementById('pStreak').textContent = `${streak} day${streak===1?'':'s'}`;
+      const pretty = window.WhyleeAchievements?.pretty(badges) || [];
+      const grid = document.getElementById('pBadges');
+      grid.innerHTML = pretty.length ? pretty.map(b=>`<div class="badge badge-lg"><span class="i">${b.icon}</span>${b.label}</div>`).join('') : '<span class="muted">No badges yet</span>';
+    });
+  </script>
+
+  <script src="/app.js?v=6007" defer></script>
+  <script src="/shell.js?v=6007" defer></script>
+</body>
+</html>
