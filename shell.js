@@ -1,9 +1,9 @@
-// Whylee Shell v6004 — Home, Play, Tasks, About, Profile, Pro
+// Whylee Shell v6006 — Home, Play, Tasks, About, Profile, Pro
 (() => {
-  const VERSION = '6004';
+  const VERSION = '6006';
   const app = document.getElementById('app');
   const tabs = Array.from(document.querySelectorAll('[data-tab]'));
-  const $ver = document.getElementById('app-version'); $ver.textContent = `Whylee v${VERSION} • Phase 2`;
+  const $ver = document.getElementById('app-version'); if ($ver) $ver.textContent = `Whylee v${VERSION} • Phase 2`;
 
   function showSplash(){
     const splash = document.createElement('div');
@@ -62,7 +62,7 @@
     '#/profile': () => {
       const xp = Number(localStorage.getItem('wl_xp')||0);
       const badges = JSON.parse(localStorage.getItem('wl_badges')||'[]');
-      const pretty = window.WhyleeAchievements.pretty(badges);
+      const pretty = window.WhyleeAchievements?.pretty(badges) || [];
       return `
       <section class="card">
         <h2>Your Profile</h2>
@@ -84,7 +84,7 @@
           <button class="primary" id="btn-pro-toggle">${window.WhyleePro?.isPro()?'Disable Pro (local)':'Enable Pro (local)'}</button>
           <button class="secondary" onclick="location.href='/pro.html'">Checkout (Netlify function)</button>
         </div>
-        <p class="muted">Local toggle simulates Pro for testing. Checkout uses \`.netlify/functions/create-checkout-session.js\`.</p>
+        <p class="muted">Local toggle simulates Pro for testing. Checkout uses .netlify/functions/create-checkout-session.js.</p>
       </section>`
   };
 
@@ -105,7 +105,7 @@
   addEventListener('hashchange', render);
   addEventListener('DOMContentLoaded', render);
 
-  // Install + refresh (same as before)
+  // Install + refresh
   let deferredPrompt;
   const installBtn = document.getElementById('btn-install');
   addEventListener('beforeinstallprompt', (e)=>{ e.preventDefault(); deferredPrompt = e; installBtn.hidden = false; });
@@ -116,7 +116,7 @@
   });
   document.getElementById('btn-refresh')?.addEventListener('click', ()=> location.reload());
 
-  // Tiny local tasks (unchanged)
+  // Local tasks
   const store = { key:'whylee:tasks', all(){ try{return JSON.parse(localStorage.getItem(this.key))||[]}catch{return[]} }, save(v){ localStorage.setItem(this.key, JSON.stringify(v)); } };
   function paintTasks(listEl, items){
     listEl.innerHTML = items.map((t,i)=>`
