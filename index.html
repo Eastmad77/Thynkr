@@ -4,15 +4,21 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="theme-color" content="#1e74f1"/>
+  <meta name="description" content="Whylee — your smart companion for daily cognitive focus and learning."/>
   <title>Whylee — Your Smart Companion</title>
-  <link rel="manifest" href="/site.webmanifest?v=6003"/>
+
+  <link rel="manifest" href="/site.webmanifest?v=6004"/>
   <link rel="icon" href="/media/icons/whylee-fox.svg" type="image/svg+xml"/>
   <link rel="apple-touch-icon" href="/media/icons/whylee-icon-192.png"/>
-  <meta name="description" content="Whylee — your smart companion for daily cognitive focus and learning."/>
-  <link rel="stylesheet" href="/style.css?v=6003"/>
+
+  <link rel="preload" href="/style.css?v=6004" as="style"/>
+  <link rel="preload" href="/shell.js?v=6004" as="script"/>
+  <link rel="preload" href="/app.js?v=6004" as="script"/>
+  <link rel="stylesheet" href="/style.css?v=6004"/>
 </head>
 <body class="theme-blue">
   <!-- Splash is injected by shell.js -->
+
   <header class="app-header" role="banner" aria-label="Whylee">
     <div class="brand">
       <img src="/media/icons/whylee-fox.svg" alt="" class="logo" width="32" height="32" />
@@ -25,22 +31,26 @@
   </header>
 
   <main id="app" class="app-shell" role="main" aria-live="polite">
-    <!-- shell.js routes fill here -->
+    <!-- shell.js routes render here -->
   </main>
 
   <footer class="app-footer">
-    <div class="tabs">
+    <nav class="tabs" aria-label="Primary">
       <a href="#/home" data-tab>Home</a>
       <a href="#/tasks" data-tab>Tasks</a>
       <a href="#/about" data-tab>About</a>
-    </div>
-    <small id="app-version" class="muted">v6003 • Qsrc: init…</small>
+    </nav>
+    <small id="app-version" class="muted">v6004 • Phase 2</small>
   </footer>
 
-  <!-- Core scripts -->
-  <script src="/shell.js?v=6003" defer></script>
-  <script src="/app.js?v=6003" defer></script>
-<script src="/questions.js?v=6003" defer></script>
-<script src="/game.js?v=6003" defer></script>
+  <!-- Order matters: helpers → data → game → shell/app -->
+  <script src="/pro.js?v=6004" defer></script>
+  <script src="/achievements.js?v=6004" defer></script>
+  <script src="/reflections.js?v=6004" defer></script>
+  <script src="/questions.js?v=6003" defer></script>
+  <script src="/game.js?v=6004" defer></script>
+
+  <script src="/shell.js?v=6004" defer></script>
+  <script src="/app.js?v=6004" defer></script>
 </body>
 </html>
