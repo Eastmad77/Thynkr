@@ -1,4 +1,14 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://dailybrainbolt.com/sitemap.xml
+# Sitemap for indexing
+Sitemap: https://whylee.com/sitemap.xml
+
+# Prevent access to sensitive or non-public files
+Disallow: /admin.html
+Disallow: /pro.html
+Disallow: /service-worker.js
+Disallow: /questions.js
+Disallow: /achievements.js
+Disallow: /reflections.js
+Disallow: /game.js
