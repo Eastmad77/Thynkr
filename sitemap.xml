@@ -5,58 +5,22 @@
 
   <!-- Core Pages -->
   <url>
-    <loc>https://dailybrainbolt.com/</loc>
+    <loc>/</loc>
     <priority>1.0</priority>
     <changefreq>daily</changefreq>
   </url>
-  <url>
-    <loc>https://dailybrainbolt.com/about.html</loc>
-    <priority>0.6</priority>
-    <changefreq>monthly</changefreq>
-  </url>
-  <url>
-    <loc>https://dailybrainbolt.com/contact.html</loc>
-    <priority>0.6</priority>
-    <changefreq>monthly</changefreq>
-  </url>
-  <url>
-    <loc>https://dailybrainbolt.com/privacy.html</loc>
-    <priority>0.5</priority>
-    <changefreq>yearly</changefreq>
-  </url>
-  <url>
-    <loc>https://dailybrainbolt.com/terms.html</loc>
-    <priority>0.5</priority>
-    <changefreq>yearly</changefreq>
-  </url>
+  <url><loc>/about.html</loc></url>
+  <url><loc>/contact.html</loc></url>
+  <url><loc>/privacy.html</loc></url>
+  <url><loc>/terms.html</loc></url>
 
-  <!-- Feature / App Pages -->
-  <url>
-    <loc>https://dailybrainbolt.com/pro.html</loc>
-    <priority>0.7</priority>
-    <changefreq>weekly</changefreq>
-  </url>
-  <url>
-    <loc>https://dailybrainbolt.com/admin.html</loc>
-    <priority>0.4</priority>
-    <changefreq>monthly</changefreq>
-  </url>
-  <url>
-    <loc>https://dailybrainbolt.com/profile.html</loc>
-    <priority>0.8</priority>
-    <changefreq>daily</changefreq>
-  </url>
-  <url>
-    <loc>https://dailybrainbolt.com/sign-in.html</loc>
-    <priority>0.6</priority>
-    <changefreq>weekly</changefreq>
-  </url>
+  <!-- App / Feature Pages -->
+  <url><loc>/profile.html</loc></url>
+  <url><loc>/pro.html</loc></url>
+  <url><loc>/sign-in.html</loc></url>
+  <url><loc>/admin.html</loc></url>
 
-  <!-- Fallback / Error Page -->
-  <url>
-    <loc>https://dailybrainbolt.com/404.html</loc>
-    <priority>0.1</priority>
-    <changefreq>yearly</changefreq>
-  </url>
+  <!-- Fallback Page -->
+  <url><loc>/404.html</loc></url>
 
 </urlset>
