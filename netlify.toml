@@ -1,6 +1,6 @@
+# Netlify config for SPA/PWA (Whylee v6007)
 [build]
   publish = "."
-  command = ""
 
 [[headers]]
   for = "/service-worker.js"
@@ -13,30 +13,7 @@
   [headers.values]
     Content-Type = "application/manifest+json; charset=utf-8"
 
-[[headers]]
-  for = "/media/posters/*.mp4"
-  [headers.values]
-    Content-Type = "video/mp4"
-    Access-Control-Allow-Origin = "*"
-
-[[headers]]
-  for = "/media/posters/*.webm"
-  [headers.values]
-    Content-Type = "video/webm"
-    Access-Control-Allow-Origin = "*"
-
-[[redirects]]
-  from = "http://dailybrainbolt.com/*"
-  to = "https://www.dailybrainbolt.com/:splat"
-  status = 301!
-  force = true
-
-[[redirects]]
-  from = "https://dailybrainbolt.com/*"
-  to = "https://www.dailybrainbolt.com/:splat"
-  status = 301!
-  force = true
-
+# Let the SPA handle routes (/#/home etc.)
 [[redirects]]
   from = "/*"
   to = "/index.html"
