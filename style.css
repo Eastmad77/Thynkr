@@ -1,6 +1,4 @@
-/* =========================================================
-   Whylee Core Styles v6004 — Blue cinematic theme (PWA)
-   ====================================================== */
+/* Whylee Core Styles v6006 — Blue cinematic theme (PWA) */
 :root{
   --bg:#06142a; --bg2:#0b1d3f; --card:#0d2147;
   --fg:#e9f2ff; --muted:#b7c8e6;
@@ -17,7 +15,7 @@ body{
   background:radial-gradient(120% 120% at 50% 35%, #102650 0%, #08162f 60%, #040b1b 100%);
 }
 
-/* ---------------- Header / Footer ---------------- */
+/* Header / Footer */
 .app-header{
   position:sticky; top:0; z-index:20;
   display:flex; justify-content:space-between; align-items:center; gap:12px;
@@ -29,12 +27,11 @@ body{
 .brand{display:flex; align-items:center; gap:.6rem}
 .brand .logo{width:28px; height:28px}
 .actions{display:flex; gap:8px}
-
 .app-footer{
   position:fixed; inset:auto 0 0 0; z-index:18;
   padding:12px 16px;
   background:linear-gradient(180deg, rgba(8,22,47,0), rgba(8,22,47,.95));
-  border-top:1px solid rgba(255,255,255,.07);
+  border-top:1px solid rgba(255,255,255,.07)
 }
 .tabs{display:grid; grid-template-columns:repeat(3,1fr); gap:8px}
 .tabs a{
@@ -44,7 +41,7 @@ body{
 }
 .tabs a.active{outline:2px solid var(--brand)}
 
-/* ---------------- Buttons / Inputs ---------------- */
+/* Buttons / Inputs */
 button{border:0; padding:10px 14px; border-radius:12px; cursor:pointer; font-weight:600}
 button.primary{background:linear-gradient(90deg,var(--brand),var(--brand2)); color:#04102a}
 button.secondary{background:#0b1d3f; color:var(--fg); border:1px solid rgba(255,255,255,.08)}
@@ -54,7 +51,7 @@ input[type="text"],input[type="search"],textarea{
   border:1px solid rgba(255,255,255,.1); padding:10px 12px; border-radius:12px;
 }
 
-/* ---------------- Layout ---------------- */
+/* Layout */
 .app-shell{max-width:980px; margin:18px auto; padding:0 16px 120px}
 .card{
   background:linear-gradient(180deg, #0e264e, #08162f);
@@ -71,7 +68,7 @@ input[type="text"],input[type="search"],textarea{
 }
 .muted{color:var(--muted)}
 
-/* ---------------- Splash (injected) ---------------- */
+/* Splash (injected) */
 .splash{
   position:fixed; inset:0; z-index:9999; display:grid; place-items:center;
   background:radial-gradient(120% 120% at 50% 35%,#0f2a55 0%,#08142c 65%,#040b1b 100%);
@@ -87,10 +84,9 @@ input[type="text"],input[type="search"],textarea{
 @keyframes pulse{0%,100%{opacity:.55}50%{opacity:1}}
 @keyframes splashFadeIn{from{opacity:0; transform:scale(1.01)}to{opacity:1; transform:scale(1)}}
 
-/* ---------------- Quiz UI ---------------- */
+/* Quiz UI */
 #qTimer{width:100%; max-width:420px; height:6px; background:#24406f; margin-top:1rem; border-radius:3px; overflow:hidden}
 #qTimerBar{width:0%; height:100%; background:linear-gradient(90deg,#47b0ff,#1e74f1); transition:width .08s linear}
-
 .choices .choice{
   display:block; width:100%; text-align:left; margin:8px 0; padding:12px;
   border-radius:12px; background:#0b1d3f; border:1px solid rgba(255,255,255,.08); color:var(--fg)
@@ -101,43 +97,24 @@ input[type="text"],input[type="search"],textarea{
 @keyframes blinkOk{0%{box-shadow:0 0 0 0 rgba(52,211,153,0)}50%{box-shadow:0 0 0 6px rgba(52,211,153,.2)}100%{box-shadow:0 0 0 0 rgba(52,211,153,0)}}
 @keyframes blinkBad{0%{box-shadow:0 0 0 0 rgba(239,68,68,0)}50%{box-shadow:0 0 0 6px rgba(239,68,68,.25)}100%{box-shadow:0 0 0 0 rgba(239,68,68,0)}}
 
-/* ---------------- Posters & Overlays ---------------- */
+/* Posters & Overlays */
 .overlay-poster{position:fixed; inset:0; z-index:60}
 .overlay-poster img{width:100%; height:100%; object-fit:cover}
 
-/* ---------------- Badges / Profile ---------------- */
-.badge{
-  display:inline-flex; align-items:center; gap:6px;
-  padding:6px 10px; border-radius:999px; font-size:12px;
-  background:#0b1d3f; border:1px solid rgba(255,255,255,.08)
-}
+/* Badges / Profile */
+.badge{display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border-radius:999px; font-size:12px; background:#0b1d3f; border:1px solid rgba(255,255,255,.08)}
 .badge .i{font-size:14px}
 .badge-lg{font-size:14px; padding:8px 12px}
 .badge-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:10px}
 
-/* ---------------- Reflection Card ---------------- */
-.reflection{
-  position:fixed; inset:0; z-index:70; display:grid; place-items:center;
-  background:rgba(0,0,0,.45); backdrop-filter:blur(2px)
-}
-.reflection-card{
-  width:min(560px,92vw);
-  background:linear-gradient(180deg,#0f2a55,#08162f);
-  border:1px solid rgba(255,255,255,.08);
-  border-radius:16px; padding:18px;
-  box-shadow:0 20px 60px rgba(0,0,0,.4);
-  text-align:center
-}
+/* Reflection Card */
+.reflection{position:fixed; inset:0; z-index:70; display:grid; place-items:center; background:rgba(0,0,0,.45); backdrop-filter:blur(2px)}
+.reflection-card{width:min(560px,92vw); background:linear-gradient(180deg,#0f2a55,#08162f); border:1px solid rgba(255,255,255,.08); border-radius:16px; padding:18px; box-shadow:0 20px 60px rgba(0,0,0,.4); text-align:center}
 .reflection-card h3{margin:8px 0 6px 0}
 .reflection-card p{color:var(--muted); margin:6px 0 14px 0}
 .reflection-card .fox{margin-bottom:6px}
 
-/* ---------------- Themes per Level (optional hooks) ---------------- */
-.theme-level1 body{}
-.theme-level2 body{}
-.theme-level3 body{}
-
-/* ---------------- Responsive ---------------- */
+/* Responsive */
 @media (min-width:680px){
   .brand h1{font-size:22px}
   .tabs{gap:12px}
