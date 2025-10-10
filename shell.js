@@ -1,21 +1,16 @@
-// Whylee Shell v6003 — +Play route
+// Whylee Shell v6004 — Home, Play, Tasks, About, Profile, Pro
 (() => {
-  const VERSION = '6003';
+  const VERSION = '6004';
   const app = document.getElementById('app');
   const tabs = Array.from(document.querySelectorAll('[data-tab]'));
-  const $ver = document.getElementById('app-version');
-  $ver.textContent = `Whylee v${VERSION} • Qsrc: ready`;
+  const $ver = document.getElementById('app-version'); $ver.textContent = `Whylee v${VERSION} • Phase 2`;
 
-  // Splash
   function showSplash(){
     const splash = document.createElement('div');
     splash.id='splash'; splash.className='splash';
-    splash.innerHTML = `
-      <img id="splashImg" src="/media/posters/poster-start.jpg" alt="Whylee splash"/>
-      <div id="tapHint">Tap to Begin</div>`;
+    splash.innerHTML = `<img id="splashImg" src="/media/posters/poster-start.jpg" alt="Whylee splash"/><div id="tapHint">Tap to Begin</div>`;
     document.body.prepend(splash);
-    const isPro = localStorage.getItem('whylee:pro')==='1';
-    if (isPro){
+    if (window.WhyleePro?.isPro()){
       const v = document.createElement('video');
       Object.assign(v,{id:'splashVid',playsInline:true,muted:true,autoplay:true,src:'/media/posters/poster-start.mp4'});
       v.addEventListener('ended', removeSplash, {once:true});
@@ -28,7 +23,6 @@
   function removeSplash(){ const s=document.getElementById('splash'); if (!s) return; s.classList.add('hide'); setTimeout(()=> s.remove(), 350); }
   document.addEventListener('DOMContentLoaded', showSplash);
 
-  // Routes
   const routes = {
     '#/home': () => `
       <section class="card">
@@ -36,8 +30,8 @@
         <p class="muted">Your smart companion for daily focus and learning.</p>
         <div class="list">
           <button class="primary" onclick="location.hash='#/play'">Play Today’s Quiz</button>
-          <div class="row"><input id="task-input" type="text" placeholder="Add a task…"/><button id="task-add" class="secondary">Add</button></div>
-          <div id="task-list" class="list" aria-live="polite"></div>
+          <button class="secondary" onclick="location.hash='#/profile'">Profile & Badges</button>
+          <button class="secondary" onclick="location.hash='#/pro'">${window.WhyleePro?.isPro()?'Manage Pro':'Upgrade to Pro'}</button>
         </div>
       </section>`,
     '#/play': () => `
@@ -51,7 +45,7 @@
         <div id="choices" class="choices"></div>
         <div id="qTimer"><div id="qTimerBar"></div></div>
         <div id="elapsedTime" class="muted" style="text-align:center;margin-top:6px">0:00</div>
-        <div id="badgeBox" class="list" style="margin-top:12px"></div>
+        <div id="badgeBox" class="badge-grid"></div>
       </section>`,
     '#/tasks': () => `
       <section class="card">
@@ -63,12 +57,34 @@
     '#/about': () => `
       <section class="card">
         <h2>About</h2>
-        <p>Whylee is a premium PWA designed for cognitive focus and daily learning.</p>
+        <p>Premium PWA for cognitive focus. Offline-first with optional Pro perks.</p>
+      </section>`,
+    '#/profile': () => {
+      const xp = Number(localStorage.getItem('wl_xp')||0);
+      const badges = JSON.parse(localStorage.getItem('wl_badges')||'[]');
+      const pretty = window.WhyleeAchievements.pretty(badges);
+      return `
+      <section class="card">
+        <h2>Your Profile</h2>
+        <div class="row"><strong>XP</strong><span>${xp}</span></div>
+        <div class="row"><strong>Streak</strong><span>${Number(localStorage.getItem('wl_streak')||0)} days</span></div>
+        <h3>Badges</h3>
+        <div class="badge-grid">${pretty.length ? pretty.map(b=>`<div class="badge badge-lg"><span class="i">${b.icon}</span>${b.label}</div>`).join('') : '<span class="muted">No badges yet</span>'}</div>
+      </section>`;
+    },
+    '#/pro': () => `
+      <section class="card">
+        <h2>Whylee Pro</h2>
         <ul>
-          <li>Blue cinematic theme, installable</li>
-          <li>Offline shell + poster preloads</li>
-          <li>Pro: animated splash & extras</li>
+          <li>Animated splash & premium posters</li>
+          <li>Priority offline updates</li>
+          <li>Early access features</li>
         </ul>
+        <div class="list">
+          <button class="primary" id="btn-pro-toggle">${window.WhyleePro?.isPro()?'Disable Pro (local)':'Enable Pro (local)'}</button>
+          <button class="secondary" onclick="location.href='/pro.html'">Checkout (Netlify function)</button>
+        </div>
+        <p class="muted">Local toggle simulates Pro for testing. Checkout uses \`.netlify/functions/create-checkout-session.js\`.</p>
       </section>`
   };
 
@@ -79,28 +95,28 @@
     tabs.forEach(a => a.classList.toggle('active', a.getAttribute('href')===hash));
     if (hash.startsWith('#/home')) initHome();
     if (hash.startsWith('#/tasks')) initTasks();
-    if (hash.startsWith('#/play')) {
-      // kick off the game once UI exists
-      setTimeout(()=> window.WhyleeGame?.start(document.getElementById('quizRoot')), 0);
+    if (hash.startsWith('#/play')) setTimeout(()=> window.WhyleeGame?.start(document.getElementById('quizRoot')), 0);
+    if (hash.startsWith('#/pro')) {
+      document.getElementById('btn-pro-toggle')?.addEventListener('click', ()=>{
+        const next = !window.WhyleePro.isPro(); window.WhyleePro.setPro(next); render();
+      });
     }
   }
   addEventListener('hashchange', render);
   addEventListener('DOMContentLoaded', render);
 
-  // Install prompt + refresh
+  // Install + refresh (same as before)
   let deferredPrompt;
   const installBtn = document.getElementById('btn-install');
   addEventListener('beforeinstallprompt', (e)=>{ e.preventDefault(); deferredPrompt = e; installBtn.hidden = false; });
   installBtn?.addEventListener('click', async ()=>{
-    installBtn.disabled = true;
-    if (!deferredPrompt) return;
-    const { outcome } = await deferredPrompt.prompt();
-    if (outcome !== 'accepted') installBtn.disabled = false;
+    installBtn.disabled = true; if (!deferredPrompt) return;
+    const { outcome } = await deferredPrompt.prompt(); if (outcome !== 'accepted') installBtn.disabled = false;
     deferredPrompt = null; installBtn.hidden = true;
   });
   document.getElementById('btn-refresh')?.addEventListener('click', ()=> location.reload());
 
-  // Tiny local tasks demo
+  // Tiny local tasks (unchanged)
   const store = { key:'whylee:tasks', all(){ try{return JSON.parse(localStorage.getItem(this.key))||[]}catch{return[]} }, save(v){ localStorage.setItem(this.key, JSON.stringify(v)); } };
   function paintTasks(listEl, items){
     listEl.innerHTML = items.map((t,i)=>`
@@ -113,14 +129,10 @@
       </div>`).join('');
   }
   function initHome(){
-    const addBtn = document.getElementById('task-add');
-    const input = document.getElementById('task-input');
-    const list = document.getElementById('task-list');
+    const addBtn = document.getElementById('task-add'); const input = document.getElementById('task-input'); const list = document.getElementById('task-list');
     const items = store.all(); paintTasks(list, items);
-    addBtn?.addEventListener('click', ()=>{
-      const text=(input.value||'').trim(); if(!text) return;
-      const next=[...store.all(), {text,done:false,ts:Date.now()}]; store.save(next); input.value=''; paintTasks(list,next);
-    });
+    addBtn?.addEventListener('click', ()=>{ const text=(input.value||'').trim(); if(!text) return;
+      const next=[...store.all(), {text,done:false,ts:Date.now()}]; store.save(next); input.value=''; paintTasks(list,next); });
     list?.addEventListener('click', (e)=>{
       const del = e.target.closest('[data-del]'); const idx = del? Number(del.dataset.del):-1;
       const cb = e.target.matches('input[type="checkbox"]') ? e.target : null;
