@@ -1,73 +1,37 @@
-/* Whylee SW — robust caching with safe navigation preload handling */
-const VERSION = '6006';
-const CACHE = `whylee-cache-v${VERSION}`;
-const CORE = [
-  '/', '/index.html',
-  '/style.css?v=6006','/app.js?v=6006','/shell.js?v=6006',
-  '/media/icons/whylee-icon-192.png','/media/icons/whylee-icon-512.png','/media/icons/favicon.svg'
-];
+// questions.js v6003 — inline 36 questions, no CSV fetch
+window.WhyleeQuestions = (function(){
+  // 12 per level, quick sample set — swap these with your real questions anytime
+  const L1 = Array.from({length:12}, (_,i)=>({
+    Question:`Warm-up ${i+1}: 2 + ${i+1} = ?`,
+    Answers:[`${i+3}`,`${i+2}`,`${i+4}`,`${i}`], // first is correct
+    Correct:0, Explanation:`Because 2 + ${i+1} = ${i+3}.`, Level:1
+  }));
 
-self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(CORE))); self.skipWaiting(); });
-self.addEventListener('activate', e => {
-  e.waitUntil((async () => {
-    const keys = await caches.keys(); await Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)));
-    if (self.registration.navigationPreload) { try { await self.registration.navigationPreload.enable(); } catch {} }
-  })());
-  self.clients.claim();
-});
+  const flags = [["🇧🇷","Brazil"],["🇨🇦","Canada"],["🇪🇸","Spain"],["🇮🇹","Italy"],["🇯🇵","Japan"],["🇫🇷","France"]];
+  const L2 = Array.from({length:12}, (_,i)=>({
+    Question:`Match the pair: Which country uses this flag? ${flags[i%flags.length][0]}`,
+    Answers:[flags[i%flags.length][1],"Germany","Norway","Chile"],
+    Correct:0, Explanation:`That flag is ${flags[i%flags.length][1]}.`, Level:2
+  }));
 
-const isHTML = req => req.mode === 'navigate' || (req.destination === 'document');
-const isCore = url => CORE.some(path => url.endsWith(path.replace(/^\//,'')));
-const isRange = req => req.headers.has('range');
+  const L3 = [
+    {Q:"Which planet is known as the Red Planet?", A:["Mars","Venus","Jupiter","Saturn"], E:"Iron oxide makes Mars look red."},
+    {Q:"The largest ocean on Earth?", A:["Pacific","Atlantic","Indian","Arctic"], E:"The Pacific is the largest."},
+    {Q:"Speed of light is about…", A:["300,000 km/s","150,000 km/s","3,000 km/s","30,000 km/s"], E:"~3×10⁵ km/s."},
+    {Q:"H2O is…", A:["Water","Hydrogen","Oxygen","Salt"], E:"H₂O is water."},
+    {Q:"Primary source of Earth’s energy?", A:["Sun","Core","Moon","Tides"], E:"Solar radiation."},
+    {Q:"Who painted the Mona Lisa?", A:["Leonardo da Vinci","Michelangelo","Raphael","Monet"], E:"Leonardo da Vinci."},
+    {Q:"DNA stands for…", A:["Deoxyribonucleic acid","Dicarboxylic nitro acid","Dinucleic amino acid","None"], E:"Deoxyribonucleic acid."},
+    {Q:"Capital of Canada?", A:["Ottawa","Toronto","Vancouver","Montreal"], E:"Ottawa."},
+    {Q:"The chemical symbol for gold?", A:["Au","Ag","Gd","Go"], E:"Au."},
+    {Q:"Which gas do plants absorb?", A:["CO₂","O₂","N₂","H₂"], E:"Carbon dioxide."},
+    {Q:"Largest mammal?", A:["Blue whale","Elephant","Giraffe","Hippo"], E:"Blue whale."},
+    {Q:"Continent with the Sahara?", A:["Africa","Asia","Australia","South America"], E:"Africa."},
+  ].map(x=>({Question:x.Q, Answers:x.A, Correct:0, Explanation:x.E, Level:3}));
 
-self.addEventListener('fetch', event => {
-  const req = event.request;
-  if (req.method !== 'GET' || isRange(req)) return;
+  const ALL = [...L1, ...L2, ...L3];
 
-  if (isHTML(req)) {
-    event.respondWith((async () => {
-      const cache = await caches.open(CACHE);
-      const cached = await cache.match('/index.html', { ignoreSearch: true });
-      if (cached) {
-        event.waitUntil((async () => { try { const fresh = await fetch('/index.html', { cache:'no-store' }); if (fresh?.ok) await cache.put('/index.html', fresh.clone()); } catch {} })());
-        return cached;
-      }
-      try {
-        const preload = await event.preloadResponse;
-        const res = preload || await fetch(req);
-        if (res?.ok) cache.put('/index.html', res.clone());
-        return res;
-      } catch {
-        return new Response('<!doctype html><title>Offline</title><style>body{background:#0b1220;color:#e6eef8;font:16px system-ui;margin:0;padding:24px}</style><h1>Offline</h1><p>Whylee is offline. Try again once you\'re connected.</p>', { headers: { 'Content-Type':'text/html; charset=utf-8' }});
-      }
-    })());
-    return;
-  }
-
-  event.respondWith((async () => {
-    const url = new URL(req.url);
-    const cache = await caches.open(CACHE);
-    const isSameOrigin = url.origin === location.origin;
-    const isMedia = ['video','audio'].includes(req.destination);
-
-    if (isSameOrigin && (isCore(url.pathname) || ['style','script','image'].includes(req.destination))) {
-      const cached = await cache.match(req, { ignoreSearch: true });
-      if (cached) return cached;
-      try {
-        const res = await fetch(req);
-        if (res?.ok && res.status === 200 && res.type !== 'opaqueredirect') cache.put(req, res.clone());
-        return res;
-      } catch (err) {
-        const fallback = await cache.match(req.url.split('?')[0]); if (fallback) return fallback;
-        throw err;
-      }
-    } else {
-      try { return await fetch(req, { cache:'no-store' }); }
-      catch (err) {
-        const cached = await cache.match(req, { ignoreSearch:true }); if (cached) return cached;
-        if (isMedia) return new Response(null, { status:504, statusText:'Offline' });
-        throw err;
-      }
-    }
-  })());
-});
+  return {
+    async load(){ return ALL; } // API used by game.js
+  };
+})();
