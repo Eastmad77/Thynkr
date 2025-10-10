@@ -1,71 +1,30 @@
-// Creates a Stripe Checkout Session for Thynkr Pro (monthly or yearly)
-// POST body: { plan: "monthly" | "yearly", uid?: "firebaseAuthUid", email?: "user@example.com" }
-
-const allowedOrigins = [
-  process.env.SITE_URL,           // e.g. "https://your-site.netlify.app"
-  "http://localhost:8888",        // Netlify dev
-  "http://localhost:5173"         // Vite dev (optional)
-];
-
-exports.handler = async (event) => {
-  const origin = event.headers.origin || "";
-  const allow = allowedOrigins.filter(Boolean).includes(origin);
-  const cors = {
-    "Access-Control-Allow-Origin": allow ? origin : (process.env.SITE_URL || "*"),
-    "Access-Control-Allow-Methods": "POST, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type, Authorization",
-  };
-
-  if (event.httpMethod === "OPTIONS") {
-    return { statusCode: 200, headers: cors, body: "" };
-  }
-  if (event.httpMethod !== "POST") {
-    return { statusCode: 405, headers: cors, body: "Method Not Allowed" };
-  }
+// POST → Stripe Checkout URL for Whylee Pro
+export default async (req) => {
+  if (req.method !== "POST")
+    return new Response("Method Not Allowed", { status: 405 });
 
   try {
-    const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
-    const body = event.body ? JSON.parse(event.body) : {};
-    const plan = (body.plan || "").toLowerCase();    // "monthly" | "yearly"
-    const uid = body.uid || "";                       // optional firebase uid
-    const email = body.email || "";                   // optional email hint for Checkout
-
-    const priceMap = {
-      monthly: process.env.STRIPE_PRICE_MONTHLY,
-      yearly:  process.env.STRIPE_PRICE_YEARLY,
-    };
-    const price = priceMap[plan];
-    if (!price) {
-      return { statusCode: 400, headers: cors, body: JSON.stringify({ error: "No price for selected plan" }) };
+    const key = process.env.STRIPE_SECRET_KEY;
+    if (!key) {
+      return Response.json({ error: "Missing STRIPE_SECRET_KEY" }, { status: 500 });
     }
 
-    const site = process.env.SITE_URL || "http://localhost:8888";
-    const successUrl = `${site}/pro.html?checkout=success&plan=${plan}&session_id={CHECKOUT_SESSION_ID}`;
-    const cancelUrl  = `${site}/pro.html?checkout=cancel&plan=${plan}`;
+    const { default: Stripe } = await import("stripe");
+    const stripe = new Stripe(key, { apiVersion: "2024-06-20" });
 
+    const origin = req.headers.get("origin") || "https://dailybrainbolt.com";
+    const price = process.env.STRIPE_PRICE_ID || "price_123";
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
       line_items: [{ price, quantity: 1 }],
-      customer_creation: "if_required",
-      allow_promotion_codes: true,
-      success_url: successUrl,
-      cancel_url: cancelUrl,
-      customer_email: email || undefined,
-      metadata: {
-        app: "thynkr",
-        uid,               // optional
-        plan,              // "monthly" | "yearly"
-        site               // helpful context
-      },
+      success_url: `${origin}/pro.html?status=success`,
+      cancel_url: `${origin}/pro.html?status=cancel`,
+      metadata: { app: "whylee" },
     });
 
-    return {
-      statusCode: 200,
-      headers: { ...cors, "Content-Type": "application/json" },
-      body: JSON.stringify({ url: session.url, id: session.id }),
-    };
+    return Response.json({ url: session.url });
   } catch (err) {
-    console.error("create-checkout-session error:", err);
-    return { statusCode: 200, headers: cors, body: JSON.stringify({ error: err.message || "Server Error" }) };
+    console.error(err);
+    return Response.json({ error: String(err) }, { status: 500 });
   }
 };
