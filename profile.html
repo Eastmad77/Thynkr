@@ -3,48 +3,103 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <meta name="theme-color" content="#1e74f1"/>
+  <meta name="theme-color" content="#0a2a43"/>
   <title>Profile · Whylee</title>
-  <link rel="manifest" href="/site.webmanifest?v=6007"/>
+  <link rel="manifest" href="/site.webmanifest?v=7000"/>
   <link rel="icon" href="/media/icons/favicon.svg" type="image/svg+xml"/>
-  <link rel="stylesheet" href="/style.css?v=6007"/>
+  <link rel="stylesheet" href="/css/style.css?v=7000"/>
 </head>
-<body>
+<body class="theme-dark">
   <header class="app-header">
-    <div class="brand"><img class="logo" src="/media/icons/whylee-fox.svg" alt="" width="28" height="28"/><h1>Your Profile</h1></div>
+    <a class="brand" href="/"><img src="/media/icons/app-icon.svg" alt="" class="brand-icon"/>Whylee</a>
+    <nav class="top-nav">
+      <a href="/achievements.html" class="top-link">Badges</a>
+      <a href="/pro.html" class="top-link">Pro</a>
+    </nav>
   </header>
+
   <main class="app-shell">
-    <section class="card" id="profileCard">
-      <h2>Stats</h2>
-      <div class="row"><strong>XP</strong><span id="pXP">0</span></div>
-      <div class="row"><strong>Streak</strong><span id="pStreak">0 days</span></div>
-      <h3>Badges</h3>
-      <div id="pBadges" class="badge-grid"><span class="muted">No badges yet</span></div>
+    <section class="card">
+      <h1>Your Profile</h1>
+      <div class="grid-2 gap">
+        <div class="card-soft">
+          <h2>Avatar</h2>
+          <img id="avatarPreview" class="avatar-lg" src="/media/avatars/fox-default.png" alt="Selected avatar" />
+          <div class="row wrap">
+            <button class="chip" data-avatar="fox-default.png">Fox</button>
+            <button class="chip" data-avatar="fox-happy.png">Happy</button>
+            <button class="chip" data-avatar="fox-focused.png">Focused</button>
+            <button class="chip" data-avatar="fox-sad.png">Sad</button>
+            <button class="chip pro" data-avatar="owl-pro.png">Owl (Pro)</button>
+            <button class="chip pro" data-avatar="panda-pro.png">Panda (Pro)</button>
+            <button class="chip pro" data-avatar="cat-pro.png">Cat (Pro)</button>
+            <button class="chip pro" data-avatar="monkey-pro.png">Monkey (Pro)</button>
+          </div>
+        </div>
+
+        <div class="card-soft">
+          <h2>Stats</h2>
+          <div class="kv">
+            <span class="muted">Level</span><span id="pLevel">1</span>
+            <span class="muted">XP</span><span id="pXP">0</span>
+            <span class="muted">Daily Streak</span><span id="pStreak">0</span>
+            <span class="muted">Perfects</span><span id="pPerfects">0</span>
+          </div>
+          <div class="progress">
+            <i id="pXPBar" style="width:0%"></i>
+          </div>
+        </div>
+      </div>
+      <div class="row gap">
+        <button id="btnExport" class="btn secondary">Export Data</button>
+        <button id="btnImport" class="btn secondary">Import Data</button>
+        <input id="fileImport" type="file" accept="application/json" hidden/>
+        <span class="spacer"></span>
+        <a class="btn ghost" href="/achievements.html">View Badges</a>
+      </div>
     </section>
   </main>
+
   <footer class="app-footer">
     <nav class="tabs">
       <a href="/#/home">Home</a>
-      <a href="/#/tasks">Tasks</a>
-      <a class="active" href="/profile.html">Profile</a>
+      <a href="/profile.html" class="active">Profile</a>
+      <a href="/achievements.html">Badges</a>
     </nav>
   </footer>
 
-  <script src="/achievements.js?v=6004" defer></script>
   <script>
-    document.addEventListener('DOMContentLoaded', ()=>{
-      const xp = Number(localStorage.getItem('wl_xp')||0);
-      const badges = JSON.parse(localStorage.getItem('wl_badges')||'[]');
-      const streak = Number(localStorage.getItem('wl_streak')||0);
-      document.getElementById('pXP').textContent = xp;
-      document.getElementById('pStreak').textContent = `${streak} day${streak===1?'':'s'}`;
-      const pretty = window.WhyleeAchievements?.pretty(badges) || [];
-      const grid = document.getElementById('pBadges');
-      grid.innerHTML = pretty.length ? pretty.map(b=>`<div class="badge badge-lg"><span class="i">${b.icon}</span>${b.label}</div>`).join('') : '<span class="muted">No badges yet</span>';
+    const el = (s)=>document.querySelector(s);
+    document.addEventListener('click', (e)=>{
+      const b = e.target.closest('.chip[data-avatar]');
+      if (!b) return;
+      const file = b.dataset.avatar;
+      el('#avatarPreview').src = '/media/avatars/' + file;
+      try{ localStorage.setItem('whylee:avatar', file); }catch(_){}
+    });
+    el('#btnExport')?.addEventListener('click', ()=>{
+      const payload = {
+        avatar: localStorage.getItem('whylee:avatar') || 'fox-default.png',
+        tasks: JSON.parse(localStorage.getItem('whylee:tasks')||'[]')
+      };
+      const blob = new Blob([JSON.stringify(payload,null,2)], {type:'application/json'});
+      const a = Object.assign(document.createElement('a'), {href:URL.createObjectURL(blob), download:'whylee-profile.json'});
+      a.click(); URL.revokeObjectURL(a.href);
+    });
+    el('#btnImport')?.addEventListener('click', ()=> el('#fileImport').click());
+    el('#fileImport')?.addEventListener('change', async (e)=>{
+      const f = e.target.files[0]; if(!f) return;
+      const text = await f.text();
+      try{
+        const data = JSON.parse(text);
+        if (data.avatar) localStorage.setItem('whylee:avatar', data.avatar);
+        if (Array.isArray(data.tasks)) localStorage.setItem('whylee:tasks', JSON.stringify(data.tasks));
+        location.reload();
+      }catch{
+        alert('Invalid JSON');
+      }
     });
   </script>
-
-  <script src="/app.js?v=6007" defer></script>
-  <script src="/shell.js?v=6007" defer></script>
+  <script src="/js/app.js?v=7000" defer></script>
 </body>
 </html>
