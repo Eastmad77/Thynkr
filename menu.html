@@ -3,34 +3,46 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="theme-color" content="#0a2a43"/>
   <title>Menu · Whylee</title>
+  <link rel="manifest" href="/site.webmanifest?v=7000"/>
   <link rel="icon" href="/media/icons/favicon.svg" type="image/svg+xml"/>
-  <link rel="stylesheet" href="/style.css?v=6007"/>
+  <link rel="stylesheet" href="/css/style.css?v=7000"/>
 </head>
-<body>
+<body class="theme-dark">
   <header class="app-header">
-    <div class="brand"><img class="logo" src="/media/icons/whylee-fox.svg" width="28" height="28" alt=""/><h1>Menu</h1></div>
+    <a class="brand" href="/"><img src="/media/icons/app-icon.svg" alt="" class="brand-icon"/>Whylee</a>
+    <nav class="top-nav">
+      <a href="/profile.html" class="top-link">Profile</a>
+      <a href="/pro.html" class="top-link">Pro</a>
+    </nav>
   </header>
+
   <main class="app-shell">
     <section class="card">
-      <h2>Quick Links</h2>
-      <nav class="list">
-        <a class="row" href="/#/home">🏠 Home</a>
-        <a class="row" href="/#/tasks">🧾 Tasks</a>
-        <a class="row" href="/profile.html">👤 Profile</a>
-        <a class="row" href="/pro.html">💎 Whylee Pro</a>
-        <a class="row" href="/contact.html">✉️ Contact</a>
-      </nav>
+      <h1>Menu</h1>
+      <div class="list">
+        <a class="row nav" href="#/home">Start / Continue</a>
+        <a class="row nav" href="#/tasks">Tasks</a>
+        <a class="row nav" href="/leaderboard.html">Leaderboard</a>
+        <a class="row nav" href="/achievements.html">Achievements</a>
+        <a class="row nav" href="/reflections.html">Daily Reflections</a>
+        <a class="row nav" href="/about.html">About</a>
+        <a class="row nav" href="/privacy.html">Privacy</a>
+        <a class="row nav" href="/terms.html">Terms</a>
+        <a class="row nav" href="/contact.html">Contact</a>
+      </div>
     </section>
   </main>
+
   <footer class="app-footer">
     <nav class="tabs">
-      <a href="/#/home" data-tab>Home</a>
-      <a href="/#/tasks" data-tab>Tasks</a>
-      <a href="/#/about" data-tab>About</a>
+      <a href="/#/home">Home</a>
+      <a href="/#/tasks">Tasks</a>
+      <a href="/menu.html" class="active">Menu</a>
     </nav>
   </footer>
-  <script src="/app.js?v=6007" defer></script>
-  <script src="/shell.js?v=6007" defer></script>
+
+  <script src="/js/app.js?v=7000" defer></script>
 </body>
 </html>
