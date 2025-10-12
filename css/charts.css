@@ -1,0 +1,36 @@
+/* =========================================================
+   Whylee v7 — Micro Charts / Stats (pure CSS)
+   ========================================================= */
+
+/* XP mini-bar */
+.stat{
+  display:grid; grid-template-columns:120px 1fr; gap:10px; align-items:center;
+}
+.stat .bar{
+  height:8px; background:#13213a; border:1px solid rgba(255,255,255,.10);
+  border-radius:999px; overflow:hidden;
+}
+.stat .bar > i{
+  display:block; height:100%; width:0%;
+  background:linear-gradient(90deg, #ffd36e, #d88c0e);
+}
+
+/* Leaderboard medals */
+.lb-row{display:flex; align-items:center; justify-content:space-between; padding:10px 12px; border-radius:12px; background:#0f1a2e; border:1px solid rgba(255,255,255,.06)}
+.lb-medal{width:24px; height:24px; border-radius:50%; display:grid; place-items:center; font-weight:800; color:#1a1202}
+.lb-medal.gold{background:linear-gradient(180deg, #ffd36e, #ffb03a)}
+.lb-medal.silver{background:linear-gradient(180deg, #dfe7ff, #9fb3c8)}
+.lb-medal.bronze{background:linear-gradient(180deg, #e7b899, #c38750)}
+
+/* Radar / donut (placeholder skins if you add SVGs) */
+.donut{
+  --size:100px;
+  width:var(--size); height:var(--size);
+  border-radius:50%;
+  background:
+    conic-gradient(#1e74f1 var(--pct, 40%), #0f1a2e 0),
+    radial-gradient(circle at 50% 50%, #0b1220 44%, transparent 46%),
+    linear-gradient(#0f1a2e,#0f1a2e);
+  border:1px solid rgba(255,255,255,.08);
+  box-shadow:0 6px 14px rgba(0,0,0,.22) inset;
+}
