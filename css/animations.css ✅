@@ -1,0 +1,70 @@
+/* =========================================================
+   Whylee v7 — Animations (reduced-motion aware)
+   ========================================================= */
+
+/* Fade-in up (cards / sections) */
+.fade-in-up{
+  opacity:0; transform:translateY(10px);
+  animation:fadeUp .35s ease-out forwards;
+}
+@keyframes fadeUp{
+  to{opacity:1; transform:none}
+}
+
+/* Subtle pulse for call-to-action */
+.pulse{
+  animation:pulse 1.8s ease-in-out infinite;
+}
+@keyframes pulse{
+  0%,100%{transform:scale(1); filter:none}
+  50%{transform:scale(1.02); filter:drop-shadow(0 6px 16px rgba(216,140,14,.35))}
+}
+
+/* Perfect burst (confetti-like glow) */
+.burst{
+  position:fixed; left:50%; top:18%;
+  width:180px; height:180px; margin-left:-90px; pointer-events:none;
+  background:radial-gradient(circle, rgba(255,255,255,.9) 0%, rgba(255,255,255,0) 60%);
+  opacity:0; transform:scale(.6);
+  border-radius:50%;
+}
+.burst.active{
+  animation:burstOn .9s ease-out forwards;
+}
+@keyframes burstOn{
+  0%{opacity:0; transform:scale(.6)}
+  20%{opacity:.9; transform:scale(1)}
+  100%{opacity:0; transform:scale(1.4)}
+}
+
+/* Streak bar glow (applied on progress increment) */
+.streak-glow{
+  position:relative;
+}
+.streak-glow::after{
+  content:""; position:absolute; inset:-2px;
+  border-radius:inherit; pointer-events:none;
+  box-shadow:0 0 0 0 rgba(71,176,255,.0);
+  animation:streak 1.2s ease-out;
+}
+@keyframes streak{
+  0%{box-shadow:0 0 0 0 rgba(71,176,255,.0)}
+  40%{box-shadow:0 0 0 6px rgba(71,176,255,.25)}
+  100%{box-shadow:0 0 0 0 rgba(71,176,255,.0)}
+}
+
+/* Toast (update prompt) */
+.toast{
+  position:fixed; left:50%; bottom:84px; transform:translateX(-50%);
+  background:#0f1a2e; border:1px solid rgba(255,255,255,.14);
+  color:#e6eef8; padding:10px 14px; border-radius:12px;
+  box-shadow:0 10px 24px rgba(0,0,0,.35);
+  display:flex; gap:10px; align-items:center; z-index:80;
+  animation:fadeUp .28s ease-out;
+}
+.toast .btn{padding:8px 10px}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce){
+  .pulse, .burst, .streak-glow::after, .toast{animation:none}
+}
