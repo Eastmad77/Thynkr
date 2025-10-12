@@ -3,37 +3,38 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <meta name="theme-color" content="#1e74f1"/>
+  <meta name="theme-color" content="#0a2a43"/>
   <title>Contact · Whylee</title>
-  <link rel="manifest" href="/site.webmanifest?v=6007"/>
+  <link rel="manifest" href="/site.webmanifest?v=7000"/>
   <link rel="icon" href="/media/icons/favicon.svg" type="image/svg+xml"/>
-  <link rel="stylesheet" href="/style.css?v=6007"/>
+  <link rel="stylesheet" href="/css/style.css?v=7000"/>
 </head>
-<body>
+<body class="theme-dark">
   <header class="app-header">
-    <div class="brand"><img class="logo" src="/media/icons/whylee-fox.svg" alt="" width="28" height="28"/><h1>Whylee</h1></div>
+    <a class="brand" href="/"><img src="/media/icons/app-icon.svg" alt="" class="brand-icon"/>Whylee</a>
   </header>
+
   <main class="app-shell">
     <section class="card">
-      <h2>Contact</h2>
-      <p>Questions or feedback? We’d love to hear from you.</p>
-      <form class="list" method="post" action="https://formspree.io/f/yourid">
+      <h1>Contact</h1>
+      <p>Questions or feedback? Email <a href="mailto:support@whylee.app">support@whylee.app</a>.</p>
+      <form class="list" method="post" action="https://formspree.io/f/YOUR_ID">
         <input type="text" name="name" placeholder="Your name" required/>
         <input type="email" name="email" placeholder="Your email" required/>
         <textarea name="message" rows="5" placeholder="Your message" required></textarea>
-        <button class="primary" type="submit">Send</button>
+        <button class="btn primary" type="submit">Send</button>
       </form>
-      <p class="muted" style="margin-top:8px">Or email us: <a href="mailto:support@whylee.app">support@whylee.app</a></p>
     </section>
   </main>
+
   <footer class="app-footer">
     <nav class="tabs">
       <a href="/#/home">Home</a>
-      <a href="/#/tasks">Tasks</a>
-      <a class="active" href="/contact.html">Contact</a>
+      <a href="/contact.html" class="active">Contact</a>
+      <a href="/about.html">About</a>
     </nav>
   </footer>
-  <script src="/app.js?v=6007" defer></script>
-  <script src="/shell.js?v=6007" defer></script>
+
+  <script src="/js/app.js?v=7000" defer></script>
 </body>
 </html>
