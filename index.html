@@ -2,41 +2,120 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#0a2a43" />
-  <title>Whylee — Daily Brain Training</title>
+  <meta name="description" content="Whylee — daily brain training with a premium, cinematic PWA experience." />
 
-  <link rel="manifest" href="/site.webmanifest" />
-  <link rel="icon" href="/media/icons/app-icon.svg" type="image/svg+xml" />
-  <link rel="apple-touch-icon" href="/media/icons/apple-touch-icon.png" />
+  <title>Whylee</title>
 
-  <!-- Core styles -->
-  <link rel="stylesheet" href="/style.css?v=__BUILD__" />
-  <link rel="stylesheet" href="/animations.css?v=__BUILD__" />
+  <link rel="manifest" href="/site.webmanifest?v=7000" />
+  <link rel="icon" href="/media/icons/favicon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="/media/icons/whylee-icon-192.png" />
+
+  <link rel="preload" href="/css/style.css?v=7000" as="style" />
+  <link rel="stylesheet" href="/css/style.css?v=7000" />
 </head>
-<body class="app">
-  <div id="app" class="app-shell">
-    <div id="splash" class="splash">
-      <div class="logo">🦊 Whylee</div>
-      <div class="spinner" aria-hidden="true"></div>
+<body class="theme-dark">
+  <noscript>Whylee needs JavaScript enabled.</noscript>
+
+  <!-- App Header -->
+  <header class="app-header">
+    <div class="left">
+      <a class="brand" href="/" aria-label="Whylee Home">
+        <img src="/media/icons/app-icon.svg" alt="" class="brand-icon" width="28" height="28"/>
+        <span class="brand-title">Whylee</span>
+      </a>
     </div>
-    <main id="view" hidden></main>
+    <nav class="top-nav">
+      <a href="/menu.html" class="top-link">Menu</a>
+      <a href="/profile.html" class="top-link">Profile</a>
+      <a href="/pro.html" class="top-link">Pro</a>
+    </nav>
+    <div class="right">
+      <button id="btn-refresh" class="btn secondary">Refresh</button>
+      <button id="btn-install" class="btn primary" hidden>Install</button>
+    </div>
+  </header>
+
+  <!-- Hero / Splash -->
+  <section class="hero card">
+    <picture>
+      <!-- Prefer portrait poster; fallback to generic -->
+      <source srcset="/media/posters/portrait/poster-start.jpg" media="(orientation: portrait)"/>
+      <img id="heroPoster" src="/media/posters/poster-start.jpg" alt="Whylee splash poster" width="1600" height="900" class="hero-img"/>
+    </picture>
+    <div class="hero-overlay">
+      <h1 class="hero-title">Tap to Begin</h1>
+      <p class="hero-subtitle">Daily challenges. Smart streaks. Cinematic feel.</p>
+      <div class="hero-cta">
+        <a href="#/home" class="btn primary" id="btnStart">Start</a>
+        <a href="#/about" class="btn ghost">About</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- App Shell root (Shell swaps hash-routes into here) -->
+  <main id="app" class="app-shell" role="main" aria-live="polite"></main>
+
+  <!-- Footer Tabs (SPA quick nav) -->
+  <footer class="app-footer">
+    <nav class="tabs" aria-label="Primary">
+      <a href="#/home" data-tab>Home</a>
+      <a href="#/tasks" data-tab>Tasks</a>
+      <a href="#/about" data-tab>About</a>
+    </nav>
+    <small id="app-version" class="muted"></small>
+  </footer>
+
+  <!-- Countdown overlay -->
+  <div id="countdownOverlay" class="overlay hidden" aria-hidden="true">
+    <div class="overlay-inner">
+      <div id="countNum" class="count-num">3</div>
+    </div>
   </div>
 
-  <!-- Runtime init -->
-  <script type="module">
-    import '/app/ui/updatePrompt.js?v=__BUILD__';
-    import '/shell.js?v=__BUILD__';
-    import '/app.js?v=__BUILD__';
-    // The updatePrompt module wires the SW “updated” toast automatically.
+  <!-- Game layer (hidden until start) -->
+  <section id="quizLayer" class="card" hidden>
+    <header class="row gap">
+      <span id="levelLabel" class="badge">Level 1</span>
+      <span id="streakLabel" class="badge">Streak: 0 days</span>
+      <span class="spacer"></span>
+      <span id="progressLabel" class="badge">Q 0/12</span>
+      <span id="elapsedTime" class="badge">0:00</span>
+    </header>
 
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/service-worker.js', { scope: '/' })
-          .then(reg => console.log('[SW] registered:', reg.scope))
-          .catch(err => console.warn('[SW] registration failed:', err));
-      });
-    }
-  </script>
+    <div class="q-timer"><i id="qTimerBar"></i></div>
+
+    <div class="question card-soft">
+      <h2 id="questionBox">Press Start to Play</h2>
+      <div id="choices" class="list grid-2"></div>
+    </div>
+
+    <footer class="row gap">
+      <button id="btnHow" class="btn ghost">How to play</button>
+      <div class="spacer"></div>
+      <button id="btnReset" class="btn secondary">Reset</button>
+      <button id="btnQuit" class="btn danger">Quit</button>
+    </footer>
+  </section>
+
+  <!-- Game over -->
+  <section id="gameOverBox" class="card center" hidden>
+    <h2 id="gameOverText">All levels complete — see you tomorrow!</h2>
+    <div class="row gap center">
+      <button id="playAgainBtn" class="btn primary">Play Again</button>
+      <button id="shareBtn" class="btn ghost">Share</button>
+    </div>
+  </section>
+
+  <!-- Perfect burst -->
+  <div id="perfectBurst" class="burst"></div>
+
+  <!-- SFX (optional preload) -->
+  <audio id="sfxPerfect" src="/media/audio/success.mp3" preload="auto"></audio>
+
+  <script src="/js/shell.js?v=7000" defer></script>
+  <script src="/js/app.js?v=7000" defer></script>
 </body>
 </html>
