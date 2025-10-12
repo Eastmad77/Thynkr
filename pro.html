@@ -3,60 +3,59 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <meta name="theme-color" content="#1e74f1"/>
+  <meta name="theme-color" content="#0a2a43"/>
   <title>Whylee Pro</title>
-  <link rel="manifest" href="/site.webmanifest?v=6007"/>
+  <link rel="manifest" href="/site.webmanifest?v=7000"/>
   <link rel="icon" href="/media/icons/favicon.svg" type="image/svg+xml"/>
-  <link rel="stylesheet" href="/style.css?v=6007"/>
+  <link rel="stylesheet" href="/css/style.css?v=7000"/>
 </head>
-<body>
+<body class="theme-dark">
   <header class="app-header">
-    <div class="brand"><img class="logo" src="/media/icons/whylee-fox.svg" alt="" width="28" height="28"/><h1>Whylee Pro</h1></div>
+    <a class="brand" href="/"><img src="/media/icons/app-icon.svg" alt="" class="brand-icon"/>Whylee</a>
+    <nav class="top-nav">
+      <a href="/leaderboard.html" class="top-link">Leaderboard</a>
+      <a href="/achievements.html" class="top-link">Badges</a>
+    </nav>
   </header>
+
   <main class="app-shell">
     <section class="card">
-      <h2>Upgrade to Pro</h2>
-      <ul>
-        <li>Animated splash & premium posters</li>
-        <li>Priority offline updates</li>
-        <li>Early access features</li>
+      <h1>Upgrade to Pro</h1>
+      <ul class="tick">
+        <li>Animated posters & ambient audio</li>
+        <li>Priority offline support</li>
+        <li>Leaderboards & Pro avatars</li>
+        <li>Golden Run events & reflections+</li>
       </ul>
-      <div class="list">
-        <button id="btn-pro-toggle" class="primary">Toggle Pro (local)</button>
-        <button id="btn-pro-checkout" class="secondary">Start Pro Trial (Checkout)</button>
-        <div id="pro-status" class="muted"></div>
+      <div class="row gap">
+        <button id="btnStartTrial" class="btn primary">Start 3-Day Trial</button>
+        <span id="proStatus" class="muted"></span>
       </div>
     </section>
   </main>
+
   <footer class="app-footer">
     <nav class="tabs">
       <a href="/#/home">Home</a>
-      <a href="/#/tasks">Tasks</a>
-      <a class="active" href="/pro.html">Pro</a>
+      <a href="/pro.html" class="active">Pro</a>
+      <a href="/leaderboard.html">Leaderboard</a>
     </nav>
   </footer>
 
-  <script src="/pro.js?v=6004" defer></script>
   <script>
-    document.addEventListener('DOMContentLoaded', ()=>{
-      const btnToggle = document.getElementById('btn-pro-toggle');
-      const btnCheckout = document.getElementById('btn-pro-checkout');
-      const status = document.getElementById('pro-status');
-
-      function paint(){ status.textContent = window.WhyleePro?.isPro() ? 'Pro enabled locally.' : 'Pro disabled.'; }
-      btnToggle?.addEventListener('click', ()=> { window.WhyleePro?.setPro(!window.WhyleePro?.isPro()); paint(); });
-      btnCheckout?.addEventListener('click', async ()=>{
-        try{
-          const res = await fetch('/.netlify/functions/create-checkout-session', { method:'POST' });
-          const { url, error } = await res.json();
-          if (url) location.href = url; else status.textContent = error || 'Checkout temporarily unavailable.';
-        }catch(err){ status.textContent = 'Checkout temporarily unavailable.'; }
-      });
-      paint();
+    document.getElementById('btnStartTrial')?.addEventListener('click', async ()=>{
+      try{
+        // Stripe Netlify Function (implemented in /api/stripe/createCheckoutSession.js)
+        const res = await fetch('/api/stripe/createCheckoutSession', { method:'POST' });
+        const { url, error } = await res.json();
+        if (url) location.href = url;
+        else document.getElementById('proStatus').textContent = error || 'Checkout unavailable.';
+      }catch(err){
+        document.getElementById('proStatus').textContent = 'Network error.';
+        console.error(err);
+      }
     });
   </script>
-
-  <script src="/app.js?v=6007" defer></script>
-  <script src="/shell.js?v=6007" defer></script>
+  <script src="/js/app.js?v=7000" defer></script>
 </body>
 </html>
