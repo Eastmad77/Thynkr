@@ -1,79 +1,92 @@
 /**
  * ============================================================================
- * Whylee — Billing / Stripe client helper (v1)
+ * Whylee — /scripts/billing/stripe.js (v7000)
  * ----------------------------------------------------------------------------
- * Responsibilities:
- *  - Starts a 3-day trial (card required) via Netlify Function → Stripe Checkout
- *  - Handles redirect and basic error display
- *  - No secrets here; all keys live in serverless functions
+ * Client-side Stripe flow (Web/PWA):
+ *   - POST → /.netlify/functions/stripe/createCheckoutSession
+ *   - Redirect to Checkout (URL returned from function)
+ *   - On return (success/cancel), refresh remote entitlements and/or set local hints
  *
- * Server endpoints expected:
- *   /.netlify/functions/stripe/createCheckoutSession
- *   /.netlify/functions/stripe/webhook            (server → Stripe events)
- *
- * Usage:
- *   import * as StripeBilling from '/scripts/billing/stripe.js';
- *   await StripeBilling.startTrialCheckout({ plan: 'pro_monthly' });
+ * Requirements:
+ *   - Netlify Function: stripe/createCheckoutSession.js (trial-enabled)
+ *   - Optional webhook: /.netlify/functions/stripe/webhook (server truth → Firebase)
+ *   - Entitlements.init({ fetchRemote }) should exist in your app boot
  * ============================================================================
  */
 
-const ENDPOINT = '/.netlify/functions/stripe/createCheckoutSession';
+import Entitlements from '/scripts/state/entitlements.js';
+
+const ENDPOINTS = Object.freeze({
+  createSession: '/.netlify/functions/stripe/createCheckoutSession',
+  // Optional: use after redirect success/cancel if you expose a status endpoint
+  status: '/.netlify/functions/status',
+});
 
 /**
- * Starts a Stripe Checkout session for 3-day trial (card capture).
- * @param {{plan?: string, metadata?: Record<string,string>}} opts
- * @returns {Promise<void>}
+ * Starts a Stripe trial checkout (3-day by default; server controls trial length).
+ * Redirects the browser to Stripe-hosted Checkout.
+ * Returns only if the function fails before redirecting.
  */
-export async function startTrialCheckout(opts = {}) {
+export async function startTrialCheckout({ plan = 'pro', source = 'app' } = {}) {
   try {
-    const body = {
-      plan: opts.plan || 'pro_monthly',
-      // Anything you want echoed into Stripe metadata for reconciliation
-      metadata: {
-        app: 'whylee',
-        intent: 'trial-3day',
-        ...opts.metadata
-      }
-    };
-
-    const res = await fetch(ENDPOINT, {
+    const res = await fetch(ENDPOINTS.createSession, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-      // Important: avoid sending credentials/cookies unless needed
-      credentials: 'same-origin'
+      // You can pass plan/metadata here if needed
+      body: JSON.stringify({ plan, source }),
+      credentials: 'include',
     });
-
     if (!res.ok) {
-      const text = await safeText(res);
-      throw new Error(`Stripe session failed (${res.status}): ${text}`);
+      const msg = await safeText(res);
+      console.error('[Stripe] session create failed:', msg);
+      throw new Error(`Checkout error (${res.status})`);
     }
+    const { url, error } = await res.json();
+    if (error) throw new Error(error);
+    if (!url) throw new Error('Missing checkout URL');
 
-    const data = await res.json();
-    if (!data?.url) {
-      throw new Error('Stripe session did not return a URL.');
-    }
+    // Optional optimistic UX: mark local trial hinting before redirect.
+    // NOTE: Server truth will correct this after return/webhook.
+    try { Entitlements.startTrialForDays(3); } catch {}
 
-    // Redirect to Stripe-hosted checkout
-    window.location.assign(data.url);
+    location.assign(url);
   } catch (err) {
-    console.error('[Billing] startTrialCheckout error:', err);
-    alert('Checkout is temporarily unavailable. Please try again in a moment.');
+    console.error('[Stripe] startTrialCheckout failed:', err);
+    throw err;
   }
 }
 
 /**
- * Optional: Open standard (non-trial) checkout.
- * @param {{plan?: string, metadata?: Record<string,string>}} opts
+ * Call on pages that can receive ?status=success|cancel after returning from Checkout.
+ * It will refresh remote entitlements and reconcile the local snapshot.
  */
-export async function startDirectCheckout(opts = {}) {
-  // For parity, the server can branch on metadata.intent === 'subscribe'
-  return startTrialCheckout({ ...opts, metadata: { ...(opts.metadata||{}), intent: 'subscribe' } });
+export async function reconcileAfterReturn() {
+  // If you expose a status endpoint, you can check it; otherwise just refresh remote.
+  try {
+    await Entitlements.refreshRemote(defaultFetchRemoteStatus);
+  } catch (e) {
+    console.warn('[Stripe] reconcileAfterReturn remote refresh failed:', e);
+  }
 }
 
-/**
- * Lightweight helper to get response text (even on non-200)
- */
-async function safeText(res) {
-  try { return await res.text(); } catch { return '<body read error>'; }
+async function defaultFetchRemoteStatus() {
+  try {
+    const res = await fetch(ENDPOINTS.status, { credentials: 'include' });
+    if (!res.ok) throw new Error('status endpoint not OK');
+    const json = await res.json();
+    // Expect { entitlements: { pro, trialActive, trialEndsAt } }
+    return json?.entitlements || { pro: false, trialActive: false, trialEndsAt: null };
+  } catch {
+    // Fallback to local snapshot when offline/unavailable
+    return Entitlements.get();
+  }
 }
+
+async function safeText(res) {
+  try { return await res.text(); } catch { return ''; }
+}
+
+export default {
+  startTrialCheckout,
+  reconcileAfterReturn,
+};
