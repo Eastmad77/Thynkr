@@ -2,7 +2,9 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#0a2a43" />
   <meta name="description" content="Whylee — fast, offline-ready, installable web app" />
 
@@ -13,58 +15,98 @@
 
   <title>Whylee</title>
 
-  <!-- Styles -->
+  <!-- Preloads -->
   <link rel="preload" href="/style.css?v=7000" as="style" />
-  <link rel="preload" href="/styles/animations.css?v=7000" as="style" />
-  <link rel="stylesheet" href="/style.css?v=7000" />
-  <link rel="stylesheet" href="/styles/animations.css?v=7000" />
-
-  <!-- App shell scripts -->
+  <link rel="preload" href="/animations.css?v=7000" as="style" />
   <link rel="preload" href="/shell.js?v=7000" as="script" />
   <link rel="preload" href="/app.js?v=7000" as="script" />
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="/style.css?v=7000" />
+  <link rel="stylesheet" href="/animations.css?v=7000" />
 </head>
 <body>
   <noscript>You need JavaScript enabled to run Whylee.</noscript>
 
-  <!-- Header -->
+  <!-- Update toast (shown by /js/ui/updatePrompt.js) -->
+  <div id="update-toast" hidden
+       style="position:fixed;inset:auto 16px 16px 16px;z-index:9999;display:flex;gap:12px;align-items:center;justify-content:space-between;background:#0f1a2e;border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:12px 14px;box-shadow:0 10px 30px rgba(0,0,0,.25)">
+    <div>
+      <strong>Update available</strong>
+      <div class="muted">Tap to refresh to the latest version.</div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button id="btn-update-dismiss" class="secondary">Later</button>
+      <button id="btn-update-accept" class="primary">Update</button>
+    </div>
+  </div>
+
+  <!-- App Header -->
   <header class="app-header">
     <button class="icon" id="btn-menu" aria-label="Toggle menu" title="Menu" hidden>☰</button>
     <h1 class="brand">Whylee</h1>
     <div class="header-actions">
-      <button id="btn-refresh" class="secondary">Refresh</button>
+      <button id="btn-refresh" class="secondary" title="Hard refresh">Refresh</button>
       <button id="btn-install" class="primary" hidden>Install</button>
     </div>
   </header>
 
-  <!-- App -->
+  <!-- App Shell -->
   <main id="app" class="app-shell" role="main" aria-live="polite">
-    <!-- shell.js renders views here -->
+    <!-- Shell routes render here (#/home, #/tasks, #/about, etc.) -->
+    <section class="card">
+      <h2>Loading…</h2>
+      <p class="muted">Preparing your experience.</p>
+    </section>
   </main>
 
-  <!-- Footer -->
-  <footer class="app-footer">
+  <!-- Footer / Primary Tabs -->
+  <footer class="app-footer" role="contentinfo">
     <nav class="tabs" aria-label="Primary">
       <a href="#/home" data-tab>Home</a>
       <a href="#/tasks" data-tab>Tasks</a>
       <a href="#/about" data-tab>About</a>
     </nav>
-    <small id="app-version" class="muted"></small>
+    <small id="app-version" class="muted" aria-live="polite"></small>
   </footer>
 
-  <!-- Core scripts -->
+  <!-- Core Scripts -->
   <script src="/shell.js?v=7000" defer></script>
   <script src="/app.js?v=7000" defer></script>
 
-  <!-- Update prompt (must load after app to receive SW messages) -->
+  <!-- Config / State / Billing (imported by shell routes or feature modules as needed) -->
   <script type="module">
-    import { registerUpdatePrompt } from '/js/ui/updatePrompt.js?v=7000';
-    // Optional: expose Firebase refs if you use entitlements/state elsewhere
-    // window.firebaseRefs = { auth, db }; window.firebaseExports = { doc, onSnapshot, onAuthStateChanged, setDoc, serverTimestamp };
+    // Light bootstrap for update prompt
+    import '/js/ui/updatePrompt.js';
 
-    // Kick off update toast listener as soon as the page is interactive
-    window.addEventListener('DOMContentLoaded', () => {
-      registerUpdatePrompt();
+    // Optional: listen for SW messages (NEW_VERSION → show toast)
+    navigator.serviceWorker?.addEventListener?.('message', (e) => {
+      if (e.data?.type === 'NEW_VERSION') {
+        const toast = document.getElementById('update-toast');
+        if (toast) toast.hidden = false;
+      }
     });
+
+    // Wire toast buttons
+    const t = document.getElementById('update-toast');
+    document.getElementById('btn-update-dismiss')?.addEventListener('click', () => {
+      if (t) t.hidden = true;
+    });
+    document.getElementById('btn-update-accept')?.addEventListener('click', async () => {
+      // Ask the waiting SW to take control now
+      const reg = await navigator.serviceWorker?.getRegistration?.();
+      const sw = reg?.waiting;
+      if (sw) {
+        sw.postMessage({ type: 'SKIP_WAITING' });
+        // Give it a moment, then reload
+        setTimeout(() => location.reload(), 150);
+      } else {
+        location.reload();
+      }
+    });
+
+    // Fallback manual refresh
+    document.getElementById('btn-refresh')?.addEventListener('click', () => location.reload());
   </script>
 </body>
 </html>
