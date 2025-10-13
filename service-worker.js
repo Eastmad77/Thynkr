@@ -1,37 +1,160 @@
-// questions.js v6003 — inline 36 questions, no CSV fetch
-window.WhyleeQuestions = (function(){
-  // 12 per level, quick sample set — swap these with your real questions anytime
-  const L1 = Array.from({length:12}, (_,i)=>({
-    Question:`Warm-up ${i+1}: 2 + ${i+1} = ?`,
-    Answers:[`${i+3}`,`${i+2}`,`${i+4}`,`${i}`], // first is correct
-    Correct:0, Explanation:`Because 2 + ${i+1} = ${i+3}.`, Level:1
-  }));
+/* Whylee SW v7000 — robust, safe caching with update broadcast
+   - Navigation: cache-first app shell (index.html) + background refresh
+   - Static assets: cache-first (scripts/styles/images) for same-origin
+   - Media/Range: bypass (avoid caching partial streams)
+   - SW updates: broadcasts `SW_UPDATED` via BroadcastChannel("sw-messages")
+   - Client prompt: page can listen and show “New version available — Refresh”
+*/
 
-  const flags = [["🇧🇷","Brazil"],["🇨🇦","Canada"],["🇪🇸","Spain"],["🇮🇹","Italy"],["🇯🇵","Japan"],["🇫🇷","France"]];
-  const L2 = Array.from({length:12}, (_,i)=>({
-    Question:`Match the pair: Which country uses this flag? ${flags[i%flags.length][0]}`,
-    Answers:[flags[i%flags.length][1],"Germany","Norway","Chile"],
-    Correct:0, Explanation:`That flag is ${flags[i%flags.length][1]}.`, Level:2
-  }));
+const VERSION = '7000';
+const CACHE = `whylee-cache-v${VERSION}`;
 
-  const L3 = [
-    {Q:"Which planet is known as the Red Planet?", A:["Mars","Venus","Jupiter","Saturn"], E:"Iron oxide makes Mars look red."},
-    {Q:"The largest ocean on Earth?", A:["Pacific","Atlantic","Indian","Arctic"], E:"The Pacific is the largest."},
-    {Q:"Speed of light is about…", A:["300,000 km/s","150,000 km/s","3,000 km/s","30,000 km/s"], E:"~3×10⁵ km/s."},
-    {Q:"H2O is…", A:["Water","Hydrogen","Oxygen","Salt"], E:"H₂O is water."},
-    {Q:"Primary source of Earth’s energy?", A:["Sun","Core","Moon","Tides"], E:"Solar radiation."},
-    {Q:"Who painted the Mona Lisa?", A:["Leonardo da Vinci","Michelangelo","Raphael","Monet"], E:"Leonardo da Vinci."},
-    {Q:"DNA stands for…", A:["Deoxyribonucleic acid","Dicarboxylic nitro acid","Dinucleic amino acid","None"], E:"Deoxyribonucleic acid."},
-    {Q:"Capital of Canada?", A:["Ottawa","Toronto","Vancouver","Montreal"], E:"Ottawa."},
-    {Q:"The chemical symbol for gold?", A:["Au","Ag","Gd","Go"], E:"Au."},
-    {Q:"Which gas do plants absorb?", A:["CO₂","O₂","N₂","H₂"], E:"Carbon dioxide."},
-    {Q:"Largest mammal?", A:["Blue whale","Elephant","Giraffe","Hippo"], E:"Blue whale."},
-    {Q:"Continent with the Sahara?", A:["Africa","Asia","Australia","South America"], E:"Africa."},
-  ].map(x=>({Question:x.Q, Answers:x.A, Correct:0, Explanation:x.E, Level:3}));
+// Core shell you want available offline immediately
+const CORE = [
+  '/',                         // SPA entry
+  '/index.html',
+  '/styles/style.css?v=7000',
+  '/styles/animations.css?v=7000',
 
-  const ALL = [...L1, ...L2, ...L3];
+  // minimal boot chain; rest will be cached on-demand
+  '/js/app.js?v=7000',
+  '/js/shell.js?v=7000',
+  '/js/config/gameRules.js?v=7000',
+  '/js/state/entitlements.js?v=7000',
+  '/js/ui/updatePrompt.js?v=7000',
+  '/js/game/core.js?v=7000',
+  '/js/billing/stripe.js?v=7000',
+  '/js/billing/play.js?v=7000',
 
-  return {
-    async load(){ return ALL; } // API used by game.js
-  };
-})();
+  // icons used by browser/UI
+  '/media/icons/whylee-icon-192.png',
+  '/media/icons/whylee-icon-512.png',
+  '/media/icons/maskable-icon.png',
+  '/media/icons/whylee-fox.svg'
+];
+
+// ---------- Helpers
+const isHTML = req =>
+  req.mode === 'navigate' ||
+  req.destination === 'document' ||
+  (req.headers.get('accept') || '').includes('text/html');
+
+const isRange = req => req.headers.has('range');
+
+const sameOrigin = url => url.origin === self.location.origin;
+
+// ---------- Install: cache the shell
+self.addEventListener('install', event => {
+  event.waitUntil(
+    caches.open(CACHE).then(cache => cache.addAll(CORE))
+  );
+  self.skipWaiting();
+});
+
+// ---------- Activate: clean old caches & enable navigation preload
+self.addEventListener('activate', event => {
+  event.waitUntil((async () => {
+    const keys = await caches.keys();
+    await Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)));
+
+    if (self.registration.navigationPreload) {
+      try { await self.registration.navigationPreload.enable(); } catch {}
+    }
+
+    // broadcast that a new SW is active
+    try {
+      const bc = new BroadcastChannel('sw-messages');
+      bc.postMessage({ type: 'SW_UPDATED', version: VERSION });
+      bc.close();
+    } catch {}
+  })());
+  self.clients.claim();
+});
+
+// ---------- Fetch: navigation + static + dynamic
+self.addEventListener('fetch', event => {
+  const req = event.request;
+
+  // Only GET
+  if (req.method !== 'GET') return;
+
+  // Bypass range/streaming media (let network handle)
+  if (isRange(req)) return;
+
+  // Handle navigations (SPA)
+  if (isHTML(req)) {
+    event.respondWith((async () => {
+      const cache = await caches.open(CACHE);
+      const cached = await cache.match('/index.html', { ignoreSearch: true });
+      if (cached) {
+        // background refresh of the shell
+        event.waitUntil((async () => {
+          try {
+            const fresh = await fetch('/index.html', { cache: 'no-store' });
+            if (fresh && fresh.ok) await cache.put('/index.html', fresh.clone());
+          } catch {}
+        })());
+        return cached;
+      }
+
+      // First time: use navigation preload or network, then cache
+      try {
+        const preload = await event.preloadResponse;
+        const res = preload || await fetch(req);
+        if (res && res.ok) {
+          await cache.put('/index.html', res.clone());
+        }
+        return res;
+      } catch {
+        // Minimal offline fallback
+        return new Response(
+          '<!doctype html><title>Offline</title><style>body{background:#0b1220;color:#e6eef8;font:16px system-ui;margin:0;padding:24px}</style><h1>Offline</h1><p>Whylee is offline. Try again when you’re connected.</p>',
+          { headers: { 'Content-Type': 'text/html; charset=utf-8' } }
+        );
+      }
+    })());
+    return;
+  }
+
+  // Static assets: cache-first for same-origin scripts/styles/images/fonts
+  if (sameOrigin(new URL(req.url)) &&
+     (['style','script','image','font'].includes(req.destination))) {
+    event.respondWith((async () => {
+      const cache = await caches.open(CACHE);
+      const cached = await cache.match(req, { ignoreSearch: true });
+      if (cached) return cached;
+
+      try {
+        const res = await fetch(req);
+        if (res && res.ok && res.status === 200 && res.type !== 'opaqueredirect') {
+          cache.put(req, res.clone());
+        }
+        return res;
+      } catch {
+        // Try best-effort fallback without query
+        const fallback = await cache.match(req.url.split('?')[0], { ignoreSearch: true });
+        if (fallback) return fallback;
+        throw new Error('Network error and no cache available');
+      }
+    })());
+    return;
+  }
+
+  // Everything else: network-first (e.g., JSON/API)
+  event.respondWith((async () => {
+    try {
+      return await fetch(req, { cache: 'no-store' });
+    } catch {
+      const cache = await caches.open(CACHE);
+      const cached = await cache.match(req, { ignoreSearch: true });
+      if (cached) return cached;
+      return new Response(null, { status: 504, statusText: 'Offline' });
+    }
+  })());
+});
+
+// ---------- Client message -> skipWaiting (for update UX)
+self.addEventListener('message', evt => {
+  if (!evt.data) return;
+  if (evt.data.type === 'SKIP_WAITING') self.skipWaiting();
+});
