@@ -1,0 +1,234 @@
+/* ==========================================================================
+   Whylee — Animations & Motion System
+   - Subtle, premium animations with reduced-motion awareness
+   - Badge unlock, toasts, shimmering headers, level transitions
+   ========================================================================== */
+
+/* ------------------------------
+   Motion safety
+--------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ------------------------------
+   Base keyframes
+--------------------------------- */
+@keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
+@keyframes fadeOut { from { opacity: 1 } to { opacity: 0 } }
+@keyframes scaleIn { from { transform: scale(.96); opacity: 0 } to { transform: scale(1); opacity: 1 } }
+@keyframes slideUp { from { transform: translateY(8px); opacity: 0 } to { transform: translateY(0); opacity: 1 } }
+@keyframes slideDown { from { transform: translateY(-8px); opacity: 0 } to { transform: translateY(0); opacity: 1 } }
+@keyframes pulseGlow {
+  0% { box-shadow: 0 0 0 rgba(28,120,230,0.0) }
+  50% { box-shadow: 0 0 32px rgba(28,120,230,0.35) }
+  100% { box-shadow: 0 0 0 rgba(28,120,230,0.0) }
+}
+@keyframes shimmer {
+  0% { transform: translateX(-100%) }
+  100% { transform: translateX(100%) }
+}
+@keyframes confetti {
+  0% { transform: translateY(-10px) rotate(0deg); opacity: 0 }
+  12% { opacity: 1 }
+  100% { transform: translateY(80px) rotate(240deg); opacity: 0 }
+}
+
+/* ------------------------------
+   Update Toast (used by updatePrompt.js)
+--------------------------------- */
+#update-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  z-index: 10000;
+  background: rgba(10, 42, 67, 0.92);
+  border: 1px solid rgba(255,255,255,.10);
+  color: #fff;
+  border-radius: 14px;
+  padding: 10px 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.35);
+  animation: slideUp .35s ease, fadeIn .35s ease;
+  backdrop-filter: saturate(120%) blur(8px);
+}
+#update-toast .toast-inner {
+  display: grid;
+  grid-auto-flow: column;
+  gap: 10px;
+  align-items: center;
+}
+#update-toast button {
+  appearance: none;
+  border: 0;
+  border-radius: 10px;
+  padding: 8px 12px;
+  background: #d88c0e;
+  color: #1b1102;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform .08s ease;
+}
+#update-toast button:active { transform: translateY(1px) }
+#update-toast.fade-out { animation: fadeOut .3s ease forwards }
+
+/* ------------------------------
+   Badge Unlock Modal / Chip
+--------------------------------- */
+.badge-unlock {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: radial-gradient(1200px 600px at 50% 120%, rgba(10,42,67,.85), rgba(10,16,32,.92));
+  z-index: 9998;
+  animation: fadeIn .25s ease;
+}
+.badge-card {
+  background: linear-gradient(180deg, #0e1726, #0b1220);
+  border: 1px solid rgba(255,255,255,.10);
+  border-radius: 20px;
+  padding: 20px 22px;
+  width: min(420px, 92vw);
+  text-align: center;
+  color: #e6eef8;
+  box-shadow: 0 20px 60px rgba(0,0,0,.45);
+  animation: scaleIn .28s ease;
+  position: relative;
+  overflow: hidden;
+}
+.badge-card .title {
+  font-size: 1.1rem;
+  letter-spacing: .3px;
+  margin-bottom: 8px;
+  color: #aecdff;
+}
+.badge-card .icon {
+  width: 88px; height: 88px;
+  margin: 6px auto 10px;
+  border-radius: 20px;
+  display: grid; place-items: center;
+  background: linear-gradient(145deg, #1b2c4a, #0f1f36);
+  border: 1px solid rgba(255,255,255,.12);
+  animation: pulseGlow 1.6s ease-in-out 1;
+}
+.badge-card .desc {
+  color: #9fb3c8;
+  margin-bottom: 12px;
+}
+.badge-card .cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #d88c0e;
+  color: #1b1102;
+  border: 0;
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* subtle shimmer streak */
+.badge-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(120deg,
+    transparent 20%,
+    rgba(255,255,255,.05) 40%,
+    rgba(255,255,255,.12) 50%,
+    rgba(255,255,255,.05) 60%,
+    transparent 80%);
+  transform: translateX(-100%);
+  animation: shimmer 1.4s ease 0.35s 1;
+}
+
+/* confetti bits */
+.badge-confetti {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.badge-confetti i {
+  position: absolute;
+  width: 8px; height: 10px;
+  left: calc(50% - 4px);
+  background: linear-gradient(180deg, #47b0ff, #1e74f1);
+  border-radius: 2px;
+  opacity: 0;
+  animation: confetti .9s ease forwards;
+}
+.badge-confetti i:nth-child(2) { left: 44%; background: #ffd36e; animation-delay: .05s }
+.badge-confetti i:nth-child(3) { left: 56%; background: #ff7a2e; animation-delay: .1s }
+.badge-confetti i:nth-child(4) { left: 40%; background: #7affd4; animation-delay: .15s }
+.badge-confetti i:nth-child(5) { left: 60%; background: #b48bff; animation-delay: .2s }
+
+/* ------------------------------
+   Level transitions / Posters
+--------------------------------- */
+.poster-enter {
+  animation: fadeIn .45s ease, scaleIn .45s ease;
+}
+.poster-leave {
+  animation: fadeOut .35s ease forwards;
+}
+
+/* ------------------------------
+   Buttons: micro-interactions
+--------------------------------- */
+.btn, button.primary, button.secondary {
+  transition: transform .08s ease, box-shadow .12s ease;
+}
+.btn:active, button.primary:active, button.secondary:active {
+  transform: translateY(1px);
+}
+
+/* ------------------------------
+   XP progress bar (liquid-ish)
+--------------------------------- */
+.xp-bar {
+  position: relative;
+  height: 12px;
+  border-radius: 999px;
+  background: #0f1a2e;
+  border: 1px solid rgba(255,255,255,.08);
+  overflow: hidden;
+}
+.xp-bar .fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #1e74f1, #47b0ff);
+  box-shadow: inset 0 -6px 10px rgba(0,0,0,.25);
+  transition: width .45s ease;
+}
+
+/* ------------------------------
+   Streak chip pulse (subtle)
+--------------------------------- */
+.streak-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #13213a;
+  border: 1px solid rgba(255,255,255,.08);
+}
+.streak-chip.pulse { animation: pulseGlow 1.4s ease-in-out 1 }
+
+/* ------------------------------
+   Utility classes
+--------------------------------- */
+.fade-in { animation: fadeIn .35s ease }
+.fade-out { animation: fadeOut .35s ease forwards }
+.slide-up { animation: slideUp .35s ease }
+.slide-down { animation: slideDown .35s ease }
+.scale-in { animation: scaleIn .28s ease }
