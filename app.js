@@ -1,64 +1,98 @@
-/* =========================================================
-   Whylee v7 — App Boot
-   - SW registration + update prompt hook
-   - PWA install prompt
-   ========================================================= */
-(() => {
-  const VERSION = '7000';
-  console.log(`[Whylee] v${VERSION} — app booted`);
+/* ===========================================================================
+   Whylee — App Bootstrap v7000
+   Initializes shell, registers service worker, handles install prompts,
+   and manages update prompts + graceful reload.
+   =========================================================================== */
 
-  // Expose version (optional)
-  window.WHYLEE_BUILD = VERSION;
+console.log('[Whylee] v7000 — booting app');
 
-  // ---------------- Service Worker ----------------
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', async () => {
-      try {
-        const reg = await navigator.serviceWorker.register('/service-worker.js?v=' + VERSION, { scope: '/' });
+const APP_VERSION = '7.0.0';
+const swFile = '/service-worker.js?v=7000';
+let deferredPrompt;
 
-        // Enable navigation preload when supported
-        if ('navigationPreload' in reg) {
-          try { await reg.navigationPreload.enable(); } catch {}
+// -----------------------------
+// Service Worker Registration
+// -----------------------------
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', async () => {
+    try {
+      const reg = await navigator.serviceWorker.register(swFile);
+      console.log('[Whylee] SW registered:', reg.scope);
+
+      // Listen for new version messages
+      navigator.serviceWorker.addEventListener('message', (event) => {
+        if (event.data?.type === 'NEW_VERSION') {
+          console.log('[Whylee] New version detected:', event.data.version);
+          showUpdateToast();
         }
+      });
 
-        // Listen for SW "updated" broadcast to show refresh toast
-        navigator.serviceWorker.addEventListener('message', (event) => {
-          if (event?.data === 'SW_UPDATED') {
-            window.WhyleeUpdatePrompt?.show({
-              message: 'A new version of Whylee is ready.',
-              action: 'Refresh',
-              onAction: () => location.reload()
-            });
-          }
-        });
+    } catch (err) {
+      console.error('[Whylee] SW registration failed:', err);
+    }
+  });
+}
 
-        console.log('[Whylee] SW registered', reg.scope);
-      } catch (err) {
-        console.error('[Whylee] SW registration failed', err);
-      }
-    });
+// -----------------------------
+// Update Prompt (toast trigger)
+// -----------------------------
+function showUpdateToast() {
+  const toast = document.createElement('div');
+  toast.id = 'update-toast';
+  toast.innerHTML = `
+    <div class="toast-inner">
+      <span>New version available</span>
+      <button id="refresh-btn">Update</button>
+    </div>
+  `;
+  document.body.appendChild(toast);
+
+  document.getElementById('refresh-btn').addEventListener('click', async () => {
+    const reg = await navigator.serviceWorker.getRegistration();
+    if (reg?.waiting) {
+      reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+      toast.classList.add('fade-out');
+      setTimeout(() => location.reload(), 400);
+    }
+  });
+}
+
+// -----------------------------
+// Install prompt (Add to Home)
+// -----------------------------
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  const btn = document.getElementById('btn-install');
+  if (btn) btn.hidden = false;
+
+  btn?.addEventListener('click', async () => {
+    btn.hidden = true;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    console.log(`[Whylee] Install: ${outcome}`);
+    deferredPrompt = null;
+  });
+});
+
+// -----------------------------
+// Refresh button for dev use
+// -----------------------------
+const refreshBtn = document.getElementById('btn-refresh');
+if (refreshBtn) {
+  refreshBtn.addEventListener('click', () => location.reload());
+}
+
+// -----------------------------
+// App startup splash animation
+// -----------------------------
+window.addEventListener('DOMContentLoaded', () => {
+  const app = document.getElementById('app');
+  if (app) {
+    app.classList.add('fade-in');
+    setTimeout(() => app.classList.remove('fade-in'), 1200);
   }
 
-  // ---------------- PWA Install ----------------
-  let deferredPrompt = null;
-  const installBtn = document.querySelector('#btn-install');
-  window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault();
-    deferredPrompt = e;
-    if (installBtn) installBtn.hidden = false;
-  });
-  installBtn?.addEventListener('click', async () => {
-    installBtn.disabled = true;
-    if (!deferredPrompt) return;
-    const { outcome } = await deferredPrompt.prompt();
-    if (outcome !== 'accepted') installBtn.disabled = false;
-    deferredPrompt = null; installBtn.hidden = true;
-  });
-
-  // ---------------- Simple global event bus ----------------
-  window.Whylee = Object.assign(window.Whylee || {}, {
-    emit(name, detail) { document.dispatchEvent(new CustomEvent(name, { detail })); },
-    on(name, fn) { document.addEventListener(name, (e) => fn(e.detail)); }
-  });
-
-})();
+  const verEl = document.getElementById('app-version');
+  if (verEl) verEl.textContent = `v${APP_VERSION}`;
+});
