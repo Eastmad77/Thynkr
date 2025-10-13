@@ -1,75 +1,73 @@
 /**
  * ============================================================================
- * Whylee — Billing / Google Play bridge (TWA) (v1)
+ * Whylee — /scripts/billing/play.js (v7000)
  * ----------------------------------------------------------------------------
- * This is a thin client-side adapter that calls into a native layer exposed
- * by a Trusted Web Activity (TWA) or WebView billing bridge when available.
+ * Play Billing bridge for TWA (Android).
+ * - In Web/PWA: methods safely no-op or simulate results
+ * - In TWA: expect a global injected object (e.g. window.PlayBilling) that
+ *           exposes: startTrial(), purchasePro(), getEntitlements()
  *
- * Expected Android interface (if present):
- *   window.AndroidBilling.startTrialPurchase(jsonString)
- *   window.AndroidBilling.startSubscription(jsonString)
- *
- * These methods should return a JSON string or trigger a callback/event.
- * Here we implement graceful no-op fallbacks for web.
- *
- * Usage:
- *   import * as PlayBilling from '/scripts/billing/play.js';
- *   if (PlayBilling.isAvailable()) PlayBilling.startTrialPurchase({ sku: 'pro_monthly' });
+ * Pair with entitlements.js to normalize snapshot.
  * ============================================================================
  */
 
-const ANDROID_KEY = 'AndroidBilling';
+import Entitlements from '/scripts/state/entitlements.js';
 
-export function isAvailable() {
-  return typeof window !== 'undefined' && typeof window[ANDROID_KEY] !== 'undefined';
-}
+const HAS_NATIVE = () => typeof window !== 'undefined' && !!window.PlayBilling;
 
-/**
- * Ask native bridge to start a 3-day trial purchase flow.
- * @param {{ sku?: string, metadata?: Record<string,string> }} opts
- * @returns {Promise<{ok:boolean, message?:string}>}
- */
-export async function startTrialPurchase(opts = {}) {
-  if (!isAvailable()) {
-    return { ok: false, message: 'Play Billing bridge not available.' };
+export async function startTrial({ days = 3 } = {}) {
+  if (!HAS_NATIVE()) {
+    // Web fallback: optimistic local trial (server should verify later)
+    const ends = Entitlements.startTrialForDays(days);
+    return { ok: true, mode: 'web-fallback', trialEndsAt: ends };
   }
   try {
-    const payload = {
-      sku: opts.sku || 'whylee_pro_monthly',
-      metadata: { app: 'whylee', intent: 'trial-3day', ...(opts.metadata || {}) }
-    };
-    const raw = window[ANDROID_KEY].startTrialPurchase(JSON.stringify(payload));
-    const result = parseMaybeJSON(raw);
-    return { ok: true, ...result };
-  } catch (err) {
-    console.error('[PlayBilling] startTrialPurchase error:', err);
-    return { ok: false, message: 'Billing failed to start.' };
+    const res = await window.PlayBilling.startTrial({ days });
+    await _refreshFromNative();
+    return res;
+  } catch (e) {
+    console.error('[PlayBilling] startTrial failed', e);
+    throw e;
   }
 }
 
-/**
- * Start a normal subscription purchase (no trial).
- * @param {{ sku?: string, metadata?: Record<string,string> }} opts
- */
-export async function startSubscription(opts = {}) {
-  if (!isAvailable()) {
-    return { ok: false, message: 'Play Billing bridge not available.' };
+export async function purchasePro() {
+  if (!HAS_NATIVE()) {
+    // Web fallback: direct stripe path should be used instead of this bridge
+    return { ok: false, reason: 'no-native', hint: 'Use Stripe in web mode' };
   }
   try {
-    const payload = {
-      sku: opts.sku || 'whylee_pro_monthly',
-      metadata: { app: 'whylee', intent: 'subscribe', ...(opts.metadata || {}) }
-    };
-    const raw = window[ANDROID_KEY].startSubscription(JSON.stringify(payload));
-    const result = parseMaybeJSON(raw);
-    return { ok: true, ...result };
-  } catch (err) {
-    console.error('[PlayBilling] startSubscription error:', err);
-    return { ok: false, message: 'Billing failed to start.' };
+    const res = await window.PlayBilling.purchasePro();
+    await _refreshFromNative();
+    return res;
+  } catch (e) {
+    console.error('[PlayBilling] purchasePro failed', e);
+    throw e;
   }
 }
 
-function parseMaybeJSON(raw) {
-  if (typeof raw !== 'string') return {};
-  try { return JSON.parse(raw); } catch { return {}; }
+export async function refreshEntitlements() {
+  if (!HAS_NATIVE()) {
+    // Try your status endpoint instead (Entitlements.refreshRemote in app code)
+    return { ok: false, reason: 'no-native' };
+  }
+  try {
+    await _refreshFromNative();
+    return { ok: true, snapshot: Entitlements.get() };
+  } catch (e) {
+    console.error('[PlayBilling] refreshEntitlements failed', e);
+    return { ok: false, reason: 'native-error' };
+  }
 }
+
+async function _refreshFromNative() {
+  const remote = await window.PlayBilling.getEntitlements();
+  if (!remote || typeof remote !== 'object') throw new Error('bad-native-snapshot');
+  await Entitlements.refreshRemote(async () => remote);
+}
+
+export default {
+  startTrial,
+  purchasePro,
+  refreshEntitlements,
+};
