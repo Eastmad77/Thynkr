@@ -1,0 +1,28 @@
+{
+  "portraitWidth": 1080,
+  "portraitHeight": 1920,
+  "landscapeWidth": 1920,
+  "landscapeHeight": 1080,
+  "jpegQuality": 88,
+  "watermark": {
+    "enabled": true,
+    "file": "watermark.svg",
+    "opacity": 0.18,
+    "scale": 0.18,
+    "margin": 40,
+    "position": "bottom-right"
+  },
+  "items": [
+    { "key": "start",      "src": "start.png",      "out": "poster-start.jpg" },
+    { "key": "level1",     "src": "level1.png",     "out": "poster-level1.jpg" },
+    { "key": "level2",     "src": "level2.png",     "out": "poster-level2.jpg" },
+    { "key": "level3",     "src": "level3.png",     "out": "poster-level3.jpg" },
+    { "key": "profile",    "src": "profile.png",    "out": "poster-profile.jpg" },
+    { "key": "pro",        "src": "pro.png",        "out": "poster-pro.jpg" },
+    { "key": "reflection", "src": "reflection.png", "out": "poster-reflection.jpg" },
+    { "key": "rewards",    "src": "rewards.png",    "out": "poster-rewards.jpg" },
+    { "key": "xp",         "src": "xp.png",         "out": "poster-xp.jpg" },
+    { "key": "end",        "src": "end.png",        "out": "poster-end.jpg" }
+  ],
+  "alsoMakeLandscape": false
+}
