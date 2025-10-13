@@ -1,57 +1,43 @@
-/* =========================================================
-   Whylee v7 — Entitlements
-   - Derives: pro, trialActive, trialExpiresAt, source
-   - Guards feature access
-   ========================================================= */
-window.WhyleeEntitlements = (() => {
-  const KEY = 'whylee:entitlements';
+/**
+ * entitlements.js — v7000
+ * Normalizes and snapshots user entitlements in one place.
+ * Source of truth for gating Pro features and trials.
+ */
+const LS_KEY = 'whylee:entitlements';
 
-  function now(){ return Date.now(); }
-  function load(){
-    try { return JSON.parse(localStorage.getItem(KEY)) || {}; }
-    catch { return {}; }
-  }
-  function save(e){ localStorage.setItem(KEY, JSON.stringify(e)); }
-
-  function snapshot(){
-    const e = load();
-    const trialActive = e.trialExpiresAt ? (now() < e.trialExpiresAt) : false;
-    const pro = !!e.pro || trialActive;
+export function getEntitlements() {
+  // Example shape stored in localStorage (synced by billing handlers)
+  // {
+  //   plan: 'free' | 'pro',
+  //   trialActive: true|false,
+  //   trialEndsAt: 1735689600000, // epoch ms
+  //   proSince: 1733097600000
+  // }
+  try {
+    const raw = JSON.parse(localStorage.getItem(LS_KEY) || '{}');
+    const now = Date.now();
+    const trialActive = !!raw.trialActive && Number(raw.trialEndsAt || 0) > now;
+    const isPro = raw.plan === 'pro' || trialActive;
     return {
-      pro,
+      plan: raw.plan || 'free',
       trialActive,
-      trialExpiresAt: e.trialExpiresAt || null,
-      source: e.source || null
+      trialEndsAt: Number(raw.trialEndsAt || 0),
+      proSince: Number(raw.proSince || 0),
+      isPro
     };
+  } catch {
+    return { plan: 'free', trialActive: false, trialEndsAt: 0, proSince: 0, isPro: false };
   }
+}
 
-  function grantTrial(days=3, source='stripe'){
-    const ms = days * 24 * 60 * 60 * 1000;
-    const e = load();
-    e.trialExpiresAt = now() + ms;
-    e.source = source;
-    save(e);
-    return snapshot();
-  }
+export function setEntitlements(next) {
+  localStorage.setItem(LS_KEY, JSON.stringify(next || {}));
+  dispatchEvent(new Event('entitlements:update'));
+}
 
-  function setProActive(source='stripe'){
-    const e = load();
-    e.pro = true; e.source = source;
-    save(e);
-    return snapshot();
-  }
-
-  function clear(){
-    localStorage.removeItem(KEY);
-  }
-
-  // Guards
-  function canUse(feature){
-    const s = snapshot();
-    const proOnly = new Set(['pro-posters','ambient-audio','advanced-levels','leaderboards']);
-    if (proOnly.has(feature)) return s.pro;
-    return true;
-  }
-
-  return { snapshot, grantTrial, setProActive, clear, canUse };
-})();
+// Convenience guards
+export const EntitlementGuards = {
+  canUseProPosters: () => getEntitlements().isPro,
+  canUseAmbientAudio: () => getEntitlements().isPro,
+  canSeeReflection: () => getEntitlements().isPro
+};
