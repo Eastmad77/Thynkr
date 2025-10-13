@@ -2,55 +2,67 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#0a2a43" />
-  <meta name="description" content="Whylee — fast, offline-ready, installable cognitive game" />
-  <link rel="manifest" href="/site.webmanifest?v=7000" />
-  <link rel="icon" href="/media/icons/favicon.svg" type="image/svg+xml" />
+  <meta name="description" content="Whylee — cinematic, offline-ready cognitive game." />
+
+  <!-- Manifest & Icons -->
+  <link rel="manifest" href="/site.webmanifest" />
+  <link rel="icon" href="/media/icons/whylee-fox.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="/media/icons/whylee-icon-192.png" />
+
   <title>Whylee</title>
 
-  <!-- CSS -->
+  <!-- Critical styles -->
   <link rel="preload" href="/styles/style.css?v=7000" as="style" />
   <link rel="stylesheet" href="/styles/style.css?v=7000" />
+  <!-- Optional animations file (safe to omit if not used) -->
   <link rel="stylesheet" href="/styles/animations.css?v=7000" />
+
+  <!-- Preload core scripts (defer execution) -->
+  <link rel="preload" href="/js/shell.js?v=7000" as="script" />
+  <link rel="preload" href="/js/app.js?v=7000" as="script" />
+  <link rel="preload" href="/js/ui/updatePrompt.js?v=7000" as="script" />
 </head>
 <body>
   <noscript>You need JavaScript enabled to run Whylee.</noscript>
 
+  <!-- Header -->
   <header class="app-header">
-    <button class="icon" id="btn-menu" aria-label="Menu" title="Menu" onclick="location.href='/menu.html'">☰</button>
-    <h1 class="brand">
-      <img src="/media/icons/whylee-fox.svg" alt="" class="brand-ico" />
-      Whylee
-    </h1>
+    <button class="icon" id="btn-menu" aria-label="Toggle menu" title="Menu" hidden>☰</button>
+    <h1 class="brand">Whylee</h1>
     <div class="header-actions">
-      <button id="btn-refresh" class="btn secondary" onclick="location.reload()">Refresh</button>
-      <button id="btn-install" class="btn primary" hidden>Install</button>
+      <button id="btn-refresh" class="secondary" title="Hard refresh">Refresh</button>
+      <button id="btn-install" class="primary" hidden>Install</button>
     </div>
   </header>
 
+  <!-- Main App Shell -->
   <main id="app" class="app-shell" role="main" aria-live="polite">
-    <!-- shell.js renders routes here -->
+    <!-- SPA routes render here (shell.js) -->
+    <section class="card">
+      <h2>Loading</h2>
+      <p class="muted">Preparing your daily challenge…</p>
+    </section>
   </main>
 
+  <!-- Footer Tabs -->
   <footer class="app-footer">
     <nav class="tabs" aria-label="Primary">
       <a href="#/home" data-tab>Home</a>
-      <a href="#/play" data-tab>Play</a>
+      <a href="#/tasks" data-tab>Tasks</a>
       <a href="#/about" data-tab>About</a>
     </nav>
     <small id="app-version" class="muted"></small>
   </footer>
 
-  <!-- JS (order matters) -->
-  <script src="/js/app.js?v=7000" defer></script>
-  <script src="/js/config/gameRules.js?v=7000" defer></script>
-  <script src="/js/state/entitlements.js?v=7000" defer></script>
-  <script src="/js/ui/updatePrompt.js?v=7000" defer></script>
-  <script src="/js/game/core.js?v=7000" defer></script>
-  <script src="/js/billing/stripe.js?v=7000" defer></script>
-  <script src="/js/billing/play.js?v=7000" defer></script>
+  <!-- Core scripts -->
   <script src="/js/shell.js?v=7000" defer></script>
+  <script src="/js/app.js?v=7000" defer></script>
+
+  <!-- SW update toast (listens to BroadcastChannel 'sw-messages') -->
+  <script src="/js/ui/updatePrompt.js?v=7000" defer></script>
 </body>
 </html>
