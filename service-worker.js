@@ -1,264 +1,258 @@
 /* ============================================================================
-   Whylee Service Worker — v7000
-   - Cache-first for app shell & static assets
-   - Stale-while-revalidate for images/posters/icons
-   - Network-first for JSON/API/dynamic requests
-   - Skips caching Range requests (audio/video streaming)
-   - Navigation Preload for faster first paint online
-   - Clean update flow with SKIP_WAITING + client toast support
-   ============================================================================ */
+   Whylee — Service Worker v7000
+   ---------------------------------------------------------------------------
+   - Versioned caches, simple & predictable
+   - Safe navigation preload (HTML)
+   - Cache-first for same-origin CSS/JS/Images/Icons/Manifest
+   - Network-first for JSON/API
+   - Skips Range requests (video/audio streaming)
+   - Broadcasts `SW_UPDATED` on activate so UI can prompt users to refresh
+   - Listens for `SKIP_WAITING` message to activate immediately
+   ========================================================================== */
 
-/// ===== Version & cache keys =====
 const VERSION = '7000';
-const CACHE_CORE = `whylee-core-v${VERSION}`;
-const CACHE_STATIC = `whylee-static-v${VERSION}`;
+const CACHE_NAME = `whylee-v${VERSION}`;
+
 const CORE = [
-  '/',                       // SPA entry
+  '/',                           // SPA entry
   '/index.html',
   '/style.css?v=7000',
-  '/animations.css?v=7000',
-
-  // Core JS
-  '/app.js?v=7000',
+  '/styles/animations.css?v=7000',
   '/shell.js?v=7000',
-  '/js/ui/updatePrompt.js',             // ES module via <script type="module"> or bundler
-  '/scripts/config/gameRules.js',
-  '/scripts/state/entitlements.js',
-  '/scripts/billing/stripe.js',
-  '/scripts/billing/play.js',
+  '/app.js?v=7000',
 
-  // Manifest & icons
-  '/site.webmanifest?v=7000',
+  // Core images / icons
   '/media/icons/whylee-icon-192.png',
   '/media/icons/whylee-icon-512.png',
   '/media/icons/maskable-icon.png',
-  '/media/icons/whylee-fox.svg',
+  '/media/icons/favicon.svg',
+
+  // Manifest
+  '/site.webmanifest?v=7000',
+
+  // Optional: posters commonly used on home/splash
+  '/media/posters/poster-start.jpg',
+  '/media/posters/poster-success.jpg',
 ];
 
-/// ===== Utility guards =====
+// Helpers --------------------------------------------------------------------
 const isHTML = (req) =>
   req.mode === 'navigate' ||
-  req.destination === 'document' ||
+  (req.destination === 'document') ||
   (req.headers.get('accept') || '').includes('text/html');
 
-const isRangeRequest = (req) => req.headers.has('range');
+const isRange = (req) => req.headers.has('range');
 
-const isSameOrigin = (url) => url.origin === self.location.origin;
+const sameOrigin = (url) => url.origin === self.location.origin;
 
-const isStaticAsset = (req) => {
-  const d = req.destination;
-  return d === 'style' || d === 'script' || d === 'image' || d === 'font';
-};
+const wantsStaticCache = (req, url) =>
+  sameOrigin(url) && (
+    req.destination === 'style' ||
+    req.destination === 'script' ||
+    req.destination === 'image' ||
+    req.destination === 'font'  ||
+    url.pathname === '/site.webmanifest'
+  );
 
-const isJSONorAPI = (req) => {
-  const d = req.destination;
-  return d === 'document' ? false : (d === '' || d === 'fetch');
-};
+const wantsNetworkFirst = (req, url) =>
+  req.destination === 'document' ? false : (
+    req.destination === 'video' ||
+    req.destination === 'audio' ||
+    /\/api\/|\.json($|\?)/i.test(url.pathname + url.search)
+  );
 
-const isMedia = (req) => req.destination === 'video' || req.destination === 'audio';
+// Broadcast helpers ----------------------------------------------------------
+let bc;
+try { bc = new BroadcastChannel('whylee-sw'); } catch (_) { bc = null; }
 
-/// ===== Precache core on install =====
+async function broadcastAll(type, payload = {}) {
+  // 1) BroadcastChannel when available
+  if (bc) { bc.postMessage({ type, payload }); return; }
+
+  // 2) Fallback to client postMessage
+  const clients = await self.clients.matchAll({ includeUncontrolled: true });
+  clients.forEach(c => c.postMessage({ type, payload }));
+}
+
+// Install --------------------------------------------------------------------
 self.addEventListener('install', (event) => {
   event.waitUntil((async () => {
-    const cache = await caches.open(CACHE_CORE);
+    const cache = await caches.open(CACHE_NAME);
     await cache.addAll(CORE);
   })());
-  // We DON'T call skipWaiting here; the page will prompt user to update.
+  // Move SW to waiting; we'll decide activation strategy below
+  self.skipWaiting();
 });
 
-/// ===== Activate: cleanup old caches & enable navigation preload =====
+// Activate -------------------------------------------------------------------
 self.addEventListener('activate', (event) => {
   event.waitUntil((async () => {
-    // Remove old caches
-    const keys = await caches.keys();
-    await Promise.all(
-      keys
-        .filter((k) => ![CACHE_CORE, CACHE_STATIC].includes(k))
-        .map((k) => caches.delete(k))
-    );
+    // Clean up older versions
+    const names = await caches.keys();
+    await Promise.all(names.map(n => (n === CACHE_NAME ? null : caches.delete(n))));
 
-    // Enable navigation preload for faster navigations
-    if (self.registration.navigationPreload) {
-      try { await self.registration.navigationPreload.enable(); } catch {}
-    }
+    // Enable navigation preload (best-effort)
+    try {
+      if (self.registration.navigationPreload) {
+        await self.registration.navigationPreload.enable();
+      }
+    } catch {}
 
-    // Take control of open clients so we can serve from the new SW after user accepts
+    // Claim clients so updated SW controls all open tabs immediately
     await self.clients.claim();
+
+    // Let the app know a new version is active
+    await broadcastAll('SW_UPDATED', { version: VERSION, at: Date.now() });
   })());
 });
 
-/// ===== Message channel: skip waiting (from the Update toast) =====
+// Fetch ----------------------------------------------------------------------
+self.addEventListener('fetch', (event) => {
+  const req = event.request;
+
+  // Only handle GET
+  if (req.method !== 'GET') return;
+
+  // Skip Range requests (let browser handle partials/streams)
+  if (isRange(req)) return;
+
+  // HTML navigations: app-shell strategy with preload
+  if (isHTML(req)) {
+    event.respondWith(handleHTML(event));
+    return;
+  }
+
+  const url = new URL(req.url);
+
+  // Static assets: cache-first
+  if (wantsStaticCache(req, url)) {
+    event.respondWith(cacheFirst(req));
+    return;
+  }
+
+  // JSON/API or media: network-first with cache fallback
+  if (wantsNetworkFirst(req, url)) {
+    event.respondWith(networkFirst(req));
+    return;
+  }
+
+  // Default: try cache-first to keep things speedy
+  event.respondWith(cacheFirst(req));
+});
+
+async function handleHTML(event) {
+  const cache = await caches.open(CACHE_NAME);
+
+  // Try cached index.html for SPA shell
+  const cached = await cache.match('/index.html', { ignoreSearch: true });
+  if (cached) {
+    // Kick a background update of index.html (best-effort)
+    event.waitUntil(refreshIndex(cache));
+    return cached;
+  }
+
+  // No cached shell yet: use preload or network, then cache
+  try {
+    const preload = await event.preloadResponse;
+    const res = preload || await fetch(event.request);
+    if (res && res.ok) {
+      cache.put('/index.html', res.clone());
+    }
+    return res;
+  } catch {
+    // Minimal offline fallback
+    return offlineHTML();
+  }
+}
+
+async function refreshIndex(cache) {
+  try {
+    const res = await fetch('/index.html', { cache: 'no-store' });
+    if (res && res.ok) {
+      await cache.put('/index.html', res.clone());
+      await broadcastAll('SW_SHELL_REFRESHED', { at: Date.now() });
+    }
+  } catch {}
+}
+
+async function cacheFirst(req) {
+  const cache = await caches.open(CACHE_NAME);
+  const cached = await cache.match(req, { ignoreSearch: true });
+  if (cached) return cached;
+
+  try {
+    const res = await fetch(req);
+    // Don’t cache opaque redirects or non-OK
+    if (res && res.ok && res.type !== 'opaqueredirect') {
+      // Avoid caching partial 206
+      if (res.status !== 206) {
+        cache.put(req, res.clone());
+      }
+    }
+    return res;
+  } catch (err) {
+    // Try cache without query as a last-resort
+    const stripped = await cache.match(stripQuery(req), { ignoreSearch: true });
+    if (stripped) return stripped;
+
+    // Media offline? return 504 rather than HTML
+    if (req.destination === 'video' || req.destination === 'audio') {
+      return new Response(null, { status: 504, statusText: 'Offline' });
+    }
+    // Otherwise a tiny HTML fallback
+    return offlineHTML();
+  }
+}
+
+async function networkFirst(req) {
+  const cache = await caches.open(CACHE_NAME);
+  try {
+    const res = await fetch(req, { cache: 'no-store' });
+    if (res && res.ok && res.status !== 206 && res.type !== 'opaqueredirect') {
+      cache.put(req, res.clone());
+    }
+    return res;
+  } catch {
+    const cached = await cache.match(req, { ignoreSearch: true }) ||
+                   await cache.match(stripQuery(req), { ignoreSearch: true });
+    if (cached) return cached;
+
+    // Media offline? 504 is clearer than HTML
+    if (req.destination === 'video' || req.destination === 'audio') {
+      return new Response(null, { status: 504, statusText: 'Offline' });
+    }
+    return offlineHTML();
+  }
+}
+
+function stripQuery(req) {
+  const url = new URL(req.url);
+  url.search = '';
+  return new Request(url.toString(), { headers: req.headers, method: 'GET' });
+}
+
+function offlineHTML() {
+  const html = `
+<!doctype html>
+<title>Offline · Whylee</title>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<style>
+  body{background:#0b1220;color:#e6eef8;font:16px system-ui;margin:0;display:grid;place-items:center;height:100vh;padding:24px}
+  .box{max-width:560px;text-align:center}
+  .box h1{margin:0 0 8px;font-size:22px}
+  .box p{color:#9fb3c8;margin:0}
+</style>
+<div class="box">
+  <h1>Offline</h1>
+  <p>Whylee can’t reach the network. Please retry when you’re online.</p>
+</div>`;
+  return new Response(html, { headers: { 'Content-Type': 'text/html; charset=utf-8' } });
+}
+
+// Messages from client --------------------------------------------------------
 self.addEventListener('message', (event) => {
   const { type } = event.data || {};
   if (type === 'SKIP_WAITING') {
     self.skipWaiting();
   }
 });
-
-/// ===== Fetch strategy =====
-self.addEventListener('fetch', (event) => {
-  const req = event.request;
-  const url = new URL(req.url);
-
-  // Only handle GET
-  if (req.method !== 'GET') return;
-
-  // Avoid caching streaming/partial content
-  if (isRangeRequest(req)) return;
-
-  // 1) App navigations (shell): cache-first index.html with safe fallbacks
-  if (isHTML(req)) {
-    event.respondWith((async () => {
-      const core = await caches.open(CACHE_CORE);
-
-      // Try cached shell first
-      const cached = await core.match('/index.html', { ignoreSearch: true });
-      if (cached) {
-        // refresh index in background (best effort)
-        event.waitUntil(updateIndex(core));
-        return cached;
-      }
-
-      // Use navigation preload if available; fallback to network
-      try {
-        const preload = await event.preloadResponse;
-        const res = preload || await fetch(req);
-        if (res && res.ok) core.put('/index.html', res.clone());
-        return res;
-      } catch {
-        // Minimal offline page
-        return offlineFallback();
-      }
-    })());
-    return;
-  }
-
-  // 2) Static assets (CSS/JS/Icons/Posters): cache-first (SW-R for images)
-  if (isSameOrigin(url) && isStaticAsset(req)) {
-    // Images/Posters/Icons → stale-while-revalidate in STATIC cache
-    if (req.destination === 'image') {
-      event.respondWith(staleWhileRevalidate(req, CACHE_STATIC));
-      return;
-    }
-    // CSS/JS/Fonts → cache-first from CORE (if present), otherwise STATIC
-    event.respondWith((async () => {
-      const core = await caches.open(CACHE_CORE);
-      const matchCore = await core.match(req, { ignoreSearch: true });
-      if (matchCore) return matchCore;
-
-      const staticCache = await caches.open(CACHE_STATIC);
-      const matchStatic = await staticCache.match(req, { ignoreSearch: true });
-      if (matchStatic) return matchStatic;
-
-      try {
-        const res = await fetch(req);
-        if (res && res.ok) {
-          // Put in STATIC unless it’s one of our known CORE paths
-          if (!CORE.some(p => url.pathname === p || url.pathname === p.split('?')[0])) {
-            staticCache.put(req, res.clone());
-          } else {
-            core.put(req, res.clone());
-          }
-        }
-        return res;
-      } catch {
-        // Try best-effort fallback by stripping query
-        const fallback = await staticCache.match(url.pathname, { ignoreSearch: true }) ||
-                         await core.match(url.pathname, { ignoreSearch: true });
-        if (fallback) return fallback;
-        return new Response('', { status: 504, statusText: 'Offline' });
-      }
-    })());
-    return;
-  }
-
-  // 3) Media (audio/video): network-first (don’t cache partials)
-  if (isMedia(req)) {
-    event.respondWith((async () => {
-      try {
-        return await fetch(req, { cache: 'no-store' });
-      } catch {
-        // If offline and previously cached (rare), allow fallback
-        const cache = await caches.open(CACHE_STATIC);
-        const cached = await cache.match(req, { ignoreSearch: true });
-        return cached || new Response(null, { status: 504, statusText: 'Offline' });
-      }
-    })());
-    return;
-  }
-
-  // 4) JSON/API/other: network-first with fallback to cache
-  if (isJSONorAPI(req)) {
-    event.respondWith((async () => {
-      const cache = await caches.open(CACHE_STATIC);
-      try {
-        const res = await fetch(req, { cache: 'no-store' });
-        // Cache only OK, non-opaque GETs
-        if (res && res.ok && res.type !== 'opaqueredirect') {
-          cache.put(req, res.clone());
-        }
-        return res;
-      } catch {
-        const cached = await cache.match(req, { ignoreSearch: true });
-        return cached || new Response(null, { status: 504, statusText: 'Offline' });
-      }
-    })());
-    return;
-  }
-
-  // Default: pass-through
-  // (e.g., cross-origin analytics, 3P APIs handled by the network)
-});
-
-/// ===== Helpers =====
-async function updateIndex(coreCache) {
-  try {
-    const fresh = await fetch('/index.html', { cache: 'no-store' });
-    if (fresh && fresh.ok) {
-      await coreCache.put('/index.html', fresh.clone());
-      // Signal pages that a new version is staged (waiting)
-      // The page’s updatePrompt.js will also detect a waiting SW automatically.
-      await broadcast({ type: 'NEW_VERSION', version: VERSION });
-    }
-  } catch {
-    // Ignore network errors
-  }
-}
-
-async function staleWhileRevalidate(req, cacheName) {
-  const cache = await caches.open(cacheName);
-  const cached = await cache.match(req, { ignoreSearch: true });
-  const fetchPromise = fetch(req).then((res) => {
-    if (res && res.ok) cache.put(req, res.clone());
-    return res;
-  }).catch(() => null);
-  return cached || fetchPromise || new Response(null, { status: 504, statusText: 'Offline' });
-}
-
-function offlineFallback() {
-  const html = `
-    <!doctype html>
-    <meta charset="utf-8">
-    <title>Offline · Whylee</title>
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <style>
-      body{margin:0;padding:24px;background:#0b1220;color:#e6eef8;font:16px system-ui}
-      .box{max-width:560px;margin:10vh auto;background:#0f1a2e;border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:20px}
-      h1{margin:0 0 6px 0;font-size:20px}
-      p{color:#9fb3c8}
-      a{color:#47b0ff;text-decoration:none}
-    </style>
-    <div class="box">
-      <h1>Offline</h1>
-      <p>Whylee couldn’t reach the network. Retry once you’re connected.</p>
-    </div>
-  `;
-  return new Response(html, { headers: { 'Content-Type': 'text/html; charset=utf-8' } });
-}
-
-async function broadcast(msg) {
-  try {
-    const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
-    for (const c of clients) c.postMessage(msg);
-  } catch { /* no-op */ }
-}
