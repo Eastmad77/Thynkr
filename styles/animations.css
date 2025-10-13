@@ -1,12 +1,16 @@
-/* ==========================================================================
-   Whylee — Animations & Motion System
-   - Subtle, premium animations with reduced-motion awareness
-   - Badge unlock, toasts, shimmering headers, level transitions
-   ========================================================================== */
+/* ============================================================================
+   Whylee — animations.css (v7000)
+   ---------------------------------------------------------------------------
+   Purpose:
+   - Premium, subtle motion language shared across Free & Pro
+   - Badge unlock, confetti pulse, streak fill, toast, and poster reveals
+   - Fully respects prefers-reduced-motion
+   - Designed to layer on top of style.css without breaking layouts
+   ============================================================================ */
 
-/* ------------------------------
-   Motion safety
---------------------------------- */
+/* -----------------------------
+   Reduced motion: global guard
+   ----------------------------- */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.001ms !important;
@@ -16,219 +20,263 @@
   }
 }
 
-/* ------------------------------
-   Base keyframes
---------------------------------- */
-@keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
-@keyframes fadeOut { from { opacity: 1 } to { opacity: 0 } }
-@keyframes scaleIn { from { transform: scale(.96); opacity: 0 } to { transform: scale(1); opacity: 1 } }
-@keyframes slideUp { from { transform: translateY(8px); opacity: 0 } to { transform: translateY(0); opacity: 1 } }
-@keyframes slideDown { from { transform: translateY(-8px); opacity: 0 } to { transform: translateY(0); opacity: 1 } }
-@keyframes pulseGlow {
-  0% { box-shadow: 0 0 0 rgba(28,120,230,0.0) }
-  50% { box-shadow: 0 0 32px rgba(28,120,230,0.35) }
-  100% { box-shadow: 0 0 0 rgba(28,120,230,0.0) }
+/* ==============================================
+   Utility: fade / slide / scale (reusable)
+   ============================================== */
+@keyframes wl-fade-in {
+  from { opacity: 0 }
+  to   { opacity: 1 }
 }
-@keyframes shimmer {
-  0% { transform: translateX(-100%) }
-  100% { transform: translateX(100%) }
-}
-@keyframes confetti {
-  0% { transform: translateY(-10px) rotate(0deg); opacity: 0 }
-  12% { opacity: 1 }
-  100% { transform: translateY(80px) rotate(240deg); opacity: 0 }
-}
+.wl-fade-in { animation: wl-fade-in 320ms ease-out both; }
 
-/* ------------------------------
-   Update Toast (used by updatePrompt.js)
---------------------------------- */
-#update-toast {
-  position: fixed;
-  left: 50%;
-  bottom: 24px;
-  transform: translateX(-50%);
-  z-index: 10000;
-  background: rgba(10, 42, 67, 0.92);
-  border: 1px solid rgba(255,255,255,.10);
-  color: #fff;
-  border-radius: 14px;
-  padding: 10px 12px;
-  box-shadow: 0 10px 30px rgba(0,0,0,.35);
-  animation: slideUp .35s ease, fadeIn .35s ease;
-  backdrop-filter: saturate(120%) blur(8px);
+@keyframes wl-slide-up {
+  from { transform: translateY(14px); opacity: 0 }
+  to   { transform: translateY(0);    opacity: 1 }
 }
-#update-toast .toast-inner {
-  display: grid;
-  grid-auto-flow: column;
-  gap: 10px;
-  align-items: center;
-}
-#update-toast button {
-  appearance: none;
-  border: 0;
-  border-radius: 10px;
-  padding: 8px 12px;
-  background: #d88c0e;
-  color: #1b1102;
-  font-weight: 700;
-  cursor: pointer;
-  transition: transform .08s ease;
-}
-#update-toast button:active { transform: translateY(1px) }
-#update-toast.fade-out { animation: fadeOut .3s ease forwards }
+.wl-slide-up { animation: wl-slide-up 360ms cubic-bezier(.2,.7,.2,1) both; }
 
-/* ------------------------------
-   Badge Unlock Modal / Chip
---------------------------------- */
+@keyframes wl-pop-in {
+  0%   { transform: scale(.92); opacity: 0 }
+  60%  { transform: scale(1.03); opacity: 1 }
+  100% { transform: scale(1) }
+}
+.wl-pop-in { animation: wl-pop-in 300ms cubic-bezier(.18,.9,.2,1) both; }
+
+/* ==============================================
+   Badge unlock (confetti + glow + bounce)
+   Apply .badge-unlock to a container
+   ============================================== */
+@keyframes wl-badge-bounce {
+  0%   { transform: translateY(8px) scale(.96); filter: drop-shadow(0 0 0 rgba(216,140,14,0)) }
+  40%  { transform: translateY(-4px) scale(1.03); filter: drop-shadow(0 6px 16px rgba(216,140,14,.25)) }
+  70%  { transform: translateY(2px)  scale(.995) }
+  100% { transform: translateY(0)    scale(1) }
+}
+@keyframes wl-badge-glow {
+  0%   { box-shadow: 0 0 0 0 rgba(216,140,14,.0) }
+  35%  { box-shadow: 0 0 0 12px rgba(216,140,14,.18) }
+  100% { box-shadow: 0 0 0 0 rgba(216,140,14,.0) }
+}
+/* lightweight confetti burst (no DOM flood) */
 .badge-unlock {
-  position: fixed;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  background: radial-gradient(1200px 600px at 50% 120%, rgba(10,42,67,.85), rgba(10,16,32,.92));
-  z-index: 9998;
-  animation: fadeIn .25s ease;
+  position: relative;
+  isolation: isolate;
 }
-.badge-card {
-  background: linear-gradient(180deg, #0e1726, #0b1220);
-  border: 1px solid rgba(255,255,255,.10);
-  border-radius: 20px;
-  padding: 20px 22px;
-  width: min(420px, 92vw);
-  text-align: center;
+.badge-unlock .badge,
+.badge-unlock [data-badge] {
+  animation: wl-badge-bounce 520ms cubic-bezier(.18,.9,.2,1) both;
+}
+.badge-unlock::after {
+  content: "";
+  position: absolute; inset: -4px;
+  border-radius: 16px;
+  animation: wl-badge-glow 900ms ease-out 40ms both;
+  pointer-events: none;
+}
+
+/* ==============================================
+   Streak bar fill (continuous session progress)
+   - Attach to the inner fill element
+   ============================================== */
+@keyframes wl-streak-fill {
+  from { width: var(--wl-streak-prev, 0%) }
+  to   { width: var(--wl-streak-next, 100%) }
+}
+.streak-fill-animate {
+  animation: wl-streak-fill 700ms cubic-bezier(.2,.7,.2,1) forwards;
+}
+
+/* ==============================================
+   Question timer bar sweep (10s visual)
+   - add .q-timer-start when timer begins
+   ============================================== */
+@keyframes wl-timer-sweep {
+  from { transform: scaleX(0); transform-origin: left }
+  to   { transform: scaleX(1); transform-origin: left }
+}
+.q-timer-start {
+  transform: scaleX(0);
+  animation: wl-timer-sweep 10s linear forwards;
+}
+
+/* ==============================================
+   Choice feedback blink (correct / incorrect)
+   - Add .blink-ok or .blink-bad on #choices container
+   ============================================== */
+@keyframes wl-blink-ok {
+  0% { background-color: rgba(82,196,26,.0) }
+  20%{ background-color: rgba(82,196,26,.18) }
+  100%{ background-color: rgba(82,196,26,.0) }
+}
+@keyframes wl-blink-bad {
+  0% { background-color: rgba(255,77,79,.0) }
+  20%{ background-color: rgba(255,77,79,.18) }
+  100%{ background-color: rgba(255,77,79,.0) }
+}
+.blink-ok  { animation: wl-blink-ok 320ms ease-out; }
+.blink-bad { animation: wl-blink-bad 360ms ease-out; }
+
+/* ==============================================
+   Toast / update prompt slide-in (top)
+   - For #updatePrompt or any .wl-toast
+   ============================================== */
+.wl-toast {
+  position: fixed;
+  inset: 12px 12px auto 12px;
+  z-index: 50;
+  background: #0f1a2e;
   color: #e6eef8;
-  box-shadow: 0 20px 60px rgba(0,0,0,.45);
-  animation: scaleIn .28s ease;
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 12px;
+  padding: 10px 12px;
+  box-shadow: 0 12px 28px rgba(0,0,0,.35);
+}
+.wl-toast-enter { animation: wl-slide-down-in 360ms cubic-bezier(.2,.7,.2,1) both; }
+
+@keyframes wl-slide-down-in {
+  0%   { transform: translateY(-12px); opacity: 0 }
+  100% { transform: translateY(0);     opacity: 1 }
+}
+
+/* ==============================================
+   Poster reveals (hero / splash visuals)
+   ============================================== */
+.wl-poster {
+  display: block;
+  border-radius: 16px;
+  overflow: hidden;
+  transform: translateZ(0);
+  box-shadow: 0 18px 40px rgba(0,0,0,.35);
+  animation: wl-fade-in 420ms ease-out both;
+}
+.wl-poster:hover {
+  transition: transform 260ms cubic-bezier(.2,.7,.2,1), filter 260ms ease;
+  transform: translateY(-2px) scale(1.01);
+  filter: saturate(110%);
+}
+
+/* Parallax shimmer overlay (subtle) */
+.wl-poster::after {
+  content:"";
+  position:absolute; inset:0;
+  background: radial-gradient(120% 60% at 50% 0%, rgba(255,255,255,.06), rgba(255,255,255,0) 60%),
+              linear-gradient(180deg, rgba(10,16,32,.0), rgba(10,16,32,.25));
+  pointer-events:none;
+}
+
+/* ==============================================
+   Buttons: premium micro-interactions
+   ============================================== */
+button.primary, .btn-primary {
+  transition: transform 160ms cubic-bezier(.2,.7,.2,1), filter 160ms ease;
+}
+button.primary:hover, .btn-primary:hover { transform: translateY(-1px); filter: brightness(1.06); }
+button.primary:active, .btn-primary:active { transform: translateY(0); filter: brightness(0.98); }
+
+/* ==============================================
+   Level transitions — body theme class hooks
+   (shell.js toggles .theme-level1/2/3 on body)
+   ============================================== */
+@keyframes wl-level-flash {
+  0% { box-shadow: inset 0 0 0 0 rgba(71,176,255,0) }
+  50%{ box-shadow: inset 0 0 0 200vmax rgba(71,176,255,.06) }
+  100%{ box-shadow: inset 0 0 0 0 rgba(71,176,255,0) }
+}
+.theme-level1 .app-shell { animation: wl-level-flash 600ms ease-out; }
+
+@keyframes wl-level2-flash {
+  0% { box-shadow: inset 0 0 0 0 rgba(216,140,14,0) }
+  50%{ box-shadow: inset 0 0 0 200vmax rgba(216,140,14,.06) }
+  100%{ box-shadow: inset 0 0 0 0 rgba(216,140,14,0) }
+}
+.theme-level2 .app-shell { animation: wl-level2-flash 600ms ease-out; }
+
+@keyframes wl-level3-flash {
+  0% { box-shadow: inset 0 0 0 0 rgba(111,194,255,0) }
+  50%{ box-shadow: inset 0 0 0 200vmax rgba(111,194,255,.06) }
+  100%{ box-shadow: inset 0 0 0 0 rgba(111,194,255,0) }
+}
+.theme-level3 .app-shell { animation: wl-level3-flash 600ms ease-out; }
+
+/* ==============================================
+   Achievement ribbon (use with .achievement-card)
+   ============================================== */
+.achievement-card {
   position: relative;
   overflow: hidden;
 }
-.badge-card .title {
-  font-size: 1.1rem;
-  letter-spacing: .3px;
-  margin-bottom: 8px;
-  color: #aecdff;
+@keyframes wl-ribbon-sweep {
+  0%   { transform: translateX(-120%) rotate(-6deg); opacity: 0 }
+  25%  { opacity: 1 }
+  100% { transform: translateX(140%)  rotate(-6deg); opacity: 0.85 }
 }
-.badge-card .icon {
-  width: 88px; height: 88px;
-  margin: 6px auto 10px;
-  border-radius: 20px;
-  display: grid; place-items: center;
-  background: linear-gradient(145deg, #1b2c4a, #0f1f36);
-  border: 1px solid rgba(255,255,255,.12);
-  animation: pulseGlow 1.6s ease-in-out 1;
-}
-.badge-card .desc {
-  color: #9fb3c8;
-  margin-bottom: 12px;
-}
-.badge-card .cta {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: #d88c0e;
-  color: #1b1102;
-  border: 0;
-  border-radius: 12px;
-  padding: 10px 14px;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-/* subtle shimmer streak */
-.badge-card::after {
+.achievement-card::before {
   content: "";
   position: absolute;
-  inset: 0;
+  top: 12px; left: -30%;
+  width: 60%;
+  height: 28px;
+  background: linear-gradient(90deg, rgba(216,140,14,.0), rgba(216,140,14,.35), rgba(216,140,14,.0));
+  border-radius: 6px;
+  filter: blur(0.4px);
+  animation: wl-ribbon-sweep 1400ms ease-out 260ms both;
   pointer-events: none;
-  background: linear-gradient(120deg,
-    transparent 20%,
-    rgba(255,255,255,.05) 40%,
-    rgba(255,255,255,.12) 50%,
-    rgba(255,255,255,.05) 60%,
-    transparent 80%);
+}
+
+/* ==============================================
+   Subtle focus ring (keyboard accessible)
+   ============================================== */
+:root {
+  --wl-focus: 0 0 0 2px rgba(71,176,255,.55), 0 0 1px 2px rgba(10,42,102,.25);
+}
+:where(a,button,input,select,textarea,[tabindex]):focus-visible {
+  outline: none;
+  box-shadow: var(--wl-focus);
+  border-color: rgba(255,255,255,.24);
+  transition: box-shadow 140ms ease, border-color 140ms ease;
+}
+
+/* ==============================================
+   Modal / overlay fade
+   ============================================== */
+@keyframes wl-overlay-in {
+  from { background: rgba(0,0,0,0); }
+  to   { background: rgba(0,0,0,.5); }
+}
+.wl-overlay-enter { animation: wl-overlay-in 220ms ease-out both; }
+
+/* ==============================================
+   Progress pulse (e.g., after XP gain)
+   ============================================== */
+@keyframes wl-pulse {
+  0%   { transform: scale(1);   filter: brightness(1) }
+  40%  { transform: scale(1.035); filter: brightness(1.12) }
+  100% { transform: scale(1);   filter: brightness(1) }
+}
+.wl-pulse { animation: wl-pulse 420ms cubic-bezier(.2,.7,.2,1); }
+
+/* ==============================================
+   Install CTA nudge (gentle)
+   ============================================== */
+@keyframes wl-nudge {
+  0%, 100% { transform: translateY(0) }
+  50%      { transform: translateY(-2px) }
+}
+.wl-nudge { animation: wl-nudge 1800ms ease-in-out infinite; }
+
+/* ==============================================
+   Loading shimmer (skeleton)
+   ============================================== */
+.wl-skeleton {
+  position: relative; overflow: hidden; background: #0f1a2e;
+}
+.wl-skeleton::after {
+  content:"";
+  position:absolute; inset:0;
+  background: linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,.06), rgba(255,255,255,0));
   transform: translateX(-100%);
-  animation: shimmer 1.4s ease 0.35s 1;
+  animation: wl-shimmer 1400ms linear infinite;
 }
-
-/* confetti bits */
-.badge-confetti {
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
-  pointer-events: none;
+@keyframes wl-shimmer {
+  100% { transform: translateX(100%); }
 }
-.badge-confetti i {
-  position: absolute;
-  width: 8px; height: 10px;
-  left: calc(50% - 4px);
-  background: linear-gradient(180deg, #47b0ff, #1e74f1);
-  border-radius: 2px;
-  opacity: 0;
-  animation: confetti .9s ease forwards;
-}
-.badge-confetti i:nth-child(2) { left: 44%; background: #ffd36e; animation-delay: .05s }
-.badge-confetti i:nth-child(3) { left: 56%; background: #ff7a2e; animation-delay: .1s }
-.badge-confetti i:nth-child(4) { left: 40%; background: #7affd4; animation-delay: .15s }
-.badge-confetti i:nth-child(5) { left: 60%; background: #b48bff; animation-delay: .2s }
-
-/* ------------------------------
-   Level transitions / Posters
---------------------------------- */
-.poster-enter {
-  animation: fadeIn .45s ease, scaleIn .45s ease;
-}
-.poster-leave {
-  animation: fadeOut .35s ease forwards;
-}
-
-/* ------------------------------
-   Buttons: micro-interactions
---------------------------------- */
-.btn, button.primary, button.secondary {
-  transition: transform .08s ease, box-shadow .12s ease;
-}
-.btn:active, button.primary:active, button.secondary:active {
-  transform: translateY(1px);
-}
-
-/* ------------------------------
-   XP progress bar (liquid-ish)
---------------------------------- */
-.xp-bar {
-  position: relative;
-  height: 12px;
-  border-radius: 999px;
-  background: #0f1a2e;
-  border: 1px solid rgba(255,255,255,.08);
-  overflow: hidden;
-}
-.xp-bar .fill {
-  height: 100%;
-  width: 0%;
-  background: linear-gradient(90deg, #1e74f1, #47b0ff);
-  box-shadow: inset 0 -6px 10px rgba(0,0,0,.25);
-  transition: width .45s ease;
-}
-
-/* ------------------------------
-   Streak chip pulse (subtle)
---------------------------------- */
-.streak-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 10px;
-  border-radius: 999px;
-  background: #13213a;
-  border: 1px solid rgba(255,255,255,.08);
-}
-.streak-chip.pulse { animation: pulseGlow 1.4s ease-in-out 1 }
-
-/* ------------------------------
-   Utility classes
---------------------------------- */
-.fade-in { animation: fadeIn .35s ease }
-.fade-out { animation: fadeOut .35s ease forwards }
-.slide-up { animation: slideUp .35s ease }
-.slide-down { animation: slideDown .35s ease }
-.scale-in { animation: scaleIn .28s ease }
