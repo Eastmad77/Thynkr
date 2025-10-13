@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "posters": [
+    { "key": "start",       "file": "poster-start.jpg",       "title": "Welcome / Tap to Begin", "usage": ["splash", "home-hero"] },
+    { "key": "level1",      "file": "poster-level1.jpg",      "title": "Level 1 – Focus",        "usage": ["level-1"] },
+    { "key": "level2",      "file": "poster-level2.jpg",      "title": "Level 2 – Pairs",        "usage": ["level-2"] },
+    { "key": "level3",      "file": "poster-level3.jpg",      "title": "Level 3 – Trivia",       "usage": ["level-3"] },
+    { "key": "profile",     "file": "poster-profile.jpg",     "title": "Profile & XP",           "usage": ["profile"] },
+    { "key": "pro",         "file": "poster-pro.jpg",         "title": "Whylee Pro",             "usage": ["pro", "upsell"] },
+    { "key": "reflection",  "file": "poster-reflection.jpg",  "title": "Daily Reflection",       "usage": ["reflection"] },
+    { "key": "rewards",     "file": "poster-rewards.jpg",     "title": "Rewards & Badges",       "usage": ["achievements"] },
+    { "key": "xp",          "file": "poster-xp.jpg",          "title": "XP Growth",              "usage": ["progress"] },
+    { "key": "end",         "file": "poster-end.jpg",         "title": "See You Tomorrow",       "usage": ["session-end"] }
+  ],
+  "fallback": "poster-start.jpg"
+}
