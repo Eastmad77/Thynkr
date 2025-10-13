@@ -1,16 +1,16 @@
-/* =========================================================
-   Whylee v7 — Play Billing Bridge (TWA Stub)
-   - This is a placeholder; integrate real TWA bridge later.
-   ========================================================= */
-window.WhyleePlayBilling = (() => {
-  async function startTrialInPlay(){
-    // Placeholder: call your Android interface from TWA
-    if (window.AndroidBilling && typeof window.AndroidBilling.startTrial === 'function'){
-      try{ await window.AndroidBilling.startTrial(); }
-      catch(err){ console.error('Play Billing trial failed', err); alert('Play Billing not available.'); }
-    } else {
-      alert('Play Billing bridge not available in this environment.');
-    }
+// Whylee — Play Billing bridge (stub for TWA/Android)
+// Expect a host app to inject window.WhyleePlayBridge with compatible APIs.
+
+export function isPlayBillingAvailable() {
+  return typeof window !== 'undefined' && !!window.WhyleePlayBridge;
+}
+
+export async function startAndroidTrialPurchase({ sku = 'whylee_pro_trial' } = {}) {
+  if (!isPlayBillingAvailable()) {
+    throw new Error('Play Billing bridge not available');
   }
-  return { startTrialInPlay };
-})();
+  // Host app should implement: buyTrial(sku) -> { ok, token, error }
+  const res = await window.WhyleePlayBridge.buyTrial(sku);
+  if (!res?.ok) throw new Error(res?.error || 'Trial purchase failed');
+  return res; // token, expiry, etc.
+}
