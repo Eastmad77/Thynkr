@@ -1,0 +1,156 @@
+/* ============================================================================
+   Whylee — Premium Animations (v7000)
+   - Subtle, performance-friendly, respects prefers-reduced-motion
+   - Used for: splash logo, badge unlocks, buttons, posters
+   ============================================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ---------- Generic helpers ---------- */
+
+.fade-in {
+  animation: fade-in 420ms ease-out both;
+}
+@keyframes fade-in {
+  from { opacity: 0; filter: blur(4px); transform: translateY(6px); }
+  to   { opacity: 1; filter: blur(0);   transform: translateY(0); }
+}
+
+.pop-in {
+  animation: pop-in 300ms cubic-bezier(.2,.8,.3,1.1) both;
+  transform-origin: 50% 60%;
+}
+@keyframes pop-in {
+  0%   { transform: scale(.92); opacity:0; }
+  60%  { transform: scale(1.02); opacity:1; }
+  100% { transform: scale(1); }
+}
+
+.shimmer {
+  position: relative;
+  overflow: hidden;
+}
+.shimmer::after {
+  content: "";
+  position: absolute; inset: 0 -150% 0 -150%;
+  background: linear-gradient(120deg,
+    rgba(255,255,255,0) 45%,
+    rgba(255,255,255,.16) 50%,
+    rgba(255,255,255,0) 55%);
+  transform: translateX(-30%);
+  animation: shimmer 1800ms ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes shimmer {
+  from { transform: translateX(-30%); }
+  to   { transform: translateX(30%); }
+}
+
+.pulse-soft {
+  animation: pulse-soft 1600ms ease-in-out infinite;
+}
+@keyframes pulse-soft {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 0 rgba(71,176,255,0); }
+  50%      { transform: scale(1.01); box-shadow: 0 0 32px rgba(71,176,255,.15); }
+}
+
+/* ---------- Splash logo glow ---------- */
+.logo-glow {
+  animation: logo-glow 2400ms ease-in-out infinite;
+  filter: drop-shadow(0 0 0 rgba(71,176,255,0));
+}
+@keyframes logo-glow {
+  0%,100% { filter: drop-shadow(0 0 0 rgba(71,176,255,0)); }
+  50%     { filter: drop-shadow(0 0 16px rgba(71,176,255,.5)); }
+}
+
+/* ---------- Badge unlock burst ---------- */
+.badge-unlock {
+  position: relative;
+  will-change: transform, opacity;
+  animation: badge-pop 480ms cubic-bezier(.2,.9,.2,1) both;
+}
+@keyframes badge-pop {
+  0%   { transform: scale(.85) rotate(-2deg); opacity: 0; }
+  60%  { transform: scale(1.05) rotate(1deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0deg); }
+}
+.badge-unlock::before,
+.badge-unlock::after {
+  content: "";
+  position: absolute; inset: -6px;
+  border-radius: 16px;
+  opacity: 0;
+  pointer-events: none;
+}
+.badge-unlock::before {
+  box-shadow: 0 0 0 0 rgba(216,140,14,.35);
+  animation: badge-ring 900ms ease-out both;
+}
+.badge-unlock::after {
+  background: radial-gradient(circle at 50% 50%,
+    rgba(111,194,255,.25), rgba(111,194,255,0) 60%);
+  animation: badge-flare 720ms ease-out both;
+}
+@keyframes badge-ring {
+  from { box-shadow: 0 0 0 0 rgba(216,140,14,.35); opacity: 1; }
+  to   { box-shadow: 0 0 0 22px rgba(216,140,14,0); opacity: 0; }
+}
+@keyframes badge-flare {
+  from { opacity: 0; transform: scale(.9); }
+  30%  { opacity: 1; transform: scale(1.02); }
+  to   { opacity: 0; transform: scale(1.1); }
+}
+
+/* ---------- CTA micro-animations ---------- */
+.btn-cta {
+  transition: transform .18s ease, box-shadow .18s ease;
+}
+.btn-cta:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px rgba(0,0,0,.25), 0 0 0 1px rgba(255,255,255,.06) inset;
+}
+.btn-cta:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 10px rgba(0,0,0,.2);
+}
+
+/* ---------- Poster reveal ---------- */
+.poster-reveal {
+  animation: poster-reveal 520ms cubic-bezier(.2,.8,.2,1) both;
+  transform-origin: center;
+}
+@keyframes poster-reveal {
+  from { opacity: 0; transform: translateY(6px) scale(0.985); filter: saturate(.9) blur(2px); }
+  to   { opacity: 1; transform: translateY(0)   scale(1);     filter: saturate(1)  blur(0); }
+}
+
+/* ---------- Level transition ribbon ---------- */
+.level-ribbon {
+  position: relative;
+  overflow: hidden;
+}
+.level-ribbon::after {
+  content: "";
+  position: absolute; left: -20%; right: -20%; top: 0; bottom: 0;
+  background: linear-gradient(90deg, rgba(71,176,255,0), rgba(71,176,255,.18), rgba(71,176,255,0));
+  transform: translateX(-40%);
+  animation: ribbon-sweep 1400ms ease-in-out both;
+}
+@keyframes ribbon-sweep {
+  from { transform: translateX(-40%); }
+  to   { transform: translateX(40%); }
+}
+
+/* ---------- Utility: delay classes ---------- */
+.delay-1 { animation-delay: .06s !important; }
+.delay-2 { animation-delay: .12s !important; }
+.delay-3 { animation-delay: .18s !important; }
+.delay-4 { animation-delay: .24s !important; }
+.delay-5 { animation-delay: .30s !important; }
