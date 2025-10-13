@@ -1,102 +1,114 @@
-// ============================================================================
-// ui/updatePrompt.js — “New version available” toast
-// ----------------------------------------------------------------------------
-// Listens for Service Worker messages and presents a small toast prompting the
-// user to reload. Also detects an already-waiting SW on page load.
-// Requires: /styles/animations.css (for #update-toast styles).
-// ============================================================================
-
 /**
- * Inject and return the toast element.
- */
-function createToast() {
-  let toast = document.getElementById('update-toast');
-  if (toast) return toast;
+ * ============================================================================
+ * Whylee — UI / updatePrompt (v7000)
+ * ----------------------------------------------------------------------------
+ * Detects when a new Service Worker is waiting and nudges the user to refresh.
+ * Works with the v7000 SW, which broadcasts { type: 'NEW_VERSION' }.
+ *
+ * Usage: imported once in index.html via:
+ *   <script type="module">import '/js/ui/updatePrompt.js'</script>
+ * ============================================================================ */
 
-  toast = document.createElement('div');
-  toast.id = 'update-toast';
-  toast.setAttribute('role', 'status');
-  toast.setAttribute('aria-live', 'polite');
-  toast.innerHTML = `
-    <div class="toast-inner">
-      <span>New version available</span>
-      <button id="refresh-btn" type="button" aria-label="Update now">Update</button>
-    </div>
-  `;
-  document.body.appendChild(toast);
-  return toast;
+const TOAST_ID = 'update-toast';
+const BTN_ACCEPT = 'btn-update-accept';
+const BTN_DISMISS = 'btn-update-dismiss';
+
+const log = (...args) => console.log('[Whylee:update]', ...args);
+
+/** Get elements eagerly if they exist on the page */
+function els() {
+  return {
+    toast: document.getElementById(TOAST_ID),
+    accept: document.getElementById(BTN_ACCEPT),
+    dismiss: document.getElementById(BTN_DISMISS),
+  };
 }
 
-/**
- * Trigger the update flow: ask the waiting SW to activate, then reload.
- */
-async function performUpdate() {
+/** Show the update toast UI */
+function showToast() {
+  const { toast } = els();
+  if (!toast) return;
+  toast.hidden = false;
+}
+
+/** Hide the update toast UI */
+function hideToast() {
+  const { toast } = els();
+  if (!toast) return;
+  toast.hidden = true;
+}
+
+/** Ask a waiting SW to activate immediately, then reload */
+async function acceptAndReload() {
   try {
-    const reg = await navigator.serviceWorker.getRegistration();
+    const reg = await navigator.serviceWorker?.getRegistration?.();
     if (reg?.waiting) {
       reg.waiting.postMessage({ type: 'SKIP_WAITING' });
-      // Reload after controller changes
+      // When the controller changes, we’re on the new version.
       navigator.serviceWorker.addEventListener('controllerchange', () => {
-        // Small delay to ensure new assets are controlled by the new SW
-        setTimeout(() => location.reload(), 200);
+        // slight delay avoids rare race conditions with cache swap
+        setTimeout(() => location.reload(), 100);
       });
-    } else {
-      // No waiting worker found; fallback to simple reload
-      location.reload();
+      return;
     }
-  } catch (err) {
-    console.error('[Whylee] Update flow error:', err);
+    // Fallback if no waiting worker (rare)
+    location.reload();
+  } catch {
     location.reload();
   }
 }
 
-/**
- * Show the toast UI and wire events.
- */
-function showToast() {
-  const toast = createToast();
-  const btn = toast.querySelector('#refresh-btn');
-  btn?.addEventListener('click', () => {
-    toast.classList.add('fade-out');
-    setTimeout(performUpdate, 180);
-  }, { once: true });
+/** Wire the buttons (if present) */
+function wireButtons() {
+  const { accept, dismiss } = els();
+  accept?.addEventListener('click', acceptAndReload);
+  dismiss?.addEventListener('click', hideToast);
 }
 
-/**
- * Check if there is already a waiting SW when the page loads.
- * (e.g., SW was updated while tab was in background.)
- */
-async function checkWaitingWorker() {
+/** Inspect current SW registration to see if an update is ready */
+async function checkRegistrationForUpdate() {
   if (!('serviceWorker' in navigator)) return;
   try {
     const reg = await navigator.serviceWorker.getRegistration();
-    if (reg?.waiting) showToast();
-  } catch (err) {
-    // non-fatal
-  }
-}
+    if (!reg) return;
 
-/**
- * Public API: registers listeners and initial check.
- */
-export function registerUpdatePrompt() {
-  // 1) SW broadcast: NEW_VERSION → show toast
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.addEventListener('message', (evt) => {
-      if (evt?.data?.type === 'NEW_VERSION') {
-        showToast();
-      }
+    // If a waiting worker already exists, show the prompt.
+    if (reg.waiting) {
+      log('New version waiting; prompting user.');
+      showToast();
+    }
+
+    // When a new worker installs and becomes "waiting", prompt.
+    reg.addEventListener('updatefound', () => {
+      const installing = reg.installing;
+      if (!installing) return;
+      installing.addEventListener('statechange', () => {
+        if (installing.state === 'installed' && navigator.serviceWorker.controller) {
+          log('Installed new SW; prompting user.');
+          showToast();
+        }
+      });
     });
-  }
-
-  // 2) On load: detect already-waiting worker
-  if (document.readyState === 'complete' || document.readyState === 'interactive') {
-    checkWaitingWorker();
-  } else {
-    window.addEventListener('DOMContentLoaded', checkWaitingWorker, { once: true });
+  } catch (e) {
+    // Non-fatal; we just skip prompting
+    log('checkRegistrationForUpdate error:', e);
   }
 }
 
-// Optional helpers if you want to trigger manually from DevTools:
-export function showUpdatePromptManually() { showToast(); }
-export async function forceUpdateNow() { await performUpdate(); }
+/** Listen for SW messages (v7000 SW sends { type: 'NEW_VERSION' }) */
+function listenForBroadcasts() {
+  if (!('serviceWorker' in navigator)) return;
+  navigator.serviceWorker.addEventListener('message', (e) => {
+    if (e?.data?.type === 'NEW_VERSION') {
+      log('Broadcast NEW_VERSION received.');
+      showToast();
+    }
+  });
+}
+
+/** Boot */
+(function init() {
+  wireButtons();
+  listenForBroadcasts();
+  checkRegistrationForUpdate();
+})();
