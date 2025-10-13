@@ -1,47 +1,81 @@
-/**
- * Whylee updatePrompt.js
- * Handles service worker updates (SW_UPDATED broadcast)
- * Shows a “New version available” toast with a refresh button
- * Automatically reloads when new SW takes control
- */
+// ============================================================================
+// updatePrompt.js — Notifies user when a new PWA version is available
+// -----------------------------------------------------------------------------
+// Shows a floating toast when the Service Worker detects a new version.
+// User can tap to refresh and load latest assets without a full app restart.
+// ============================================================================
 
-(() => {
-  // Guard
-  if (!('BroadcastChannel' in self)) return;
+export function registerUpdatePrompt() {
+  if (!('serviceWorker' in navigator)) return;
 
-  // Create BroadcastChannel to listen for SW messages
-  const channel = new BroadcastChannel('sw-messages');
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    showUpdateToast();
+  });
 
-  // Build toast element
+  // Listen for custom message from SW
+  navigator.serviceWorker.addEventListener('message', (event) => {
+    if (event.data && event.data.type === 'NEW_VERSION') {
+      showUpdateToast();
+    }
+  });
+}
+
+function showUpdateToast() {
+  // Remove existing
+  const oldToast = document.getElementById('update-toast');
+  if (oldToast) oldToast.remove();
+
   const toast = document.createElement('div');
-  toast.className = 'update-toast hidden';
+  toast.id = 'update-toast';
   toast.innerHTML = `
-    <div class="update-toast-inner">
+    <div class="toast-inner">
       <span>✨ New version available</span>
-      <button id="update-refresh">Refresh</button>
+      <button id="update-reload-btn">Refresh</button>
     </div>
   `;
   document.body.appendChild(toast);
 
-  const refreshButton = toast.querySelector('#update-refresh');
-  refreshButton.addEventListener('click', () => {
-    navigator.serviceWorker.getRegistration().then((reg) => {
-      if (reg && reg.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
-    });
+  toast.querySelector('#update-reload-btn').onclick = () => {
     toast.classList.add('fade-out');
-    setTimeout(() => location.reload(), 600);
-  });
+    setTimeout(() => {
+      window.location.reload(true);
+    }, 500);
+  };
+}
 
-  // When SW sends an update broadcast
-  channel.addEventListener('message', (event) => {
-    if (!event.data || event.data.type !== 'SW_UPDATED') return;
-    toast.classList.remove('hidden');
-    toast.classList.add('visible');
-  });
+// Optional CSS (include in style.css or animations.css)
+//
+// #update-toast {
+//   position: fixed;
+//   bottom: 1.5rem;
+//   left: 50%;
+//   transform: translateX(-50%);
+//   background: #0a2a43cc;
+//   color: #fff;
+//   padding: 0.75rem 1.25rem;
+//   border-radius: 1rem;
+//   display: flex;
+//   align-items: center;
+//   gap: 0.5rem;
+//   box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+//   z-index: 9999;
+//   font-size: 0.9rem;
+//   animation: fadeIn 0.4s ease;
+// }
+// #update-toast.fade-out { opacity: 0; transition: opacity 0.3s; }
+// #update-reload-btn {
+//   background: #d88c0e;
+//   border: none;
+//   color: #fff;
+//   padding: 0.4rem 0.9rem;
+//   border-radius: 0.5rem;
+//   cursor: pointer;
+// }
+// #update-reload-btn:hover { background: #ff9d1a; }
+// ```
 
-  // Auto-reload once the new SW takes control
-  navigator.serviceWorker?.addEventListener('controllerchange', () => {
-    toast.classList.add('fade-out');
-    setTimeout(() => location.reload(), 600);
-  });
-})();
+---
+
+Next:  
+📁 `/js/entitlements/plan.js` — handles user plan logic (Free vs Pro, active trial, expiry checks).  
+Continue?
