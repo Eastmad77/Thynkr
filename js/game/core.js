@@ -1,276 +1,337 @@
-/* =========================================================
-   Whylee v7 — Core Game Logic
-   - Levels 1..3, 12 questions each
-   - Redemption: 3 consecutive correct removes one wrong
-   - Daily streak mechanic
-   - Minimal mock questions (replace with CSV/Firestore later)
-   ========================================================= */
-window.WhyleeGameCore = (() => {
-  const $ = s => document.querySelector(s);
+/**
+ * game/core.js — v7000
+ * Core loop for Levels 1–3, XP, streaks, posters, SFX, timers.
+ *
+ * Expected DOM ids (lightweight):
+ *  - #quizLayer, #questionBox, #choices, #progressLabel, #elapsedTime, #qTimerBar
+ *  - #streakFill, #streakLabel, #levelLabel
+ *  - #countdownOverlay, #countNum
+ *  - #perfectBurst, #sfxPerfect (audio)
+ *  - #heroPoster (img)  — optional, swaps per level
+ *  - Start/controls: #btnStart, #btnHow, #btnResume, #btnReset, #btnQuit
+ *  - #gameOverBox, #gameOverText, #playAgainBtn, #shareBtn, #shuffleBtn
+ */
+import { GameRules } from '/js/config/gameRules.js';
+import { getEntitlements } from '/js/state/entitlements.js';
+import { loadQuestionsForToday } from '/js/questions.js';
 
-  // UI refs (resolved at init)
-  let btnStart, btnHow, btnReset, qBox, choicesEl, progressLabel, elapsedEl, qTimerBar, perfectBurst, sfxPerfect, levelLabel;
+// ---- small DOM helpers
+const $  = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
 
-  // SFX
-  const sfx = {
-    correct: new Audio('/media/audio/correct.mp3'),
-    wrong: new Audio('/media/audio/wrong.mp3'),
-    levelUp: new Audio('/media/audio/level-up.mp3'),
-    start: new Audio('/media/audio/start-chime.mp3'),
-    gameOver: new Audio('/media/audio/game-over-low.mp3')
+// Elements
+const quizLayer = $('#quizLayer');
+const questionBox = $('#questionBox');
+const choicesEl = $('#choices');
+const progressLabel = $('#progressLabel');
+const elapsedEl = $('#elapsedTime');
+const qTimerBar = $('#qTimerBar');
+const streakFill = $('#streakFill');
+const streakLabel = $('#streakLabel');
+const levelLabel = $('#levelLabel');
+const countdownOverlay = $('#countdownOverlay');
+const countNum = $('#countNum');
+const perfectBurst = $('#perfectBurst');
+const sfxPerfect = $('#sfxPerfect');
+
+// Controls
+const btnStart = $('#btnStart');
+const btnHow = $('#btnHow');
+const btnResume = $('#btnResume');
+const btnReset = $('#btnReset');
+const btnQuit = $('#btnQuit');
+
+// ---- SFX
+const SFX = Object.fromEntries(Object.entries(GameRules.sfx)
+  .map(([k, path]) => [k, new Audio(path)]));
+
+// ---- State
+let state = makeInitialState();
+
+function makeInitialState(){
+  return {
+    level: 1,
+    qIndex: 0,        // 0..11 for current level
+    correctInRow: 0,
+    wrongCount: 0,
+    totalCorrect: 0,
+    totalAsked: 0,
+    startedAt: 0,
+    timerHandle: null,
+    running: false,
+    levelCounts: {1:0,2:0,3:0},
+    levelCorrects: {1:0,2:0,3:0},
+    perfectLevels: [],       // e.g. [1,3]
+    currentSet: [],          // 36 questions
+    xp: 0,
+    levelClears: 0
   };
+}
 
-  // State
-  let state = null;
-  function baseState(){
-    return {
-      level: 1,
-      qIndex: 0,
-      consecutive: 0,
-      wrongCount: 0,
-      totalCorrect: 0,
-      totalAsked: 0,
-      startedAt: 0,
-      timerHandle: null,
-      running: false,
-      levelCounts: {1:0,2:0,3:0},
-      levelCorrects: {1:0,2:0,3:0},
-      set: []
-    };
-  }
+// ---- Time formatting
+function fmtTime(ms){
+  const s = Math.floor(ms/1000);
+  const m = Math.floor(s/60);
+  const r = s % 60;
+  return `${m}:${r<10?'0':''}${r}`;
+}
 
-  // Utils
-  function fmt(ms){ const s = Math.floor(ms/1000), m = Math.floor(s/60), r = s%60; return `${m}:${r<10?'0':''}${r}`; }
-  function vibrate(ms){ if (navigator.vibrate) try{ navigator.vibrate(ms); }catch{} }
-  function shuffle(arr){ const a = arr.slice(); for(let i=a.length-1;i>0;i--){ const j = Math.floor(Math.random()*(i+1)); [a[i],a[j]] = [a[j],a[i]]; } return a; }
+// ---- Streak handling
+function getDailyKey(){ return new Date().toISOString().slice(0,10); }
+function getDailyStreak(){ return Number(localStorage.getItem(GameRules.streak.storageKey) || '0'); }
+function setDailyStreak(v){ localStorage.setItem(GameRules.streak.storageKey, String(v)); }
+function markTodayComplete(){
+  const today = getDailyKey();
+  const lastKey = GameRules.streak.lastDateKey;
+  const lastDate = localStorage.getItem(lastKey);
+  let streak = getDailyStreak();
+  if (lastDate === today) return; // already counted
+  const prev = new Date(lastDate || today); prev.setDate(prev.getDate()+1);
+  const prevStr = prev.toISOString().slice(0,10);
+  if (!lastDate || prevStr === today){ streak = streak + 1; } else { streak = 1; }
+  setDailyStreak(streak);
+  localStorage.setItem(lastKey, today);
+}
 
-  // Daily streak storage
-  const KEY_STREAK = 'wl_streak';
-  const KEY_LAST = 'wl_last_date';
-  const todayKey = () => new Date().toISOString().slice(0,10);
-  const getStreak = () => Number(localStorage.getItem(KEY_STREAK) || '0');
-  const setStreak = (n) => localStorage.setItem(KEY_STREAK, String(n));
-  function markTodayIfQualified(){
-    const today = todayKey();
-    const last = localStorage.getItem(KEY_LAST);
-    if (last === today) return;
-    let s = getStreak();
-    if (!last) s = 1;
-    else {
-      const prev = new Date(last); prev.setDate(prev.getDate() + 1);
-      const prevStr = prev.toISOString().slice(0,10);
-      s = (prevStr === today) ? s + 1 : 1;
-    }
-    setStreak(s);
-    localStorage.setItem(KEY_LAST, today);
-  }
+// ---- UI header
+function updateHeader(){
+  const totalToAsk = GameRules.session.questionsPerLevel * GameRules.session.levels.length;
+  const pct = Math.min(100, Math.floor((state.totalAsked/totalToAsk)*100));
+  streakFill && (streakFill.style.width = pct + '%');
 
-  // Questions (mock)
-  async function loadQuestions(){
-    // Replace with fetch('/media/questions/sample-questions.csv') when wired
-    const mk = (i) => ({
-      q: `Sample question #${i+1}?`,
-      options: shuffle([`Correct ${i+1}`, `Alt A`, `Alt B`, `Alt C`]),
-      correctIndex: 0, // we treat index 0 as correct for the mock
-      level: (i<12) ? 1 : (i<24 ? 2 : 3)
-    });
-    return Array.from({length:36}, (_,i)=> mk(i));
-  }
+  const dayStreak = getDailyStreak();
+  if (streakLabel) streakLabel.textContent = `Streak: ${dayStreak} day${dayStreak===1?'':'s'}`;
+  if (levelLabel) levelLabel.textContent = `Level ${state.level}`;
+}
 
-  // Header/Progress
-  function paintHeader(){
-    if (!levelLabel) return;
-    levelLabel.textContent = `Level ${state.level}`;
-    progressLabel.textContent = `Q ${state.qIndex+1}/12`;
-    // XP & streak bars (cosmetic demo)
-    const xpPct = Math.min(100, Math.floor((state.totalCorrect * 100) / 36));
-    const stPct = Math.min(100, Math.floor((getStreak() % 7) * (100/7)));
-    const xpBar = $('#xpBar'); const streakBar = $('#streakBar');
-    if (xpBar) xpBar.style.width = xpPct + '%';
-    if (streakBar) streakBar.style.width = stPct + '%';
-  }
+// ---- Posters
+function setPosterForLevel(level){
+  const ent = getEntitlements();
+  const posterMap = GameRules.posters;
+  const path = posterMap[level] || posterMap.start;
+  const hero = $('#heroPoster');
+  if (hero) hero.src = path;
+  // optional: ambient poster for Pro users (night)
+  if (ent.isPro && level === 3 && posterMap.night && hero) hero.src = posterMap.night;
+}
 
-  // Timer
-  function elapsedTick(){
+// ---- Begin / Timer
+function beginLevel(level){
+  state.level = level;
+  state.qIndex = 0;
+  state.correctInRow = 0;
+  state.levelCounts[level] = 0;
+  state.levelCorrects[level] = 0;
+  setPosterForLevel(level);
+  updateHeader();
+}
+
+function elapsedTick(){
+  if (!state.running) return;
+  elapsedEl && (elapsedEl.textContent = fmtTime(Date.now() - state.startedAt));
+  state.timerHandle = setTimeout(elapsedTick, 250);
+}
+
+function qTimerStart(){
+  const sec = GameRules.session.perQuestionSeconds;
+  const start = performance.now();
+  const dur = sec * 1000;
+  function step(ts){
     if (!state.running) return;
-    elapsedEl.textContent = fmt(Date.now() - state.startedAt);
-    state.timerHandle = setTimeout(elapsedTick, 250);
+    const p = Math.min(1, (ts-start)/dur);
+    if (qTimerBar) qTimerBar.style.width = (p*100)+'%';
+    if (p<1) requestAnimationFrame(step);
   }
-  function qTimerStart(){
-    const start = performance.now(), dur = 10000;
-    qTimerBar.style.width = '0%';
-    function step(ts){
-      if (!state.running) return;
-      const p = Math.min(1, (ts - start) / dur);
-      qTimerBar.style.width = (p*100) + '%';
-      if (p < 1) requestAnimationFrame(step);
-    }
-    requestAnimationFrame(step);
-  }
+  if (qTimerBar) qTimerBar.style.width = '0%';
+  requestAnimationFrame(step);
+}
 
-  // Flow
-  function beginLevel(l){
-    state.level = l; state.qIndex = 0; state.consecutive = 0;
-    state.levelCounts[l] = 0; state.levelCorrects[l] = 0;
-    paintHeader();
-  }
+// ---- Questions
+function showQuestion(){
+  const lv = state.level;
+  const perLevel = GameRules.session.questionsPerLevel;
+  const subset = state.currentSet.filter(q=>q.Level===lv);
+  const q = subset[state.qIndex] || null;
+  if (!q){
+    // level finished
+    const correct = state.levelCorrects[lv] || 0;
+    const asked = state.levelCounts[lv] || 0;
+    const perfect = (asked === perLevel && correct === perLevel);
+    if (perfect && !state.perfectLevels.includes(lv)) state.perfectLevels.push(lv);
+    if (perfect) triggerPerfect();
 
-  function showQuestion(){
-    const lv = state.level;
-    const subset = state.set.filter(x => x.level === lv);
-    const q = subset[state.qIndex] || null;
-    if (!q){
-      // done this level
-      const perfect = (state.levelCounts[lv]===12 && state.levelCorrects[lv]===12);
-      if (perfect){ // visual celebrate
-        try{ sfxPerfect?.play(); }catch{} 
-        perfectBurst?.classList.add('active');
-        setTimeout(()=> perfectBurst?.classList.remove('active'), 1000);
-      }
-      if (lv < 3){
-        try{ sfx.levelUp?.play(); }catch{}
-        beginLevel(lv+1);
-        showQuestion();
-        return;
-      }
-      // finished all
-      finalizeSession();
+    // XP bonuses
+    state.xp += GameRules.xp.perLevelClearBonus;
+    if (perfect) state.xp += GameRules.xp.perfectLevelBonus;
+
+    state.levelClears++;
+
+    if (lv < 3){
+      SFX.levelUp?.play().catch(()=>{});
+      beginLevel(lv + 1);
+      showQuestion();
       return;
     }
 
-    paintHeader();
-    qBox.textContent = q.q;
-    choicesEl.innerHTML = '';
-    q.options.forEach((t, idx) => {
-      const b = document.createElement('button');
-      b.className = 'btn secondary';
-      b.textContent = t;
-      b.addEventListener('click', () => onAnswer(idx === 0));
-      choicesEl.appendChild(b);
-    });
-    qTimerStart();
-  }
-
-  function onAnswer(correct){
-    state.totalAsked++;
-    state.levelCounts[state.level]++;
-
-    if (correct){
-      state.totalCorrect++;
-      state.levelCorrects[state.level]++;
-      state.consecutive++;
-      try{ sfx.correct?.play(); }catch{}
-      if (state.consecutive >= 3 && state.wrongCount > 0){
-        state.wrongCount = Math.max(0, state.wrongCount - 1);
-      }
-      flash(true);
-    } else {
-      state.consecutive = 0;
-      state.wrongCount++;
-      vibrate(40);
-      try{ sfx.wrong?.play(); }catch{}
-      flash(false);
-    }
-
-    paintHeader();
-    state.qIndex++;
-    setTimeout(showQuestion, 360);
-  }
-
-  function flash(ok){
-    choicesEl.classList.remove('blink-ok','blink-bad');
-    void choicesEl.offsetWidth;
-    choicesEl.classList.add(ok ? 'blink-ok' : 'blink-bad');
-    setTimeout(()=> choicesEl.classList.remove('blink-ok','blink-bad'), 260);
-  }
-
-  function finalizeSession(){
+    // all done — session complete
     state.running = false;
     clearTimeout(state.timerHandle);
-    const correct = state.totalCorrect;
-    const streakTriples = Math.floor(correct / 3);
-    const levelClears = [1,2,3].filter(l => state.levelCounts[l] >= 12).length;
-    const xp = window.WhyleeRules.xpForSession({ correct, levelClears, streakTriples });
+    markTodayComplete();
+    state.xp += GameRules.xp.dailyCompletionBonus;
+    const over = $('#gameOverBox');
+    if (over) over.hidden = false;
+    const txt = $('#gameOverText');
+    if (txt) txt.textContent = 'All levels complete — see you tomorrow!';
+    return;
+  }
 
-    // Persist simple stats
-    try {
-      const KEY = 'whylee:stats';
-      const s = JSON.parse(localStorage.getItem(KEY) || '{}');
-      s.xp = (s.xp || 0) + xp;
-      s.totalCorrect = (s.totalCorrect || 0) + correct;
-      s.sessions = (s.sessions || 0) + 1;
-      // Perfects
-      s.levelPerfects = s.levelPerfects || {};
-      [1,2,3].forEach(l => {
-        if (state.levelCounts[l]===12 && state.levelCorrects[l]===12){
-          s.levelPerfects[l] = (s.levelPerfects[l] || 0) + 1;
-        }
-      });
-      localStorage.setItem(KEY, JSON.stringify(s));
-    } catch {}
+  if (progressLabel) progressLabel.textContent = `Q ${state.qIndex+1}/${perLevel}`;
+  if (questionBox) questionBox.textContent = q.Question;
+  if (choicesEl) choicesEl.innerHTML = '';
 
-    // Day complete if enough questions
-    if (state.totalAsked >= window.WhyleeRules.DAILY_TARGET) markTodayIfQualified();
+  // Shuffle answers but remember correct
+  const indices = [0,1,2,3].filter(i => i < q.Answers.length);
+  const shuffled = shuffle(indices);
+  const correctIndex = q.CorrectIndex ?? 0;
+  shuffled.forEach((ansIdx) => {
+    const b = document.createElement('button');
+    b.textContent = q.Answers[ansIdx];
+    b.addEventListener('click', () => onAnswer(ansIdx === correctIndex, q));
+    choicesEl.appendChild(b);
+  });
 
-    const box = document.getElementById('gameOverBox');
-    const text = document.getElementById('gameOverText');
-    if (box && text){
-      text.textContent = 'All levels complete — fantastic session!';
-      box.hidden = false;
-      try{ sfx.gameOver?.play(); }catch{}
+  qTimerStart();
+}
+
+function shuffle(arr){
+  const a = arr.slice();
+  for (let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+
+function onAnswer(isCorrect, q){
+  state.totalAsked++;
+  state.levelCounts[state.level]++;
+
+  if (isCorrect){
+    state.totalCorrect++;
+    state.levelCorrects[state.level]++;
+    state.correctInRow++;
+    state.xp += GameRules.xp.perCorrect;
+    SFX.correct?.play().catch(()=>{});
+    flashChoice(true);
+    if (state.correctInRow >= GameRules.session.redemptionStreak && state.wrongCount > 0) {
+      state.wrongCount = Math.max(0, state.wrongCount - 1);
     }
+  } else {
+    state.correctInRow = 0;
+    state.wrongCount++;
+    navigator.vibrate?.(40);
+    SFX.wrong?.play().catch(()=>{});
+    flashChoice(false);
   }
 
-  function reset(){
-    state = {
-      ...baseState(),
-      set: state?.set || []
-    };
-    if (qTimerBar) qTimerBar.style.width = '0%';
-    if (progressLabel) progressLabel.textContent = 'Q 0/12';
-    if (qBox) qBox.textContent = 'Press Start to Play';
-    if (choicesEl) choicesEl.innerHTML = '';
-    const box = document.getElementById('gameOverBox'); if (box) box.hidden = true;
-    paintHeader();
+  updateHeader();
+  state.qIndex++;
+  setTimeout(showQuestion, 400);
+}
+
+function flashChoice(ok){
+  if (!choicesEl) return;
+  choicesEl.classList.remove('blink-ok','blink-bad');
+  // force reflow
+  void choicesEl.offsetWidth;
+  choicesEl.classList.add(ok ? 'blink-ok' : 'blink-bad');
+  setTimeout(()=> choicesEl.classList.remove('blink-ok','blink-bad'), 300);
+}
+
+function triggerPerfect(){
+  perfectBurst?.classList.add('active');
+  try { sfxPerfect?.play(); } catch {}
+  setTimeout(()=> perfectBurst?.classList.remove('active'), 1200);
+}
+
+// ---- Start & Controls
+function startCountdownThenStart(){
+  if (!countdownOverlay || !countNum) return startGame();
+
+  countdownOverlay.classList.remove('hidden');
+  [3,2,1].forEach((n,idx)=>{
+    setTimeout(()=>{ countNum.textContent = String(n); }, idx*800);
+  });
+  setTimeout(()=>{ countNum.textContent = 'Go'; SFX.start?.play().catch(()=>{}); }, 2400);
+  setTimeout(()=>{
+    countdownOverlay.classList.add('hidden');
+    startGame();
+  }, 3000);
+}
+
+function startGame(){
+  if (quizLayer) quizLayer.hidden = false;
+  state.running = true;
+  state.startedAt = Date.now();
+  elapsedTick();
+  beginLevel(1);
+  showQuestion();
+}
+
+function resetSession(){
+  const keepSet = state.currentSet;
+  state = makeInitialState();
+  state.currentSet = keepSet;
+  if (qTimerBar) qTimerBar.style.width = '0%';
+  if (progressLabel) progressLabel.textContent = `Q 0/${GameRules.session.questionsPerLevel}`;
+  if (questionBox) questionBox.textContent = 'Press Start to Play';
+  if (choicesEl) choicesEl.innerHTML = '';
+  const over = $('#gameOverBox'); if (over) over.hidden = true;
+  updateHeader();
+}
+
+function onQuit(){
+  if (state.level >= 2) {
+    const ok = confirm('Quit the session? Progress in this level will be lost.');
+    if (!ok) return;
+  }
+  if (quizLayer) quizLayer.hidden = true;
+  resetSession();
+}
+
+// ---- Wire once
+(async function init(){
+  try {
+    $('#yy') && ($('#yy').textContent = new Date().getFullYear());
+    updateHeader();
+    // Load questions
+    state.currentSet = await loadQuestionsForToday();
+  } catch (err) {
+    console.error('Failed to load questions; using seed', err);
+    state.currentSet = await (async()=> {
+      const mod = await import('/js/questions.js');
+      return mod.loadQuestionsForToday();
+    })();
   }
 
-  // -------------- Public init --------------
-  async function init(){
-    // resolve refs within #/play view
-    btnStart = $('#btnStart'); btnHow = $('#btnHow'); btnReset = $('#btnReset');
-    qBox = $('#questionBox'); choicesEl = $('#choices'); progressLabel = $('#progressLabel');
-    elapsedEl = $('#elapsedTime'); qTimerBar = $('#qTimerBar'); levelLabel = $('#levelLabel');
-    perfectBurst = $('#perfectBurst'); sfxPerfect = $('#sfxPerfect');
+  btnStart?.addEventListener('click', startCountdownThenStart);
+  btnHow?.addEventListener('click', ()=> alert('Three levels. 3-in-a-row redemption. Finish at least one level daily to keep your streak.'));
+  btnResume?.addEventListener('click', ()=> { quizLayer && (quizLayer.hidden = false); });
+  btnReset?.addEventListener('click', resetSession);
+  btnQuit?.addEventListener('click', onQuit);
 
-    reset();
-    state.set = await loadQuestions();
-
-    btnStart?.addEventListener('click', () => {
-      const overlay = $('#countdownOverlay');
-      const countNum = $('#countNum');
-      overlay?.classList.remove('hidden');
-      [3,2,1].forEach((n,i)=> setTimeout(()=> countNum.textContent=String(n), i*800));
-      setTimeout(()=>{ countNum.textContent='Go'; try{ sfx.start?.play(); }catch{}; }, 2400);
-      setTimeout(()=> {
-        overlay?.classList.add('hidden');
-        state.running = true; state.startedAt = Date.now(); elapsedTick();
-        beginLevel(1); showQuestion();
-      }, 3000);
-    });
-
-    btnHow?.addEventListener('click', () => {
-      alert('Three levels × 12 questions each. 3-in-a-row redeems a previous wrong. Finish ≥12 questions to keep your daily streak!');
-    });
-
-    btnReset?.addEventListener('click', reset);
-
-    $('#shareBtn')?.addEventListener('click', () => {
-      const txt = `I’m playing Whylee! Day streak: ${getStreak()} — try it: ${location.origin}`;
-      if (navigator.share) navigator.share({ title:'Whylee', text:txt, url:location.origin }).catch(()=>{});
-      else prompt('Copy link', location.origin);
-    });
-    $('#playAgainBtn')?.addEventListener('click', () => { reset(); beginLevel(1); showQuestion(); });
-  }
-
-  return { init };
+  $('#shuffleBtn')?.addEventListener('click', ()=>{
+    state.currentSet = shuffle(state.currentSet);
+    state.qIndex = 0; showQuestion();
+  });
+  $('#shareBtn')?.addEventListener('click', ()=>{
+    const txt = `I’m playing Whylee! Day streak: ${getDailyStreak()} — try it: ${location.origin}`;
+    if (navigator.share){ navigator.share({title:'Whylee', text:txt, url:location.origin}).catch(()=>{}); }
+    else { prompt('Copy link', location.origin); }
+  });
+  $('#playAgainBtn')?.addEventListener('click', ()=>{
+    resetSession();
+    beginLevel(1);
+    showQuestion();
+  });
 })();
