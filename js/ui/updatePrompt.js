@@ -1,81 +1,102 @@
 // ============================================================================
-// updatePrompt.js — Notifies user when a new PWA version is available
-// -----------------------------------------------------------------------------
-// Shows a floating toast when the Service Worker detects a new version.
-// User can tap to refresh and load latest assets without a full app restart.
+// ui/updatePrompt.js — “New version available” toast
+// ----------------------------------------------------------------------------
+// Listens for Service Worker messages and presents a small toast prompting the
+// user to reload. Also detects an already-waiting SW on page load.
+// Requires: /styles/animations.css (for #update-toast styles).
 // ============================================================================
 
-export function registerUpdatePrompt() {
-  if (!('serviceWorker' in navigator)) return;
+/**
+ * Inject and return the toast element.
+ */
+function createToast() {
+  let toast = document.getElementById('update-toast');
+  if (toast) return toast;
 
-  navigator.serviceWorker.addEventListener('controllerchange', () => {
-    showUpdateToast();
-  });
-
-  // Listen for custom message from SW
-  navigator.serviceWorker.addEventListener('message', (event) => {
-    if (event.data && event.data.type === 'NEW_VERSION') {
-      showUpdateToast();
-    }
-  });
-}
-
-function showUpdateToast() {
-  // Remove existing
-  const oldToast = document.getElementById('update-toast');
-  if (oldToast) oldToast.remove();
-
-  const toast = document.createElement('div');
+  toast = document.createElement('div');
   toast.id = 'update-toast';
+  toast.setAttribute('role', 'status');
+  toast.setAttribute('aria-live', 'polite');
   toast.innerHTML = `
     <div class="toast-inner">
-      <span>✨ New version available</span>
-      <button id="update-reload-btn">Refresh</button>
+      <span>New version available</span>
+      <button id="refresh-btn" type="button" aria-label="Update now">Update</button>
     </div>
   `;
   document.body.appendChild(toast);
-
-  toast.querySelector('#update-reload-btn').onclick = () => {
-    toast.classList.add('fade-out');
-    setTimeout(() => {
-      window.location.reload(true);
-    }, 500);
-  };
+  return toast;
 }
 
-// Optional CSS (include in style.css or animations.css)
-//
-// #update-toast {
-//   position: fixed;
-//   bottom: 1.5rem;
-//   left: 50%;
-//   transform: translateX(-50%);
-//   background: #0a2a43cc;
-//   color: #fff;
-//   padding: 0.75rem 1.25rem;
-//   border-radius: 1rem;
-//   display: flex;
-//   align-items: center;
-//   gap: 0.5rem;
-//   box-shadow: 0 4px 20px rgba(0,0,0,0.25);
-//   z-index: 9999;
-//   font-size: 0.9rem;
-//   animation: fadeIn 0.4s ease;
-// }
-// #update-toast.fade-out { opacity: 0; transition: opacity 0.3s; }
-// #update-reload-btn {
-//   background: #d88c0e;
-//   border: none;
-//   color: #fff;
-//   padding: 0.4rem 0.9rem;
-//   border-radius: 0.5rem;
-//   cursor: pointer;
-// }
-// #update-reload-btn:hover { background: #ff9d1a; }
-// ```
+/**
+ * Trigger the update flow: ask the waiting SW to activate, then reload.
+ */
+async function performUpdate() {
+  try {
+    const reg = await navigator.serviceWorker.getRegistration();
+    if (reg?.waiting) {
+      reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+      // Reload after controller changes
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        // Small delay to ensure new assets are controlled by the new SW
+        setTimeout(() => location.reload(), 200);
+      });
+    } else {
+      // No waiting worker found; fallback to simple reload
+      location.reload();
+    }
+  } catch (err) {
+    console.error('[Whylee] Update flow error:', err);
+    location.reload();
+  }
+}
 
----
+/**
+ * Show the toast UI and wire events.
+ */
+function showToast() {
+  const toast = createToast();
+  const btn = toast.querySelector('#refresh-btn');
+  btn?.addEventListener('click', () => {
+    toast.classList.add('fade-out');
+    setTimeout(performUpdate, 180);
+  }, { once: true });
+}
 
-Next:  
-📁 `/js/entitlements/plan.js` — handles user plan logic (Free vs Pro, active trial, expiry checks).  
-Continue?
+/**
+ * Check if there is already a waiting SW when the page loads.
+ * (e.g., SW was updated while tab was in background.)
+ */
+async function checkWaitingWorker() {
+  if (!('serviceWorker' in navigator)) return;
+  try {
+    const reg = await navigator.serviceWorker.getRegistration();
+    if (reg?.waiting) showToast();
+  } catch (err) {
+    // non-fatal
+  }
+}
+
+/**
+ * Public API: registers listeners and initial check.
+ */
+export function registerUpdatePrompt() {
+  // 1) SW broadcast: NEW_VERSION → show toast
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.addEventListener('message', (evt) => {
+      if (evt?.data?.type === 'NEW_VERSION') {
+        showToast();
+      }
+    });
+  }
+
+  // 2) On load: detect already-waiting worker
+  if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    checkWaitingWorker();
+  } else {
+    window.addEventListener('DOMContentLoaded', checkWaitingWorker, { once: true });
+  }
+}
+
+// Optional helpers if you want to trigger manually from DevTools:
+export function showUpdatePromptManually() { showToast(); }
+export async function forceUpdateNow() { await performUpdate(); }
