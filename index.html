@@ -2,29 +2,26 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#0a2a43" />
-  <meta name="description" content="Whylee — cinematic, offline-ready cognitive game." />
+  <meta name="description" content="Whylee — fast, offline-ready, installable web app" />
 
-  <!-- Manifest & Icons -->
-  <link rel="manifest" href="/site.webmanifest" />
+  <!-- PWA -->
+  <link rel="manifest" href="/site.webmanifest?v=7000" />
   <link rel="icon" href="/media/icons/whylee-fox.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="/media/icons/whylee-icon-192.png" />
 
   <title>Whylee</title>
 
-  <!-- Critical styles -->
-  <link rel="preload" href="/styles/style.css?v=7000" as="style" />
-  <link rel="stylesheet" href="/styles/style.css?v=7000" />
-  <!-- Optional animations file (safe to omit if not used) -->
+  <!-- Styles -->
+  <link rel="preload" href="/style.css?v=7000" as="style" />
+  <link rel="preload" href="/styles/animations.css?v=7000" as="style" />
+  <link rel="stylesheet" href="/style.css?v=7000" />
   <link rel="stylesheet" href="/styles/animations.css?v=7000" />
 
-  <!-- Preload core scripts (defer execution) -->
-  <link rel="preload" href="/js/shell.js?v=7000" as="script" />
-  <link rel="preload" href="/js/app.js?v=7000" as="script" />
-  <link rel="preload" href="/js/ui/updatePrompt.js?v=7000" as="script" />
+  <!-- App shell scripts -->
+  <link rel="preload" href="/shell.js?v=7000" as="script" />
+  <link rel="preload" href="/app.js?v=7000" as="script" />
 </head>
 <body>
   <noscript>You need JavaScript enabled to run Whylee.</noscript>
@@ -34,21 +31,17 @@
     <button class="icon" id="btn-menu" aria-label="Toggle menu" title="Menu" hidden>☰</button>
     <h1 class="brand">Whylee</h1>
     <div class="header-actions">
-      <button id="btn-refresh" class="secondary" title="Hard refresh">Refresh</button>
+      <button id="btn-refresh" class="secondary">Refresh</button>
       <button id="btn-install" class="primary" hidden>Install</button>
     </div>
   </header>
 
-  <!-- Main App Shell -->
+  <!-- App -->
   <main id="app" class="app-shell" role="main" aria-live="polite">
-    <!-- SPA routes render here (shell.js) -->
-    <section class="card">
-      <h2>Loading</h2>
-      <p class="muted">Preparing your daily challenge…</p>
-    </section>
+    <!-- shell.js renders views here -->
   </main>
 
-  <!-- Footer Tabs -->
+  <!-- Footer -->
   <footer class="app-footer">
     <nav class="tabs" aria-label="Primary">
       <a href="#/home" data-tab>Home</a>
@@ -59,10 +52,19 @@
   </footer>
 
   <!-- Core scripts -->
-  <script src="/js/shell.js?v=7000" defer></script>
-  <script src="/js/app.js?v=7000" defer></script>
+  <script src="/shell.js?v=7000" defer></script>
+  <script src="/app.js?v=7000" defer></script>
 
-  <!-- SW update toast (listens to BroadcastChannel 'sw-messages') -->
-  <script src="/js/ui/updatePrompt.js?v=7000" defer></script>
+  <!-- Update prompt (must load after app to receive SW messages) -->
+  <script type="module">
+    import { registerUpdatePrompt } from '/js/ui/updatePrompt.js?v=7000';
+    // Optional: expose Firebase refs if you use entitlements/state elsewhere
+    // window.firebaseRefs = { auth, db }; window.firebaseExports = { doc, onSnapshot, onAuthStateChanged, setDoc, serverTimestamp };
+
+    // Kick off update toast listener as soon as the page is interactive
+    window.addEventListener('DOMContentLoaded', () => {
+      registerUpdatePrompt();
+    });
+  </script>
 </body>
 </html>
