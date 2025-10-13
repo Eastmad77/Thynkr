@@ -1,0 +1,76 @@
+<!-- ===== Whylee: Quiz Layer (overlay; hidden by default) ===== -->
+<section id="quizLayer" class="quiz-layer hidden" aria-live="polite" aria-label="Quiz Layer">
+  <!-- Header bar with streak + level -->
+  <div class="quiz-hud">
+    <div class="streak">
+      <div id="streakFill" class="streak-fill"></div>
+    </div>
+    <div class="hud-labels">
+      <span id="streakLabel" class="muted">Streak: 0 days</span>
+      <span id="levelLabel" class="muted">Level 1</span>
+      <span id="elapsedTime" class="muted">0:00</span>
+    </div>
+  </div>
+
+  <!-- Hero poster (swaps per level) -->
+  <div class="poster-wrap">
+    <img id="heroPoster" class="poster" src="/media/posters/poster-start.jpg" alt="Level poster"/>
+  </div>
+
+  <!-- Question card -->
+  <div class="quiz-card card">
+    <div class="quiz-top">
+      <span id="progressLabel" class="muted">Q 0/12</span>
+      <div class="q-timer"><div id="qTimerBar" class="q-timer-bar"></div></div>
+    </div>
+
+    <h2 id="questionBox" class="question">Tap Start to play</h2>
+
+    <div id="choices" class="choices" role="group" aria-label="Answer choices"></div>
+
+    <div class="quiz-actions">
+      <button id="shuffleBtn" class="secondary">Shuffle</button>
+      <button id="shareBtn" class="secondary">Share</button>
+    </div>
+  </div>
+
+  <!-- Controls footer -->
+  <div class="quiz-controls">
+    <button id="btnReset" class="secondary">Reset</button>
+    <button id="btnQuit" class="secondary">Quit</button>
+  </div>
+
+  <!-- Countdown overlay -->
+  <div id="countdownOverlay" class="countdown-overlay hidden" aria-hidden="true">
+    <div class="countdown-circle">
+      <div id="countNum" class="countnum">3</div>
+    </div>
+  </div>
+
+  <!-- Perfect burst effect -->
+  <div id="perfectBurst" class="perfect-burst" aria-hidden="true"></div>
+
+  <!-- Start panel (shown when quiz hidden or before start) -->
+  <div class="quiz-start card">
+    <h2>Ready?</h2>
+    <p class="muted">Three levels. Redemption at 3 in a row. Finish ≥1 level daily to keep your streak.</p>
+    <div class="start-actions">
+      <button id="btnStart" class="primary">Start</button>
+      <button id="btnResume" class="secondary">Resume</button>
+      <button id="btnHow" class="secondary">How it works</button>
+    </div>
+  </div>
+
+  <!-- Game Over -->
+  <div id="gameOverBox" class="gameover card" hidden>
+    <h2>Session Complete</h2>
+    <p id="gameOverText" class="muted">All levels complete — see you tomorrow!</p>
+    <div class="start-actions">
+      <button id="playAgainBtn" class="primary">Play again</button>
+      <button id="btnQuit2" class="secondary" onclick="document.getElementById('btnQuit')?.click()">Close</button>
+    </div>
+  </div>
+
+  <!-- SFX (perfect burst chime) -->
+  <audio id="sfxPerfect" preload="auto" src="/media/audio/thynkr-victory.mp3"></audio>
+</section>
