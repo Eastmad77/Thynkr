@@ -1,35 +1,47 @@
-/* =========================================================
-   Whylee v7 — Update Prompt Toast (for SW updates)
-   ========================================================= */
-window.WhyleeUpdatePrompt = (() => {
-  let el = null;
+/**
+ * Whylee updatePrompt.js
+ * Handles service worker updates (SW_UPDATED broadcast)
+ * Shows a “New version available” toast with a refresh button
+ * Automatically reloads when new SW takes control
+ */
 
-  function ensure(){
-    if (el) return el;
-    el = document.createElement('div');
-    el.className = 'toast';
-    el.style.display = 'none';
-    el.innerHTML = `
-      <span id="toast-msg"></span>
-      <button id="toast-act" class="btn primary">Refresh</button>
-    `;
-    document.body.appendChild(el);
-    return el;
-  }
+(() => {
+  // Guard
+  if (!('BroadcastChannel' in self)) return;
 
-  function show({ message='Update available', action='Refresh', onAction=()=>{} }={}){
-    const t = ensure();
-    t.querySelector('#toast-msg').textContent = message;
-    const btn = t.querySelector('#toast-act');
-    btn.textContent = action;
-    btn.onclick = () => { hide(); try{ onAction(); }catch{} };
-    t.style.display = 'flex';
-  }
+  // Create BroadcastChannel to listen for SW messages
+  const channel = new BroadcastChannel('sw-messages');
 
-  function hide(){
-    if (!el) return;
-    el.style.display = 'none';
-  }
+  // Build toast element
+  const toast = document.createElement('div');
+  toast.className = 'update-toast hidden';
+  toast.innerHTML = `
+    <div class="update-toast-inner">
+      <span>✨ New version available</span>
+      <button id="update-refresh">Refresh</button>
+    </div>
+  `;
+  document.body.appendChild(toast);
 
-  return { show, hide };
+  const refreshButton = toast.querySelector('#update-refresh');
+  refreshButton.addEventListener('click', () => {
+    navigator.serviceWorker.getRegistration().then((reg) => {
+      if (reg && reg.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+    });
+    toast.classList.add('fade-out');
+    setTimeout(() => location.reload(), 600);
+  });
+
+  // When SW sends an update broadcast
+  channel.addEventListener('message', (event) => {
+    if (!event.data || event.data.type !== 'SW_UPDATED') return;
+    toast.classList.remove('hidden');
+    toast.classList.add('visible');
+  });
+
+  // Auto-reload once the new SW takes control
+  navigator.serviceWorker?.addEventListener('controllerchange', () => {
+    toast.classList.add('fade-out');
+    setTimeout(() => location.reload(), 600);
+  });
 })();
