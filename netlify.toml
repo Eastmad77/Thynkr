@@ -1,19 +1,54 @@
-# Netlify config for SPA/PWA (Whylee v6007)
+# Netlify config for Whylee (SPA + PWA)
+
 [build]
   publish = "."
 
+# ---------- Strict SW behavior
 [[headers]]
   for = "/service-worker.js"
   [headers.values]
     Cache-Control = "no-store, no-cache, must-revalidate, proxy-revalidate"
     Service-Worker-Allowed = "/"
 
+# ---------- Correct MIME for manifest
 [[headers]]
   for = "/site.webmanifest"
   [headers.values]
     Content-Type = "application/manifest+json; charset=utf-8"
+    Cache-Control = "public, max-age=3600"
 
-# Let the SPA handle routes (/#/home etc.)
+# ---------- Cache static posters & assets aggressively (bust with file names)
+[[headers]]
+  for = "/media/posters/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/styles/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/js/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/media/icons/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# ---------- Basic security headers
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    X-Frame-Options = "SAMEORIGIN"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=(self)"
+    Content-Security-Policy = "default-src 'self'; img-src 'self' data: blob:; media-src 'self' blob:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self' https://api.stripe.com https://*.stripe.com /.netlify/functions; frame-src https://js.stripe.com https://checkout.stripe.com;"
+
+# ---------- SPA routing
 [[redirects]]
   from = "/*"
   to = "/index.html"
