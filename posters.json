@@ -1,0 +1,98 @@
+{
+  "series": "Whylee Experience Posters",
+  "version": "1.0.0",
+  "author": "Connetics | Whylee",
+  "updated": "2025-10-12",
+  "order": [
+    {
+      "id": "poster-1-start",
+      "title": "Tap to Begin",
+      "category": "intro",
+      "theme": "dark",
+      "animation": "fadeIn",
+      "duration": 5,
+      "audio": "start-chime.mp3"
+    },
+    {
+      "id": "poster-2-reflection",
+      "title": "Daily Reflection",
+      "category": "focus",
+      "theme": "blue-calm",
+      "animation": "zoomSoft",
+      "duration": 6,
+      "audio": "ambient-tone.mp3"
+    },
+    {
+      "id": "poster-3-xp",
+      "title": "+150 XP Earned",
+      "category": "achievement",
+      "theme": "gold-bright",
+      "animation": "pulseLight",
+      "duration": 4,
+      "audio": "xp-reward.mp3"
+    },
+    {
+      "id": "poster-4-challenge",
+      "title": "Challenge Mode",
+      "category": "gameplay",
+      "theme": "blue-orange",
+      "animation": "slideInRight",
+      "duration": 4,
+      "audio": "swipe.mp3"
+    },
+    {
+      "id": "poster-5-rewards",
+      "title": "Whylee Pro Rewards",
+      "category": "premium",
+      "theme": "gold-elite",
+      "animation": "glowPulse",
+      "duration": 5,
+      "audio": "reward-tone.mp3"
+    },
+    {
+      "id": "poster-6-pro",
+      "title": "Upgrade to Pro",
+      "category": "premium",
+      "theme": "halo-blue",
+      "animation": "fadeUp",
+      "duration": 5,
+      "audio": "pro-intro.mp3"
+    },
+    {
+      "id": "poster-7-evolve",
+      "title": "Evolve. Learn. Achieve.",
+      "category": "motivation",
+      "theme": "dark-aura",
+      "animation": "lightSweep",
+      "duration": 6,
+      "audio": "motivational-chime.mp3"
+    },
+    {
+      "id": "poster-8-companion",
+      "title": "Your Smart Companion",
+      "category": "brand",
+      "theme": "twilight",
+      "animation": "panSlow",
+      "duration": 6,
+      "audio": "ambient-soft.mp3"
+    },
+    {
+      "id": "poster-9-dashboard",
+      "title": "XP Dashboard",
+      "category": "ui",
+      "theme": "neon",
+      "animation": "dataPulse",
+      "duration": 5,
+      "audio": "ui-click.mp3"
+    },
+    {
+      "id": "poster-10-grow",
+      "title": "Keep Growing",
+      "category": "outro",
+      "theme": "bright-horizon",
+      "animation": "fadeOutSoft",
+      "duration": 5,
+      "audio": "success-chime.mp3"
+    }
+  ]
+}
