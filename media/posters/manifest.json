@@ -1,16 +1,12 @@
 {
-  "version": 1,
-  "posters": [
-    { "key": "start",       "file": "poster-start.jpg",       "title": "Welcome / Tap to Begin", "usage": ["splash", "home-hero"] },
-    { "key": "level1",      "file": "poster-level1.jpg",      "title": "Level 1 – Focus",        "usage": ["level-1"] },
-    { "key": "level2",      "file": "poster-level2.jpg",      "title": "Level 2 – Pairs",        "usage": ["level-2"] },
-    { "key": "level3",      "file": "poster-level3.jpg",      "title": "Level 3 – Trivia",       "usage": ["level-3"] },
-    { "key": "profile",     "file": "poster-profile.jpg",     "title": "Profile & XP",           "usage": ["profile"] },
-    { "key": "pro",         "file": "poster-pro.jpg",         "title": "Whylee Pro",             "usage": ["pro", "upsell"] },
-    { "key": "reflection",  "file": "poster-reflection.jpg",  "title": "Daily Reflection",       "usage": ["reflection"] },
-    { "key": "rewards",     "file": "poster-rewards.jpg",     "title": "Rewards & Badges",       "usage": ["achievements"] },
-    { "key": "xp",          "file": "poster-xp.jpg",          "title": "XP Growth",              "usage": ["progress"] },
-    { "key": "end",         "file": "poster-end.jpg",         "title": "See You Tomorrow",       "usage": ["session-end"] }
-  ],
-  "fallback": "poster-start.jpg"
+  "poster-01-start.jpg": "Tap to Begin — Your Smart Companion Awaits.",
+  "poster-02-mode.jpg": "Choose Your Path — Play Free or Go Pro.",
+  "poster-03-reward.jpg": "XP +150 Earned! New Badge Unlocked – Daily Streak 5 Days!",
+  "poster-04-reflection.jpg": "Daily Reflection — Pause. Think. Grow.",
+  "poster-05-upgrade.jpg": "Go Pro — Unlock Your Full Potential. 3-Day Free Trial Available.",
+  "poster-06-challenge.jpg": "Challenge Mode — Test Your Mind. Beat Your Best.",
+  "poster-07-pro.jpg": "Whylee Pro Rewards — Earn Exclusive Badges & Benefits.",
+  "poster-08-levelup.jpg": "Level Up — Unlock Brilliance Through Progress.",
+  "poster-09-community.jpg": "Evolve. Learn. Achieve. Join the Whylee Crew.",
+  "poster-10-brand.jpg": "Your Smart Companion. Every Day."
 }
