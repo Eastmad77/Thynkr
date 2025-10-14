@@ -1,15 +1,19 @@
 {
   "name": "whylee",
-  "version": "6.0.7",
-  "private": true,
-  "type": "module",
+  "version": "7.0.0",
+  "description": "Whylee – Daily Brain Training PWA",
+  "main": "index.html",
   "scripts": {
-    "dev": "npx http-server -c-1 -p 8080 .",
-    "serve": "npx http-server -c-1 -p 8080 .",
-    "serve:netlifylike": "npx http-server -c-1 -p 8080 . --push-state",
-    "export:posters": "node media/scripts/export-images.js",
-    "build": "echo \"Static site — nothing to build\"",
-    "lint": "echo \"No lint step\""
+    "start": "npx serve .",
+    "build": "echo 'Static PWA – no build step required'"
   },
-  "engines": { "node": ">=18" }
+  "author": "Brendan Hayman",
+  "license": "MIT",
+  "dependencies": {
+    "firebase": "^9.23.0",
+    "stripe": "^14.0.0"
+  },
+  "devDependencies": {
+    "netlify-cli": "^17.0.0"
+  }
 }
