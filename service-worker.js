@@ -1,77 +1,75 @@
-/* Whylee service worker – static cache + runtime fallback (v7002) */
+/* Whylee Service Worker (v7006) */
+const CACHE_NAME = 'whylee-cache-v7006';
 
-const CACHE_NAME = 'wl-v7002';
-const CORE_ASSETS = [
+const CORE = [
   '/', '/index.html',
-  '/style.css', '/styles/animations.css', '/styles/brand.css',
-  '/shell.js', '/app.js', '/scripts/ui/updatePrompt.js',
-  '/scripts/posters.js', '/scripts/firebase-bridge.js',
-  '/media/branding/logo-w-mark.png',
-  '/media/branding/feature-graphic-1024x500.png',
+  '/menu.html', '/leaderboard.html', '/profile.html',
+  '/about.html', '/privacy.html', '/terms.html', '/contact.html', '/pro.html',
+  '/styles/brand.css?v=7005',
+  '/styles/avatar.css?v=7005',
+  '/styles/avatar-badge.css?v=7006',
+  '/scripts/shell.js?v=7000',
+  '/scripts/app.js?v=7000',
+  '/scripts/ui/avatar.js?v=7006',
+  '/data/leaderboard.json?v=7006',
   '/media/icons/whylee-icon-192.png',
   '/media/icons/whylee-icon-512.png',
-  '/media/icons/favicon-32.png', '/media/icons/favicon-48.png', '/media/icons/favicon-96.png',
-  '/media/ui/brand-fox-head.png',
-
-  // Posters (full)
-  '/media/posters/v1/poster-01-start.jpg',
-  '/media/posters/v1/poster-02-mode.jpg',
-  '/media/posters/v1/poster-03-reward.jpg',
-  '/media/posters/v1/poster-04-reflection.jpg',
-  '/media/posters/v1/poster-05-upgrade.jpg',
-  '/media/posters/v1/poster-06-challenge.jpg',
-  '/media/posters/v1/poster-07-pro.jpg',
-  '/media/posters/v1/poster-08-levelup.jpg',
-  '/media/posters/v1/poster-09-community.jpg',
-  '/media/posters/v1/poster-10-brand.jpg',
-  '/media/posters/v1/countdown.png',
-
-  // Thumbnails (fast LQIPs)
-  '/media/thumbnails/poster-01-start-thumb.jpg',
-  '/media/thumbnails/poster-02-mode-thumb.jpg',
-  '/media/thumbnails/poster-03-reward-thumb.jpg',
-  '/media/thumbnails/poster-04-reflection-thumb.jpg',
-  '/media/thumbnails/poster-05-upgrade-thumb.jpg',
-  '/media/thumbnails/poster-06-challenge-thumb.jpg',
-  '/media/thumbnails/poster-07-pro-thumb.jpg',
-  '/media/thumbnails/poster-08-levelup-thumb.jpg',
-  '/media/thumbnails/poster-09-community-thumb.jpg',
-  '/media/thumbnails/poster-10-brand-thumb.jpg',
-  '/media/thumbnails/countdown-thumb.jpg',
-  '/media/thumbnails/feature-thumb.jpg',
-  '/media/thumbnails/logo-thumb.png'
+  '/site.webmanifest'
 ];
 
 self.addEventListener('install', (e) => {
-  self.skipWaiting();
-  e.waitUntil(caches.open(CACHE_NAME).then((c) => c.addAll(CORE_ASSETS)));
+  e.waitUntil((async () => {
+    const cache = await caches.open(CACHE_NAME);
+    await cache.addAll(CORE);
+    self.skipWaiting();
+  })());
 });
 
 self.addEventListener('activate', (e) => {
-  e.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(keys.map((k) => (k === CACHE_NAME ? null : caches.delete(k))))
-    ).then(() => self.clients.claim())
-  );
+  e.waitUntil((async () => {
+    const keys = await caches.keys();
+    await Promise.all(keys.map(k => (k !== CACHE_NAME ? caches.delete(k) : null)));
+    self.clients.claim();
+  })());
 });
 
-self.addEventListener('fetch', (e) => {
-  const req = e.request;
-  if (req.method !== 'GET' || !req.url.startsWith(self.location.origin)) return;
-  e.respondWith(
-    caches.match(req).then((cached) => {
-      const fetchPromise = fetch(req)
-        .then((res) => {
-          const copy = res.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(req, copy)).catch(() => {});
-          return res;
-        })
-        .catch(() => cached || caches.match('/index.html'));
-      return cached || fetchPromise;
-    })
-  );
+self.addEventListener('fetch', (event) => {
+  const req = event.request;
+  const url = new URL(req.url);
+
+  // Bypass for Netlify functions and Firestore endpoints
+  if (url.pathname.startsWith('/.netlify/functions/')) return;
+
+  // Network-first for JSON data; cache-first for static
+  if (url.pathname.endsWith('.json')) {
+    event.respondWith(networkThenCache(req));
+  } else {
+    event.respondWith(cacheThenNetwork(req));
+  }
 });
 
-self.addEventListener('message', (event) => {
-  if (event.data === 'SKIP_WAITING') self.skipWaiting();
-});
+async function cacheThenNetwork(req) {
+  const cache = await caches.open(CACHE_NAME);
+  const hit = await cache.match(req, { ignoreSearch: true });
+  if (hit) return hit;
+
+  try {
+    const res = await fetch(req);
+    if (res && res.ok) cache.put(req, res.clone());
+    return res;
+  } catch (err) {
+    return hit || new Response('Offline', { status: 503 });
+  }
+}
+
+async function networkThenCache(req) {
+  const cache = await caches.open(CACHE_NAME);
+  try {
+    const res = await fetch(req, { cache: 'no-store' });
+    if (res && res.ok) cache.put(req, res.clone());
+    return res;
+  } catch (err) {
+    const hit = await cache.match(req, { ignoreSearch: true });
+    return hit || new Response('[]', { status: 200, headers: { 'Content-Type': 'application/json' } });
+  }
+}
