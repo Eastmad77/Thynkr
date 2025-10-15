@@ -7,46 +7,41 @@
   <meta name="description" content="Whylee — daily brain training with a cinematic touch." />
 
   <!-- PWA: manifest & icons -->
-  <link rel="manifest" href="/site.webmanifest?v=7001" />
-  <link rel="icon" type="image/png" sizes="32x32" href="/media/icons/favicon-32.png?v=7001" />
-  <link rel="icon" type="image/png" sizes="48x48" href="/media/icons/favicon-48.png?v=7001" />
-  <link rel="icon" type="image/png" sizes="96x96" href="/media/icons/favicon-96.png?v=7001" />
-  <link rel="apple-touch-icon" sizes="192x192" href="/media/icons/whylee-icon-192.png?v=7001" />
-  <link rel="apple-touch-icon" href="/media/icons/apple-touch-icon.png?v=7001" />
+  <link rel="manifest" href="/site.webmanifest?v=7002" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/media/icons/favicon-32.png?v=7002" />
+  <link rel="icon" type="image/png" sizes="48x48" href="/media/icons/favicon-48.png?v=7002" />
+  <link rel="icon" type="image/png" sizes="96x96" href="/media/icons/favicon-96.png?v=7002" />
+  <link rel="apple-touch-icon" sizes="192x192" href="/media/icons/whylee-icon-192.png?v=7002" />
+  <link rel="apple-touch-icon" href="/media/icons/apple-touch-icon.png?v=7002" />
   <link rel="mask-icon" href="/media/icons/mask-icon.svg" color="#11a7ff" />
 
-  <!-- Social / store previews -->
+  <!-- Social / store previews (use thumbs for faster unfurls) -->
   <meta property="og:title" content="Whylee – Daily Brain Training" />
   <meta property="og:description" content="Challenge, reflect, and grow with Whylee." />
-  <meta property="og:image" content="/media/branding/feature-graphic-1024x500.png?v=7001" />
+  <meta property="og:image" content="/media/thumbnails/feature-thumb.jpg?v=7002" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:image" content="/media/branding/feature-graphic-1024x500.png?v=7001" />
+  <meta name="twitter:image" content="/media/thumbnails/feature-thumb.jpg?v=7002" />
 
   <title>Whylee</title>
 
   <!-- Styles -->
-  <link rel="preload" href="/style.css?v=7001" as="style" />
-  <link rel="stylesheet" href="/style.css?v=7001" />
-  <link rel="stylesheet" href="/styles/animations.css?v=7001" />
-  <!-- small brand helpers (logo sizing, watermark, etc.) -->
-  <link rel="stylesheet" href="/styles/brand.css?v=7001" />
+  <link rel="preload" href="/style.css?v=7002" as="style" />
+  <link rel="stylesheet" href="/style.css?v=7002" />
+  <link rel="stylesheet" href="/styles/animations.css?v=7002" />
+  <link rel="stylesheet" href="/styles/brand.css?v=7002" />
 
   <!-- Preload core scripts -->
-  <link rel="preload" href="/shell.js?v=7001" as="script" />
-  <link rel="preload" href="/app.js?v=7001" as="script" />
+  <link rel="preload" href="/shell.js?v=7002" as="script" />
+  <link rel="preload" href="/app.js?v=7002" as="script" />
 </head>
 <body>
   <noscript>You need JavaScript enabled to run Whylee.</noscript>
 
-  <!-- App Header -->
   <header class="app-header">
     <button class="icon" id="btn-menu" aria-label="Toggle menu" title="Menu">
       <img src="/media/ui/icon-menu.svg" alt="" width="24" height="24" />
     </button>
-
-    <!-- Updated brand mark -->
     <img class="brand-mark" src="/media/branding/logo-w-mark.png" alt="Whylee" />
-
     <div class="header-actions">
       <button id="btn-refresh" class="secondary">Refresh</button>
       <button id="btn-install" class="primary wl-nudge" hidden>Install</button>
@@ -56,7 +51,6 @@
     </div>
   </header>
 
-  <!-- App Shell -->
   <main id="app" class="app-shell" role="main" aria-live="polite"></main>
 
   <footer class="app-footer">
@@ -68,7 +62,6 @@
     <small id="app-version" class="muted"></small>
   </footer>
 
-  <!-- Update toast -->
   <div id="updatePrompt" class="wl-toast" style="display:none">
     <strong>New version available</strong>
     <div class="muted" style="margin-top:4px">Tap to refresh and get the latest improvements.</div>
@@ -79,11 +72,12 @@
   </div>
 
   <!-- Core scripts -->
-  <script src="/shell.js?v=7001" defer></script>
-  <script src="/app.js?v=7001" defer></script>
-  <script src="/scripts/ui/updatePrompt.js?v=7001" defer></script>
+  <script src="/shell.js?v=7002" defer></script>
+  <script src="/app.js?v=7002" defer></script>
+  <script src="/scripts/ui/updatePrompt.js?v=7002" defer></script>
 
-  <!-- Firebase bridge (as requested previously) -->
-  <script type="module" src="/scripts/firebase-bridge.js?v=7001"></script>
+  <!-- Firebase bridge + poster loader -->
+  <script type="module" src="/scripts/firebase-bridge.js?v=7002"></script>
+  <script type="module" src="/scripts/posters.js?v=7002"></script>
 </body>
 </html>
