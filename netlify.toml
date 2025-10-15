@@ -1,70 +1,95 @@
-# ────────────────────────────────
-# Whylee — Netlify Configuration
-# v7006 (Autonomous Build)
-# ────────────────────────────────
+# ========== Whylee · Netlify config (v7006) ==========
 
 [build]
-  publish = "."
-  command = "npm run build"
+  publish   = "."
   functions = "netlify/functions"
 
-[dev]
-  command = "npm run start"
-  port = 8888
+[functions]
+  node_bundler = "esbuild"
 
-# Environment variables are set in the Netlify UI:
-# FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, FIREBASE_PRIVATE_KEY
-# STRIPE_SECRET_KEY, STRIPE_PRICE_ID, LEADERBOARD_COLLECTION, LEADERBOARD_LIMIT
-
-# ────────────────────────────────
-# Redirects
-# ────────────────────────────────
-[[redirects]]
-  from = "/"
-  to = "/index.html"
-  status = 200
-
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
-
-# ────────────────────────────────
-# Scheduled (CRON) Functions
-# ────────────────────────────────
-# Run the daily question generator once a day at 05:00 UTC.
+# ---- Scheduled Functions (CRON) ----
+# Daily generation of Firestore questions at 05:00 UTC (adjust as needed)
 [[scheduled.functions]]
   name = "generateDailyQuestions"
   cron = "0 5 * * *"
 
-# ────────────────────────────────
-# Headers
-# ────────────────────────────────
-[[headers]]
-  for = "/*"
-  [headers.values]
-    Access-Control-Allow-Origin = "*"
-    X-Frame-Options = "DENY"
-    X-Content-Type-Options = "nosniff"
-    Referrer-Policy = "no-referrer-when-downgrade"
+# ---- Redirects ----
+# Keep real files first; then SPA fallback to /index.html
+[[redirects]]
+  from = "/*"
+  to   = "/index.html"
+  status = 200
 
-# ────────────────────────────────
-# PWA Cache Policy
-# ────────────────────────────────
+# Ensure .well-known is accessible (app links / TWA)
+[[redirects]]
+  from = "/.well-known/*"
+  to   = "/.well-known/:splat"
+  status = 200
+
+# ---- Caching / Headers ----
+# Service Worker: always revalidate
 [[headers]]
   for = "/service-worker.js"
   [headers.values]
     Cache-Control = "no-cache, no-store, must-revalidate"
 
-# ────────────────────────────────
-# Function Timeouts (optional tuning)
-# ────────────────────────────────
-[functions]
-  node_bundler = "esbuild"
-  included_files = ["media/questions/daily.csv"]
-  timeout = 30
-  memory = 256
+# HTML: short cache so updates roll out quickly
+[[headers]]
+  for = "/*.html"
+  [headers.values]
+    Cache-Control = "public, max-age=120, must-revalidate"
 
-# ────────────────────────────────
-# END
-# ────────────────────────────────
+# Static assets: long cache with immutability
+[[headers]]
+  for = "/styles/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/scripts/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/media/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# Manifest & icons
+[[headers]]
+  for = "/site.webmanifest"
+  [headers.values]
+    Cache-Control = "public, max-age=3600"
+
+[[headers]]
+  for = "/media/icons/*"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"
+
+# Functions: CORS
+[[headers]]
+  for = "/.netlify/functions/*"
+  [headers.values]
+    Access-Control-Allow-Origin = "*"
+    Access-Control-Allow-Methods = "GET, POST, OPTIONS"
+    Access-Control-Allow-Headers = "Content-Type, Authorization"
+
+# ---- Security (safe defaults; relax if adding 3rd-party scripts like AdSense) ----
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "SAMEORIGIN"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "geolocation=(), microphone=(), camera=(), interest-cohort=()"
+    Content-Security-Policy = "default-src 'self'; img-src 'self' data: blob:; media-src 'self' data:; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://firestore.googleapis.com https://www.googleapis.com /.netlify/functions; frame-ancestors 'self'; base-uri 'self';"
+
+# ---- Optional env template (for reference in Netlify UI) ----
+[template.environment]
+  FIREBASE_PROJECT_ID    = "your-firebase-project-id"
+  FIREBASE_CLIENT_EMAIL  = "firebase-adminsdk@your-project.iam.gserviceaccount.com"
+  FIREBASE_PRIVATE_KEY   = "-----BEGIN PRIVATE KEY-----\\n...\\n-----END PRIVATE KEY-----\\n"
+  LEADERBOARD_COLLECTION = "leaderboard"
+  LEADERBOARD_LIMIT      = "100"
+  STRIPE_SECRET_KEY      = "sk_live_xxx"
+  STRIPE_PRICE_ID        = "price_xxx"
