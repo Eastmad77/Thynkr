@@ -1,41 +1,36 @@
-// scripts/profile.js — v7000
-import { Achievements } from './achievements.js';
+/* Whylee — Profile view (v7004)
+   Shows current user name, avatar, tier, and streak info
+*/
 
-function getDayStreak() { return Number(localStorage.getItem('wl_daystreak') || '0'); }
+document.addEventListener('DOMContentLoaded', async () => {
+  const nameEl = document.querySelector('.user-name');
+  const tierEl = document.querySelector('.user-tier');
+  const streakEl = document.querySelector('.user-streak');
+  const avatarImg = document.querySelector('.avatar');
 
-function $(s){ return document.querySelector(s); }
+  // Example user data from Firebase/Auth or localStorage
+  const user = window.currentUser || JSON.parse(localStorage.getItem('wl_user') || '{}');
 
-function render() {
-  const name = localStorage.getItem('wl_username') || 'Guest';
-  const avatar = localStorage.getItem('wl_avatar') || '/media/avatars/fox-default.png';
-  const xp = Achievements.state.xp;
-  const sessionStreak = Achievements.state.streak;
-  const dayStreak = getDayStreak();
+  // Fallback values
+  const displayName = user.displayName || 'Player';
+  const tier = user.tier || 'free';
+  const streak = localStorage.getItem('wl_streak') || 0;
 
-  const nameEl = $('#username');
-  const streakEl = $('#streak-count');
-  const xpEl = $('#xp-count');
-  const img = document.querySelector('.profile-card .avatar');
+  nameEl.textContent = displayName;
+  tierEl.textContent = tier === 'pro' ? 'Pro Member' :
+                       tier === 'leader' ? 'Leaderboard Tier' :
+                       'Free Player';
+  streakEl.textContent = `Daily Streak: ${streak}`;
 
-  if (nameEl) nameEl.textContent = name;
-  if (streakEl) streakEl.textContent = `${dayStreak} day${dayStreak===1?'':'s'}`;
-  if (xpEl) xpEl.textContent = xp;
-  if (img) img.src = avatar;
+  // 🔸 Avatar assignment logic
+  if (tier === 'pro') {
+    avatarImg.src = '/media/avatars/profile-pro-gold.svg';
+  } else if (tier === 'leader') {
+    avatarImg.src = '/media/avatars/profile-pro-silver.svg';
+  } else {
+    avatarImg.src = '/media/avatars/profile-default.svg';
+  }
 
-  // quick avatar switcher if thumbnail row exists
-  document.querySelectorAll('[data-avatar]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      localStorage.setItem('wl_avatar', btn.dataset.avatar);
-      render();
-    });
-  });
-
-  // sign-in button goes to Sign-in page
-  const signInBtn = document.getElementById('sign-in-btn') || document.getElementById('google-login');
-  if (signInBtn) signInBtn.addEventListener('click', () => location.href = '/sign-in.html');
-}
-
-window.addEventListener('DOMContentLoaded', render);
-window.addEventListener('wl:pro', render);
-window.addEventListener('wl:badge', render);
-window.addEventListener('wl:day-complete', render);
+  // Optional: add small animation on load
+  avatarImg.classList.add('pop-in');
+});
