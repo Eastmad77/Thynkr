@@ -1,14 +1,40 @@
 {
   "name": "whylee",
-  "version": "7000.0.0",
-  "private": true,
-  "description": "Whylee — Daily Brain Bolt (PWA)",
+  "version": "7005.0.0",
+  "description": "Whylee — interactive daily brain-training PWA (Free + Pro versions)",
+  "type": "module",
   "scripts": {
-    "dev": "npx serve",
-    "build": "echo \"Static PWA: no build step\"",
-    "lint": "echo \"(optional)\""
+    "start": "npx serve .",
+    "thumbs": "node tools/make-thumbs.mjs",
+    "brand": "node tools/make-brand-assets.mjs",
+    "generate": "netlify functions:invoke generateDailyQuestions",
+    "build": "npm run thumbs && npm run brand"
   },
   "dependencies": {
-    "firebase-admin": "^12.5.0"
+    "firebase-admin": "^12.5.0",
+    "sharp": "^0.33.3"
+  },
+  "devDependencies": {
+    "serve": "^14.2.3",
+    "netlify-cli": "^17.34.1"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "pwa",
+    "quiz",
+    "game",
+    "netlify",
+    "firebase",
+    "brain-training",
+    "education",
+    "ai",
+    "autonomous"
+  ],
+  "author": "Whylee Team",
+  "license": "MIT",
+  "netlify": {
+    "functions": "netlify/functions"
   }
 }
