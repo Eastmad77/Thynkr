@@ -3,76 +3,58 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="theme-color" content="#0a2a43" />
-  <meta name="description" content="Whylee — main navigation menu" />
-  <link rel="manifest" href="/site.webmanifest?v=7000" />
-  <link rel="icon" href="/media/icons/favicon.svg" type="image/svg+xml" />
-  <link rel="apple-touch-icon" href="/media/icons/whylee-icon-192.png" />
-  <title>Menu · Whylee</title>
-
-  <link rel="preload" href="/style.css?v=7000" as="style" />
-  <link rel="stylesheet" href="/style.css?v=7000" />
-  <link rel="stylesheet" href="/styles/animations.css?v=7000" />
-  <link rel="preload" href="/shell.js?v=7000" as="script" />
-  <link rel="preload" href="/app.js?v=7000" as="script" />
-
-  <!-- AdSense global (load once per document) -->
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXX" crossorigin="anonymous"></script>
+  <title>Whylee · Menu</title>
+  <link rel="stylesheet" href="/styles/brand.css?v=7005" />
+  <style>
+    body{margin:0;background:#0A2A43;color:#E9F3FF;font-family:system-ui, -apple-system, Segoe UI, Roboto, Inter, sans-serif}
+    header{display:flex;align-items:center;gap:12px;padding:16px 20px;border-bottom:1px solid rgba(233,243,255,.08)}
+    main{max-width:960px;margin:0 auto;padding:20px}
+    .grid{display:grid;grid-template-columns:repeat(2,minmax(220px,1fr));gap:14px}
+    @media(max-width:640px){.grid{grid-template-columns:1fr}}
+    a.card{display:block;padding:16px;border-radius:14px;text-decoration:none;color:#E9F3FF;border:1px solid rgba(233,243,255,.08);
+      background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.02));backdrop-filter:blur(6px)}
+    a.card:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(0,0,0,.35);transition:.2s ease}
+    .muted{opacity:.75;font-size:.95rem}
+  </style>
 </head>
 <body>
-  <noscript>Enable JavaScript to use Whylee.</noscript>
-
-  <header class="app-header">
-    <button class="icon" id="btn-menu" aria-label="Toggle menu" title="Menu" hidden>☰</button>
-    <h1 class="brand">Whylee</h1>
-    <div class="header-actions">
-      <button id="btn-refresh" class="secondary">Refresh</button>
-      <button id="btn-install" class="primary wl-nudge" hidden>Install</button>
-    </div>
+  <header>
+    <button class="icon" onclick="history.back()" aria-label="Back">←</button>
+    <h1 class="brand">Menu</h1>
   </header>
 
-  <main id="app" class="app-shell" role="main" aria-live="polite">
-    <section class="route route--menu">
-      <ul class="menu">
-        <li><a href="index.html">Start Game</a></li>
-        <li><a href="leaderboard.html">Leaderboard</a></li>
-        <li><a href="pro.html">Upgrade to Pro</a></li>
-        <li><a href="profile.html">Profile</a></li>
-        <li><a href="about.html">About</a></li>
-        <li><a href="contact.html">Contact</a></li>
-      </ul>
+  <main>
+    <div class="grid">
+      <a class="card" href="#/play">
+        <h3>Play</h3>
+        <div class="muted">Start today’s Warm-Up → Pairs → Trivia</div>
+      </a>
 
-      <!-- Responsive AdSense block (shown when online & Free users) -->
-      <section id="ad-section" class="wl-ad">
-        <ins class="adsbygoogle"
-             style="display:block"
-             data-ad-client="ca-pub-XXXXXXXXXXXX"
-             data-ad-slot="1234567890"
-             data-ad-format="auto"
-             data-full-width-responsive="true"></ins>
-      </section>
-      <script>
-        if (navigator.onLine && !(window.WhyleePro && window.WhyleePro.isPro && window.WhyleePro.isPro())) {
-          try { (adsbygoogle = window.adsbygoogle || []).push({}); } catch(e){}
-        } else {
-          document.getElementById('ad-section')?.remove();
-        }
-      </script>
-    </section>
+      <a class="card" href="/profile.html">
+        <h3>Profile</h3>
+        <div class="muted">Avatar, tier, streak and XP</div>
+      </a>
+
+      <a class="card" href="/leaderboard.html">
+        <h3>Leaderboard</h3>
+        <div class="muted">Top streaks and XP this season</div>
+      </a>
+
+      <a class="card" href="/about.html">
+        <h3>About</h3>
+        <div class="muted">What is Whylee?</div>
+      </a>
+
+      <a class="card" href="/privacy.html">
+        <h3>Privacy</h3>
+        <div class="muted">How your data is handled</div>
+      </a>
+
+      <a class="card" href="/terms.html">
+        <h3>Terms</h3>
+        <div class="muted">Legal & usage</div>
+      </a>
+    </div>
   </main>
-
-  <footer class="app-footer">
-    <nav class="tabs" aria-label="Primary">
-      <a href="#/home" data-tab>Home</a>
-      <a href="#/tasks" data-tab>Tasks</a>
-      <a href="#/about" data-tab>About</a>
-    </nav>
-    <small id="app-version" class="muted"></small>
-  </footer>
-
-  <script src="/shell.js?v=7000" defer></script>
-  <script src="/app.js?v=7000" defer></script>
-  <script src="/scripts/ui/updatePrompt.js?v=7000" defer></script>
-  <script type="module" src="/scripts/menu.js?v=7000"></script>
 </body>
 </html>
