@@ -1,105 +1,56 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <meta name="theme-color" content="#0a2a43"/>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0a2a43" />
+  <meta name="description" content="Your Whylee profile, streaks and XP" />
+  <link rel="manifest" href="/site.webmanifest?v=7000" />
+  <link rel="icon" href="/media/icons/favicon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="/media/icons/whylee-icon-192.png" />
   <title>Profile · Whylee</title>
-  <link rel="manifest" href="/site.webmanifest?v=7000"/>
-  <link rel="icon" href="/media/icons/favicon.svg" type="image/svg+xml"/>
-  <link rel="stylesheet" href="/css/style.css?v=7000"/>
+  <link rel="preload" href="/style.css?v=7000" as="style" />
+  <link rel="stylesheet" href="/style.css?v=7000" />
+  <link rel="stylesheet" href="/styles/animations.css?v=7000" />
+  <link rel="preload" href="/shell.js?v=7000" as="script" />
+  <link rel="preload" href="/app.js?v=7000" as="script" />
 </head>
-<body class="theme-dark">
+<body>
+  <noscript>Enable JavaScript to use Whylee.</noscript>
+
   <header class="app-header">
-    <a class="brand" href="/"><img src="/media/icons/app-icon.svg" alt="" class="brand-icon"/>Whylee</a>
-    <nav class="top-nav">
-      <a href="/achievements.html" class="top-link">Badges</a>
-      <a href="/pro.html" class="top-link">Pro</a>
-    </nav>
+    <button class="icon" id="btn-menu" aria-label="Toggle menu" title="Menu" hidden>☰</button>
+    <h1 class="brand">Whylee</h1>
+    <div class="header-actions">
+      <button id="btn-refresh" class="secondary">Refresh</button>
+      <button id="btn-install" class="primary wl-nudge" hidden>Install</button>
+    </div>
   </header>
 
-  <main class="app-shell">
-    <section class="card">
-      <h1>Your Profile</h1>
-      <div class="grid-2 gap">
-        <div class="card-soft">
-          <h2>Avatar</h2>
-          <img id="avatarPreview" class="avatar-lg" src="/media/avatars/fox-default.png" alt="Selected avatar" />
-          <div class="row wrap">
-            <button class="chip" data-avatar="fox-default.png">Fox</button>
-            <button class="chip" data-avatar="fox-happy.png">Happy</button>
-            <button class="chip" data-avatar="fox-focused.png">Focused</button>
-            <button class="chip" data-avatar="fox-sad.png">Sad</button>
-            <button class="chip pro" data-avatar="owl-pro.png">Owl (Pro)</button>
-            <button class="chip pro" data-avatar="panda-pro.png">Panda (Pro)</button>
-            <button class="chip pro" data-avatar="cat-pro.png">Cat (Pro)</button>
-            <button class="chip pro" data-avatar="monkey-pro.png">Monkey (Pro)</button>
-          </div>
-        </div>
-
-        <div class="card-soft">
-          <h2>Stats</h2>
-          <div class="kv">
-            <span class="muted">Level</span><span id="pLevel">1</span>
-            <span class="muted">XP</span><span id="pXP">0</span>
-            <span class="muted">Daily Streak</span><span id="pStreak">0</span>
-            <span class="muted">Perfects</span><span id="pPerfects">0</span>
-          </div>
-          <div class="progress">
-            <i id="pXPBar" style="width:0%"></i>
-          </div>
-        </div>
-      </div>
-      <div class="row gap">
-        <button id="btnExport" class="btn secondary">Export Data</button>
-        <button id="btnImport" class="btn secondary">Import Data</button>
-        <input id="fileImport" type="file" accept="application/json" hidden/>
-        <span class="spacer"></span>
-        <a class="btn ghost" href="/achievements.html">View Badges</a>
+  <main id="app" class="app-shell" role="main" aria-live="polite">
+    <section class="route route--profile">
+      <div class="profile-card">
+        <img src="/media/avatars/fox-default.png" alt="Avatar" class="avatar" />
+        <h2 id="username">Guest</h2>
+        <p>Daily Streak: <span id="streak-count">0</span> days</p>
+        <p>XP: <span id="xp-count">0</span></p>
+        <button id="sign-in-btn">Sign in / Sync</button>
       </div>
     </section>
   </main>
 
   <footer class="app-footer">
-    <nav class="tabs">
-      <a href="/#/home">Home</a>
-      <a href="/profile.html" class="active">Profile</a>
-      <a href="/achievements.html">Badges</a>
+    <nav class="tabs" aria-label="Primary">
+      <a href="#/home" data-tab>Home</a>
+      <a href="#/tasks" data-tab>Tasks</a>
+      <a href="#/about" data-tab>About</a>
     </nav>
+    <small id="app-version" class="muted"></small>
   </footer>
 
-  <script>
-    const el = (s)=>document.querySelector(s);
-    document.addEventListener('click', (e)=>{
-      const b = e.target.closest('.chip[data-avatar]');
-      if (!b) return;
-      const file = b.dataset.avatar;
-      el('#avatarPreview').src = '/media/avatars/' + file;
-      try{ localStorage.setItem('whylee:avatar', file); }catch(_){}
-    });
-    el('#btnExport')?.addEventListener('click', ()=>{
-      const payload = {
-        avatar: localStorage.getItem('whylee:avatar') || 'fox-default.png',
-        tasks: JSON.parse(localStorage.getItem('whylee:tasks')||'[]')
-      };
-      const blob = new Blob([JSON.stringify(payload,null,2)], {type:'application/json'});
-      const a = Object.assign(document.createElement('a'), {href:URL.createObjectURL(blob), download:'whylee-profile.json'});
-      a.click(); URL.revokeObjectURL(a.href);
-    });
-    el('#btnImport')?.addEventListener('click', ()=> el('#fileImport').click());
-    el('#fileImport')?.addEventListener('change', async (e)=>{
-      const f = e.target.files[0]; if(!f) return;
-      const text = await f.text();
-      try{
-        const data = JSON.parse(text);
-        if (data.avatar) localStorage.setItem('whylee:avatar', data.avatar);
-        if (Array.isArray(data.tasks)) localStorage.setItem('whylee:tasks', JSON.stringify(data.tasks));
-        location.reload();
-      }catch{
-        alert('Invalid JSON');
-      }
-    });
-  </script>
-  <script src="/js/app.js?v=7000" defer></script>
+  <script src="/shell.js?v=7000" defer></script>
+  <script src="/app.js?v=7000" defer></script>
+  <script src="/scripts/ui/updatePrompt.js?v=7000" defer></script>
+  <script type="module" src="/scripts/profile.js?v=7000"></script>
 </body>
 </html>
