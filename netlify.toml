@@ -1,45 +1,25 @@
-# ========== Whylee · Netlify config (v7006) ==========
-
 [build]
-  publish   = "."
+  publish = "."
   functions = "netlify/functions"
 
 [functions]
   node_bundler = "esbuild"
+  external_node_modules = ["stripe"]
 
-# ---- Scheduled Functions (CRON) ----
-# Daily generation of Firestore questions at 05:00 UTC (adjust as needed)
-[[scheduled.functions]]
-  name = "generateDailyQuestions"
-  cron = "0 5 * * *"
+# -----------------------------------------
+# 🔒 Security, caching, and CORS settings
+# -----------------------------------------
 
-# ---- Redirects ----
-# Keep real files first; then SPA fallback to /index.html
-[[redirects]]
-  from = "/*"
-  to   = "/index.html"
-  status = 200
-
-# Ensure .well-known is accessible (app links / TWA)
-[[redirects]]
-  from = "/.well-known/*"
-  to   = "/.well-known/:splat"
-  status = 200
-
-# ---- Caching / Headers ----
-# Service Worker: always revalidate
 [[headers]]
   for = "/service-worker.js"
   [headers.values]
     Cache-Control = "no-cache, no-store, must-revalidate"
 
-# HTML: short cache so updates roll out quickly
 [[headers]]
   for = "/*.html"
   [headers.values]
     Cache-Control = "public, max-age=120, must-revalidate"
 
-# Static assets: long cache with immutability
 [[headers]]
   for = "/styles/*"
   [headers.values]
@@ -55,7 +35,6 @@
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
 
-# Manifest & icons
 [[headers]]
   for = "/site.webmanifest"
   [headers.values]
@@ -66,30 +45,32 @@
   [headers.values]
     Cache-Control = "public, max-age=604800"
 
-# Functions: CORS
 [[headers]]
   for = "/.netlify/functions/*"
   [headers.values]
-    Access-Control-Allow-Origin = "*"
-    Access-Control-Allow-Methods = "GET, POST, OPTIONS"
     Access-Control-Allow-Headers = "Content-Type, Authorization"
+    Access-Control-Allow-Methods = "GET, POST, OPTIONS"
+    Access-Control-Allow-Origin = "*"
 
-# ---- Security (safe defaults; relax if adding 3rd-party scripts like AdSense) ----
 [[headers]]
   for = "/*"
   [headers.values]
-    X-Frame-Options = "SAMEORIGIN"
-    X-Content-Type-Options = "nosniff"
-    Referrer-Policy = "strict-origin-when-cross-origin"
-    Permissions-Policy = "geolocation=(), microphone=(), camera=(), interest-cohort=()"
     Content-Security-Policy = "default-src 'self'; img-src 'self' data: blob:; media-src 'self' data:; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://firestore.googleapis.com https://www.googleapis.com /.netlify/functions; frame-ancestors 'self'; base-uri 'self';"
+    Permissions-Policy = "geolocation=(), microphone=(), camera=(), interest-cohort=()"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    X-Content-Type-Options = "nosniff"
+    X-Frame-Options = "SAMEORIGIN"
 
-# ---- Optional env template (for reference in Netlify UI) ----
-[template.environment]
-  FIREBASE_PROJECT_ID    = "your-firebase-project-id"
-  FIREBASE_CLIENT_EMAIL  = "firebase-adminsdk@your-project.iam.gserviceaccount.com"
-  FIREBASE_PRIVATE_KEY   = "-----BEGIN PRIVATE KEY-----\\n...\\n-----END PRIVATE KEY-----\\n"
-  LEADERBOARD_COLLECTION = "leaderboard"
-  LEADERBOARD_LIMIT      = "100"
-  STRIPE_SECRET_KEY      = "sk_live_xxx"
-  STRIPE_PRICE_ID        = "price_xxx"
+# -----------------------------------------
+# 🔁 Redirects
+# -----------------------------------------
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/.well-known/*"
+  to = "/.well-known/:splat"
+  status = 200
