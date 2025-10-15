@@ -1,0 +1,5 @@
+v7006
+• New avatar overlays with animated badges (Pro & Leader)
+• Global leaderboard page + serverless Firestore feed
+• Faster posters with thumbnails for smooth transitions
+• Stability and offline caching improvements
