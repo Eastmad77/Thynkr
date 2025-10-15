@@ -4,60 +4,86 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#0a2a43" />
-  <meta name="description" content="Whylee — fast, offline-ready brain-training PWA" />
+  <meta name="description" content="Whylee — daily brain training with a cinematic touch." />
 
-  <link rel="manifest" href="/site.webmanifest?v=7000" />
-  <link rel="icon" href="/media/icons/favicon.svg" type="image/svg+xml" />
-  <link rel="apple-touch-icon" href="/media/icons/whylee-icon-192.png" />
+  <!-- PWA: manifest & icons -->
+  <link rel="manifest" href="/site.webmanifest?v=7001" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/media/icons/favicon-32.png?v=7001" />
+  <link rel="icon" type="image/png" sizes="48x48" href="/media/icons/favicon-48.png?v=7001" />
+  <link rel="icon" type="image/png" sizes="96x96" href="/media/icons/favicon-96.png?v=7001" />
+  <link rel="apple-touch-icon" sizes="192x192" href="/media/icons/whylee-icon-192.png?v=7001" />
+  <link rel="apple-touch-icon" href="/media/icons/apple-touch-icon.png?v=7001" />
+  <link rel="mask-icon" href="/media/icons/mask-icon.svg" color="#11a7ff" />
+
+  <!-- Social / store previews -->
+  <meta property="og:title" content="Whylee – Daily Brain Training" />
+  <meta property="og:description" content="Challenge, reflect, and grow with Whylee." />
+  <meta property="og:image" content="/media/branding/feature-graphic-1024x500.png?v=7001" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content="/media/branding/feature-graphic-1024x500.png?v=7001" />
+
   <title>Whylee</title>
 
-  <link rel="preload" href="/style.css?v=7000" as="style" />
-  <link rel="stylesheet" href="/style.css?v=7000" />
-  <link rel="stylesheet" href="/styles/animations.css?v=7000" />
-  <link rel="stylesheet" href="/styles/adlayer.css?v=7000" />
-  <link rel="preload" href="/shell.js?v=7000" as="script" />
-  <link rel="preload" href="/app.js?v=7000" as="script" />
+  <!-- Styles -->
+  <link rel="preload" href="/style.css?v=7001" as="style" />
+  <link rel="stylesheet" href="/style.css?v=7001" />
+  <link rel="stylesheet" href="/styles/animations.css?v=7001" />
+  <!-- small brand helpers (logo sizing, watermark, etc.) -->
+  <link rel="stylesheet" href="/styles/brand.css?v=7001" />
+
+  <!-- Preload core scripts -->
+  <link rel="preload" href="/shell.js?v=7001" as="script" />
+  <link rel="preload" href="/app.js?v=7001" as="script" />
 </head>
-
 <body>
-  <noscript>Enable JavaScript to run Whylee.</noscript>
+  <noscript>You need JavaScript enabled to run Whylee.</noscript>
 
+  <!-- App Header -->
   <header class="app-header">
-    <button class="icon" id="btn-menu" aria-label="Toggle menu" hidden>☰</button>
-    <h1 class="brand">Whylee</h1>
+    <button class="icon" id="btn-menu" aria-label="Toggle menu" title="Menu">
+      <img src="/media/ui/icon-menu.svg" alt="" width="24" height="24" />
+    </button>
+
+    <!-- Updated brand mark -->
+    <img class="brand-mark" src="/media/branding/logo-w-mark.png" alt="Whylee" />
+
     <div class="header-actions">
       <button id="btn-refresh" class="secondary">Refresh</button>
       <button id="btn-install" class="primary wl-nudge" hidden>Install</button>
+      <button id="btn-sound" class="icon" aria-label="Toggle sound" title="Sound">
+        <img src="/media/ui/icon-sound-on.svg" alt="" width="24" height="24" />
+      </button>
     </div>
   </header>
 
+  <!-- App Shell -->
   <main id="app" class="app-shell" role="main" aria-live="polite"></main>
 
   <footer class="app-footer">
-    <nav class="tabs">
-      <a href="index.html">Home</a>
-      <a href="menu.html">Menu</a>
-      <a href="about.html">About</a>
+    <nav class="tabs" aria-label="Primary">
+      <a href="#/home" data-tab>Home</a>
+      <a href="#/play" data-tab>Play</a>
+      <a href="#/about" data-tab>About</a>
     </nav>
-    <small id="app-version" class="muted">v7000</small>
+    <small id="app-version" class="muted"></small>
   </footer>
 
-  <!-- Update prompt toast -->
+  <!-- Update toast -->
   <div id="updatePrompt" class="wl-toast" style="display:none">
     <strong>New version available</strong>
-    <div class="muted">Tap to refresh and get the latest updates.</div>
-    <div style="margin-top:8px;display:flex;gap:8px">
+    <div class="muted" style="margin-top:4px">Tap to refresh and get the latest improvements.</div>
+    <div style="margin-top:8px; display:flex; gap:8px">
       <button id="btnUpdateNow" class="primary">Refresh now</button>
       <button id="btnUpdateLater" class="secondary">Later</button>
     </div>
   </div>
 
-  <!-- Firebase bridge (before core scripts) -->
-  <script type="module" src="/scripts/firebase-bridge.js?v=7000"></script>
+  <!-- Core scripts -->
+  <script src="/shell.js?v=7001" defer></script>
+  <script src="/app.js?v=7001" defer></script>
+  <script src="/scripts/ui/updatePrompt.js?v=7001" defer></script>
 
-  <!-- Core app -->
-  <script src="/shell.js?v=7000" defer></script>
-  <script src="/app.js?v=7000" defer></script>
-  <script src="/scripts/ui/updatePrompt.js?v=7000" defer></script>
+  <!-- Firebase bridge (as requested previously) -->
+  <script type="module" src="/scripts/firebase-bridge.js?v=7001"></script>
 </body>
 </html>
