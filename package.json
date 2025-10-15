@@ -1,6 +1,6 @@
 {
   "name": "whylee",
-  "version": "7005.0.0",
+  "version": "7006.0.0",
   "description": "Whylee — interactive daily brain-training PWA (Free + Pro versions)",
   "type": "module",
   "scripts": {
@@ -13,29 +13,12 @@
   "dependencies": {
     "firebase-admin": "^12.5.0",
     "sharp": "^0.33.3",
-    "stripe": "^16.0.0"
+    "stripe": "^14.0.0"
   },
   "devDependencies": {
     "serve": "^14.2.3",
     "netlify-cli": "^17.34.1"
   },
-  "engines": {
-    "node": ">=18"
-  },
-  "keywords": [
-    "pwa",
-    "quiz",
-    "game",
-    "netlify",
-    "firebase",
-    "brain-training",
-    "education",
-    "ai",
-    "autonomous"
-  ],
-  "author": "Whylee Team",
-  "license": "MIT",
-  "netlify": {
-    "functions": "netlify/functions"
-  }
+  "engines": { "node": ">=18" },
+  "netlify": { "functions": "netlify/functions" }
 }
