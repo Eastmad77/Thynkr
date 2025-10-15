@@ -1,19 +1,14 @@
 {
   "name": "whylee",
-  "version": "7.0.0",
-  "description": "Whylee – Daily Brain Training PWA",
-  "main": "index.html",
+  "version": "7000.0.0",
+  "private": true,
+  "description": "Whylee — Daily Brain Bolt (PWA)",
   "scripts": {
-    "start": "npx serve .",
-    "build": "echo 'Static PWA – no build step required'"
+    "dev": "npx serve",
+    "build": "echo \"Static PWA: no build step\"",
+    "lint": "echo \"(optional)\""
   },
-  "author": "Brendan Hayman",
-  "license": "MIT",
   "dependencies": {
-    "firebase": "^9.23.0",
-    "stripe": "^14.0.0"
-  },
-  "devDependencies": {
-    "netlify-cli": "^17.0.0"
+    "firebase-admin": "^12.5.0"
   }
 }
