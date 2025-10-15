@@ -1,27 +1,45 @@
+# ─────────────────────────────────────────────────────────
+# Netlify config for Whylee (PWA)
+# Fixes: CSP errors, MIME issues, Stripe bundling, SW caching
+# ─────────────────────────────────────────────────────────
+
 [build]
   publish = "."
-  functions = "netlify/functions"
+  command = ""   # static site (no build step)
 
 [functions]
   node_bundler = "esbuild"
+  # Stripe is a server-only dep; don't bundle it into functions
   external_node_modules = ["stripe"]
 
-# -----------------------------------------
-# 🔒 Security, caching, and CORS settings
-# -----------------------------------------
+# Redirect SPA routes to index.html
+[[redirects]]
+  from = "/*"
+  to   = "/index.html"
+  status = 200
 
+# Well-known (assetlinks, etc.)
+[[redirects]]
+  from = "/.well-known/*"
+  to   = "/.well-known/:splat"
+  status = 200
+
+# ── HTTP headers ─────────────────────────────────────────
+
+# Service worker: never cache aggressively
 [[headers]]
   for = "/service-worker.js"
   [headers.values]
     Cache-Control = "no-cache, no-store, must-revalidate"
 
+# Immutable assets (cache-busted by querystrings or filenames)
 [[headers]]
-  for = "/*.html"
+  for = "/css/*"
   [headers.values]
-    Cache-Control = "public, max-age=120, must-revalidate"
+    Cache-Control = "public, max-age=31536000, immutable"
 
 [[headers]]
-  for = "/styles/*"
+  for = "/js/*"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
 
@@ -45,32 +63,36 @@
   [headers.values]
     Cache-Control = "public, max-age=604800"
 
+# APIs (Netlify functions) – CORS for your frontend
 [[headers]]
   for = "/.netlify/functions/*"
   [headers.values]
-    Access-Control-Allow-Headers = "Content-Type, Authorization"
-    Access-Control-Allow-Methods = "GET, POST, OPTIONS"
     Access-Control-Allow-Origin = "*"
+    Access-Control-Allow-Methods = "GET, POST, OPTIONS"
+    Access-Control-Allow-Headers = "Content-Type, Authorization"
 
+# Security headers + CSP
+# NOTE: We whitelist Firebase + Google APIs because you load them from CDNs.
+# '/.netlify/functions' is NOT valid as a CSP source (it’s already covered by 'self').
 [[headers]]
   for = "/*"
   [headers.values]
-    Content-Security-Policy = "default-src 'self'; img-src 'self' data: blob:; media-src 'self' data:; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://firestore.googleapis.com https://www.googleapis.com /.netlify/functions; frame-ancestors 'self'; base-uri 'self';"
+    Content-Security-Policy = """
+      default-src 'self';
+      base-uri 'self';
+      frame-ancestors 'self';
+      img-src 'self' data: blob:;
+      media-src 'self' data:;
+      style-src 'self' 'unsafe-inline';
+      script-src 'self' https://www.gstatic.com https://www.googletagmanager.com;
+      connect-src 'self' https://firestore.googleapis.com https://www.googleapis.com https://firebaseinstallations.googleapis.com;
+      font-src 'self' data:;
+      object-src 'none';
+      frame-src 'self' https://js.stripe.com;
+      manifest-src 'self';
+      worker-src 'self';
+    """
     Permissions-Policy = "geolocation=(), microphone=(), camera=(), interest-cohort=()"
     Referrer-Policy = "strict-origin-when-cross-origin"
     X-Content-Type-Options = "nosniff"
     X-Frame-Options = "SAMEORIGIN"
-
-# -----------------------------------------
-# 🔁 Redirects
-# -----------------------------------------
-
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
-
-[[redirects]]
-  from = "/.well-known/*"
-  to = "/.well-known/:splat"
-  status = 200
