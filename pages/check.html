@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Whylee — System Check</title>
+
+  <!-- Use the same styles your app uses -->
+  <link rel="stylesheet" href="/css/style.css?v=7006">
+  <link rel="stylesheet" href="/css/animations.css?v=7006">
+  <link rel="stylesheet" href="/styles/avatar.css?v=7006">
+  <link rel="stylesheet" href="/styles/avatar-badge.css?v=7006">
+
+  <style>
+    :root { --ok:#16a34a; --warn:#f59e0b; --err:#ef4444; }
+    body { max-width: 1100px; margin: 0 auto; padding: 24px; font: 14px/1.5 system-ui, sans-serif; }
+    h1 { margin: 0 0 16px; }
+    .grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(180px,1fr)); gap:16px; }
+    .card { border:1px solid #222; border-radius:12px; padding:12px; background:#0b0e13; }
+    .muted { opacity:.7 }
+    .row { display:flex; gap:8px; align-items:center; }
+    .status { font-weight:600 }
+    .ok { color:var(--ok) } .err { color:var(--err) } .warn { color:var(--warn) }
+    img.thumb { width:100%; height:120px; object-fit:cover; border-radius:8px; background:#111 }
+    .avatar-demo { display:flex; gap:24px; align-items:center; }
+  </style>
+</head>
+<body>
+  <h1>Whylee — System Check</h1>
+
+  <section class="card">
+    <h2>1) Icons</h2>
+    <div class="grid">
+      <div><div class="muted">192×192</div><img class="thumb" src="/media/icons/whylee-icon-192.png" alt="icon-192"></div>
+      <div><div class="muted">512×512</div><img class="thumb" src="/media/icons/whylee-icon-512.png" alt="icon-512"></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>2) Avatar overlays</h2>
+    <div class="avatar-demo">
+      <div class="avatar-wrap" data-tier="pro" data-progress="42"
+           data-base="/media/avatars/profile-pro-gold.svg"
+           data-badge="/media/badges/crown-gold.svg" data-dot></div>
+
+      <div class="avatar-wrap" data-tier="leader" data-progress="88"
+           data-base="/media/avatars/profile-leader.svg"
+           data-badge="/media/badges/crown-silver.svg" data-dot></div>
+    </div>
+    <p class="muted">If you see two avatars with a crown badge + progress ring, overlays are working.</p>
+  </section>
+
+  <section class="card">
+    <h2>3) Posters & Thumbnails</h2>
+    <p class="muted">Loaded from <code>/posters.json</code>. Thumbs try <code>/media/thumbnails/*-thumb.jpg</code> first, then fall back to poster.</p>
+    <div id="posters" class="grid"></div>
+  </section>
+
+  <section class="card">
+    <h2>4) Service Worker & Functions</h2>
+    <div class="row"><div>Service Worker:</div><div id="sw" class="status warn">checking…</div></div>
+    <div class="row"><div>Functions health:</div><div id="fx" class="status warn">checking…</div></div>
+  </section>
+
+  <script>
+    // 4a) SW check
+    (async () => {
+      const el = document.getElementById('sw');
+      if (!('serviceWorker' in navigator)) { el.textContent = 'not supported'; el.className = 'status err'; return; }
+      try {
+        const reg = await navigator.serviceWorker.getRegistration();
+        if (reg) { el.textContent = 'registered'; el.className = 'status ok'; }
+        else { el.textContent = 'not registered (yet)'; el.className = 'status warn'; }
+      } catch (e) { el.textContent = 'error'; el.className = 'status err'; }
+    })();
+
+    // 4b) function health
+    (async () => {
+      const el = document.getElementById('fx');
+      try {
+        const res = await fetch('/.netlify/functions/health',{cache:'no-store'});
+        el.textContent = res.ok ? 'OK' : 'error: ' + res.status;
+        el.className = 'status ' + (res.ok ? 'ok' : 'err');
+      } catch (e) { el.textContent = 'fetch failed'; el.className = 'status err'; }
+    })();
+
+    // 3) posters via posters.json
+    (async () => {
+      const wrap = document.getElementById('posters');
+      try {
+        const res = await fetch('/posters.json',{cache:'no-store'});
+        const posters = await res.json();
+        const items = Array.isArray(posters) ? posters : (posters.items || []);
+        items.slice(0, 20).forEach(p => {
+          // p.src may be like "/media/posters/v1/xyz.png"
+          const poster = (typeof p === 'string') ? p : (p.src || p.path || p.url);
+          const name = (typeof p === 'string') ? p.split('/').pop() : (p.title || p.name || poster.split('/').pop());
+          let thumb = '';
+          if (poster) {
+            const base = poster.replace(/\.(png|jpe?g|webp)$/i,'');
+            thumb = '/media/thumbnails/' + base.split('/').pop() + '-thumb.jpg';
+          }
+          const card = document.createElement('div');
+          card.innerHTML = `
+            <img class="thumb" src="${thumb}" onerror="this.onerror=null; this.src='${poster}'" alt="${name}">
+            <div class="muted" title="${poster}">${name}</div>
+          `;
+          wrap.appendChild(card);
+        });
+      } catch (e) {
+        wrap.innerHTML = `<div class="warn">Could not load posters.json (${e && e.message})</div>`;
+      }
+    })();
+  </script>
+
+  <!-- avatar JS last so the DOM is ready -->
+  <script type="module" src="/scripts/ui/avatar.js?v=7006"></script>
+</body>
+</html>
