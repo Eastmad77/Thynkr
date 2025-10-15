@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Whylee · Profile</title>
+  <link rel="stylesheet" href="/styles/brand.css?v=7005" />
+  <link rel="stylesheet" href="/styles/avatar.css?v=7005" />
+</head>
+<body class="page-profile">
+  <main class="container" style="padding:24px; max-width:960px; margin:0 auto;">
+    <section class="profile-card" style="display:flex; gap:16px; align-items:center;">
+      <div class="avatar-wrap tier-free"
+           data-tier="free"
+           data-progress="0"
+           data-base="/media/avatars/profile-default.svg">
+        <img class="avatar-base" src="/media/avatars/profile-default.svg" alt="User avatar" />
+        <div class="avatar-ring" aria-hidden="true"></div>
+        <img class="avatar-badge" src="/media/badges/crown-gold.svg" alt="" aria-hidden="true" style="display:none" />
+        <span class="avatar-dot" aria-hidden="true" style="display:none"></span>
+      </div>
+
+      <div class="meta">
+        <h2 class="user-name" style="margin:0 0 4px">Player</h2>
+        <p class="user-tier" style="margin:0; opacity:.85">Free Player</p>
+        <p class="user-streak" style="margin:8px 0 0; opacity:.7">Daily Streak: 0</p>
+      </div>
+    </section>
+
+    <hr class="hr-soft" style="margin:24px 0" />
+
+    <section class="controls" style="display:flex; gap:12px; flex-wrap:wrap">
+      <button id="btn-free"   class="btn-primary" style="opacity:.85">Set Free</button>
+      <button id="btn-pro"    class="btn-primary">Set Pro</button>
+      <button id="btn-leader" class="btn-primary" style="background:linear-gradient(135deg, var(--whylee-lime,#D8FF72), #C5FFA6); color:#061522">Set Leader</button>
+    </section>
+  </main>
+
+  <script type="module">
+    import { renderAvatar } from '/scripts/ui/avatar.js?v=7005';
+
+    const wrap = document.querySelector('.avatar-wrap');
+    const nameEl = document.querySelector('.user-name');
+    const tierEl = document.querySelector('.user-tier');
+    const streakEl = document.querySelector('.user-streak');
+
+    const user = window.currentUser || JSON.parse(localStorage.getItem('wl_user') || '{}');
+    const displayName = user.displayName || 'Player';
+    const tier = user.tier || 'free';
+    const streak = Number(localStorage.getItem('wl_streak') || '0');
+
+    nameEl.textContent = displayName;
+    tierEl.textContent = (tier === 'pro') ? 'Pro Member' : (tier === 'leader' ? 'Leaderboard Tier' : 'Free Player');
+    streakEl.textContent = `Daily Streak: ${streak}`;
+
+    renderAvatar(wrap, {
+      tier,
+      progress: (streak % 100),
+      badge: (tier === 'pro') ? '/media/badges/crown-gold.svg' : (tier === 'leader' ? '/media/badges/star-silver.svg' : null),
+      baseSrc: (tier === 'pro') ? '/media/avatars/profile-pro-gold.svg'
+           : (tier === 'leader') ? '/media/avatars/profile-pro-silver.svg'
+           : '/media/avatars/profile-default.svg',
+      showDot: tier !== 'free'
+    });
+
+    // Demo controls
+    const setTier = (t) => {
+      const newUser = { ...user, tier: t };
+      localStorage.setItem('wl_user', JSON.stringify(newUser));
+      tierEl.textContent = (t === 'pro') ? 'Pro Member' : (t === 'leader' ? 'Leaderboard Tier' : 'Free Player');
+      renderAvatar(wrap, {
+        tier: t,
+        progress: (Number(localStorage.getItem('wl_streak')||0) % 100),
+        badge: (t === 'pro') ? '/media/badges/crown-gold.svg' : (t === 'leader' ? '/media/badges/star-silver.svg' : null),
+        baseSrc: (t === 'pro') ? '/media/avatars/profile-pro-gold.svg'
+             : (t === 'leader') ? '/media/avatars/profile-pro-silver.svg'
+             : '/media/avatars/profile-default.svg',
+        showDot: t !== 'free'
+      });
+    };
+
+    document.getElementById('btn-free').addEventListener('click', () => setTier('free'));
+    document.getElementById('btn-pro').addEventListener('click', () => setTier('pro'));
+    document.getElementById('btn-leader').addEventListener('click', () => setTier('leader'));
+  </script>
+</body>
+</html>
