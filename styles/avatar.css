@@ -1,0 +1,67 @@
+/* Whylee – Avatar overlays (v7005)
+   Layers: base image, progress ring, badge icon, dot
+   Uses brand variables with fallbacks.
+*/
+
+:root{
+  --ring-free: var(--whylee-line, #3A5E7A);
+  --ring-pro: var(--whylee-blue, #11A7FF);
+  --ring-leader: var(--whylee-lime, #D8FF72);
+  --dot: var(--whylee-orange, #FF7A2E);
+}
+
+.avatar-wrap{
+  position: relative;
+  width: 96px; height: 96px;
+  border-radius: 50%;
+  isolation: isolate;
+  display: inline-block;
+}
+
+.avatar-base{
+  width: 100%; height: 100%;
+  object-fit: cover; border-radius: 50%;
+  display: block;
+  box-shadow: 0 6px 18px rgba(0,0,0,.35);
+  background: radial-gradient(120% 120% at 40% 20%, rgba(255,255,255,.08), rgba(0,0,0,.08));
+}
+
+/* Progress / prestige ring using conic-gradient */
+.avatar-ring{
+  position: absolute; inset: -4px;
+  border-radius: 50%;
+  pointer-events: none;
+  background: conic-gradient(var(--ring-free) 0deg, rgba(255,255,255,.08) 0deg);
+  -webkit-mask: radial-gradient(circle at center, transparent 66%, #000 67%);
+          mask: radial-gradient(circle at center, transparent 66%, #000 67%);
+  filter: drop-shadow(0 0 10px rgba(17,167,255,.25));
+}
+
+/* Badge icon (e.g., crown) */
+.avatar-badge{
+  position: absolute;
+  width: 34%;
+  right: -4%; bottom: -4%;
+  transform: rotate(-6deg);
+  filter: drop-shadow(0 4px 10px rgba(0,0,0,.5));
+  pointer-events: none;
+}
+
+/* Notification / online dot (optional) */
+.avatar-dot{
+  position: absolute;
+  width: 14px; height: 14px; border-radius: 50%;
+  right: 4px; top: 4px; background: var(--dot);
+  box-shadow: 0 0 0 2px var(--whylee-navy, #0A2A43);
+}
+
+/* Tier colors */
+.tier-free  .avatar-ring{ background: conic-gradient(var(--ring-free) 0deg, rgba(255,255,255,.08) 0deg); }
+.tier-pro   .avatar-ring{ background: conic-gradient(var(--ring-pro) 0deg, rgba(255,255,255,.08) 0deg); }
+.tier-leader .avatar-ring{ background: conic-gradient(var(--ring-leader) 0deg, rgba(255,255,255,.08) 0deg); }
+
+/* Entrance motion */
+@media (prefers-reduced-motion: no-preference){
+  .avatar-wrap.pop-in{ animation: avPop .28s ease both; }
+  @keyframes avPop{ from{ transform: scale(.96); opacity:.0 } to{ transform: scale(1); opacity:1 } }
+}
