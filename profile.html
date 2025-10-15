@@ -4,115 +4,67 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#0a2a43" />
-  <meta name="description" content="Whylee — your daily mental fitness journey" />
-
   <title>Whylee · Profile</title>
 
-  <!-- Brand & Avatar Styles -->
+  <!-- Styles -->
   <link rel="stylesheet" href="/styles/brand.css?v=7005" />
   <link rel="stylesheet" href="/styles/avatar.css?v=7005" />
   <link rel="stylesheet" href="/styles/avatar-badge.css?v=7006" />
 
-  <!-- Favicons -->
-  <link rel="icon" href="/media/icons/favicon.svg" type="image/svg+xml" />
-  <link rel="apple-touch-icon" href="/media/icons/whylee-icon-192.png" />
-</head>
-<body class="page-profile">
+  <style>
+    body { margin:0; background:#0A2A43; color:#E9F3FF; font-family:system-ui, -apple-system, 'Segoe UI', Roboto, Inter, sans-serif; }
+    header { display:flex; align-items:center; gap:12px; padding:16px 20px; border-bottom:1px solid rgba(233,243,255,.08); }
+    header h1 { margin:0; font-size:1.3rem; letter-spacing:.3px; }
+    main { max-width:700px; margin:0 auto; padding:30px 20px; display:flex; flex-direction:column; align-items:center; text-align:center; }
 
-  <!-- HEADER -->
-  <header class="app-header">
+    .stats { display:flex; gap:20px; margin-top:20px; flex-wrap:wrap; justify-content:center; }
+    .stat { background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.08); border-radius:14px; padding:12px 18px; min-width:120px; }
+    .stat h3 { margin:0; font-size:1.3rem; color:#D8FF72; }
+    .stat p { margin:6px 0 0; opacity:.8; font-size:.9rem; }
+
+    footer { opacity:.65; margin-top:50px; font-size:.85rem; }
+  </style>
+</head>
+<body>
+
+  <header>
     <button class="icon" onclick="history.back()" aria-label="Back">←</button>
     <h1 class="brand">Profile</h1>
   </header>
 
-  <!-- MAIN CONTENT -->
-  <main class="container" style="padding:24px; max-width:960px; margin:0 auto;">
-    <!-- User section -->
-    <section class="profile-card" style="display:flex; gap:16px; align-items:center; flex-wrap:wrap;">
-      <div class="avatar-wrap tier-free pop-in"
-           data-tier="free"
-           data-progress="0"
-           data-base="/media/avatars/profile-default.svg">
-        <img class="avatar-base" src="/media/avatars/profile-default.svg" alt="User avatar" />
-        <div class="avatar-ring" aria-hidden="true"></div>
-        <img class="avatar-badge" src="/media/badges/crown-gold.svg" alt="" aria-hidden="true" style="display:none" />
-        <span class="avatar-dot" aria-hidden="true" style="display:none"></span>
-      </div>
+  <main>
+    <!-- Avatar display -->
+    <div class="avatar-wrap"
+      data-tier="pro"
+      data-progress="42"
+      data-base="/media/avatars/profile-pro-gold.svg"
+      data-badge="/media/badges/crown-gold.svg"
+      data-dot></div>
 
-      <div class="meta">
-        <h2 class="user-name" style="margin:0 0 4px">Player</h2>
-        <p class="user-tier" style="margin:0; opacity:.85">Free Player</p>
-        <p class="user-streak" style="margin:8px 0 0; opacity:.7">Daily Streak: 0</p>
+    <h2 style="margin-top:20px;">Ava Sparks</h2>
+    <p style="opacity:.8;">Pro Tier · 42% progress to next rank</p>
+
+    <section class="stats">
+      <div class="stat">
+        <h3>46</h3>
+        <p>Day Streak</p>
+      </div>
+      <div class="stat">
+        <h3>9,820</h3>
+        <p>Total XP</p>
+      </div>
+      <div class="stat">
+        <h3>#1</h3>
+        <p>Leaderboard</p>
       </div>
     </section>
 
-    <hr class="hr-soft" style="margin:24px 0; opacity:.2" />
-
-    <!-- Buttons -->
-    <section class="controls" style="display:flex; gap:12px; flex-wrap:wrap">
-      <button id="btn-free" class="btn-secondary">Set Free</button>
-      <button id="btn-pro" class="btn-primary">Set Pro</button>
-      <button id="btn-leader" class="btn-primary" style="background:linear-gradient(135deg, var(--whylee-lime,#D8FF72), #C5FFA6); color:#061522;">Set Leader</button>
-    </section>
+    <footer>
+      © 2025 Whylee — Daily Brain Training
+    </footer>
   </main>
 
-  <!-- FOOTER -->
-  <footer class="app-footer" style="margin-top:48px; text-align:center; opacity:.6; font-size:.9em;">
-    <p>&copy; 2025 Whylee · Daily Brain Training</p>
-  </footer>
-
-  <!-- JS: Avatar Overlay Module -->
+  <!-- Scripts -->
   <script type="module" src="/scripts/ui/avatar.js?v=7006"></script>
-
-  <!-- Inline demo logic -->
-  <script type="module">
-    import { renderAvatar } from '/scripts/ui/avatar.js?v=7006';
-
-    const wrap = document.querySelector('.avatar-wrap');
-    const nameEl = document.querySelector('.user-name');
-    const tierEl = document.querySelector('.user-tier');
-    const streakEl = document.querySelector('.user-streak');
-
-    const user = window.currentUser || JSON.parse(localStorage.getItem('wl_user') || '{}');
-    const displayName = user.displayName || 'Player';
-    const tier = user.tier || 'free';
-    const streak = Number(localStorage.getItem('wl_streak') || '0');
-
-    nameEl.textContent = displayName;
-    tierEl.textContent = (tier === 'pro') ? 'Pro Member' : (tier === 'leader' ? 'Leaderboard Tier' : 'Free Player');
-    streakEl.textContent = `Daily Streak: ${streak}`;
-
-    renderAvatar(wrap, {
-      tier,
-      progress: (streak % 100),
-      badge: (tier === 'pro') ? '/media/badges/crown-gold.svg' :
-             (tier === 'leader') ? '/media/badges/star-silver.svg' : null,
-      baseSrc: (tier === 'pro') ? '/media/avatars/profile-pro-gold.svg' :
-               (tier === 'leader') ? '/media/avatars/profile-pro-silver.svg' :
-               '/media/avatars/profile-default.svg',
-      showDot: tier !== 'free'
-    });
-
-    // Demo tier toggle
-    const setTier = (t) => {
-      const newUser = { ...user, tier: t };
-      localStorage.setItem('wl_user', JSON.stringify(newUser));
-      tierEl.textContent = (t === 'pro') ? 'Pro Member' : (t === 'leader' ? 'Leaderboard Tier' : 'Free Player');
-      renderAvatar(wrap, {
-        tier: t,
-        progress: (Number(localStorage.getItem('wl_streak') || 0) % 100),
-        badge: (t === 'pro') ? '/media/badges/crown-gold.svg' :
-               (t === 'leader') ? '/media/badges/star-silver.svg' : null,
-        baseSrc: (t === 'pro') ? '/media/avatars/profile-pro-gold.svg' :
-                 (t === 'leader') ? '/media/avatars/profile-pro-silver.svg' :
-                 '/media/avatars/profile-default.svg',
-        showDot: t !== 'free'
-      });
-    };
-
-    document.getElementById('btn-free').addEventListener('click', () => setTier('free'));
-    document.getElementById('btn-pro').addEventListener('click', () => setTier('pro'));
-    document.getElementById('btn-leader').addEventListener('click', () => setTier('leader'));
-  </script>
 </body>
 </html>
