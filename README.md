@@ -1,49 +1,22 @@
-# Whylee — Daily Brain Bolt (PWA)
+# Whylee — Daily Brain Training (v7006)
 
-A cinematic brain-training PWA deployed on Netlify with autonomous daily content via Firebase/Firestore.
+Dark, cinematic PWA with Free + Pro tiers, autonomous daily questions, and a global leaderboard.
 
-## 🌟 Features
-- 3 daily levels: Warm-up (MCQ), Matching Pairs, Trivia/Logic
-- Offline-ready PWA with service worker + update toast
-- XP, streaks, badges, reflections
-- Free (ad-supported) + Pro (ad-free, bonus level, leaderboard)
-- Netlify Function generates new content daily (cron) → Firestore
+## New: Avatar Overlays + Leaderboard
 
----
+### Files
+- `/styles/avatar.css` — avatar base + progress ring
+- `/styles/avatar-badge.css` — crown/star/lightning animations
+- `/scripts/ui/avatar.js` — render logic (tier, progress, badges)
+- `/profile.html` — profile screen example
+- `/leaderboard.html` — responsive grid, fetches data
+- `/data/leaderboard.json` — static data (dev)
+- `/netlify/functions/fetchLeaderboard.js` — Firestore function (prod)
+- `/service-worker.js` — cache bumped to `v7006`
 
-## 🔐 Environment Variables (Netlify)
-Set these in **Netlify → Site settings → Build & deploy → Environment**:
-- `FIREBASE_PROJECT_ID`
-- `FIREBASE_CLIENT_EMAIL`
-- `FIREBASE_PRIVATE_KEY` (escape newlines as `\n`)
-- *(Optional for Stripe)* `WHYLEE_STRIPE_PK` (or inject via `<script>`)
-
-> **Never commit secrets** to the repo.
-
----
-
-## 🔄 Autonomous Daily Questions
-- Function: **`/netlify/functions/generateDailyQuestions.js`**
-- Scheduled via **`netlify.toml`** (daily cron)
-- Writes Firestore doc: **`daily_questions/{YYYY-MM-DD}`**
-- Payload includes:
-  - `levels[]` (with `type: "mcq" | "pairs"`)
-  - `adPoster` for sponsor rotation
-
----
-
-## 💸 Monetization
-- **AdSense** banners: add the global script in page `<head>` with your publisher ID.
-- **Sponsor posters**: displayed between Level 2 → 3 from `/media/posters/v1/*`.
-- **Pro upgrade**: Stripe or Play Billing. 3-day trial via `entitlements.js`.
-
-**Ads compliance**
-- Root **`/ads.txt`** present and includes your publisher ID.
-- Update **privacy** page to mention AdSense and link to Google Ad Settings.
-
----
-
-## 🧭 Local Dev
-```bash
-# from project root
-npx serve    # or any static server
+### Usage
+Add to your HTML:
+```html
+<link rel="stylesheet" href="/styles/avatar.css?v=7005" />
+<link rel="stylesheet" href="/styles/avatar-badge.css?v=7006" />
+<script type="module" src="/scripts/ui/avatar.js?v=7006"></script>
