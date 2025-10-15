@@ -4,35 +4,114 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#0a2a43" />
-  <meta name="description" content="Whylee — Profile" />
-  <title>Profile · Whylee</title>
+  <meta name="description" content="Whylee — your daily mental fitness journey" />
 
-  <link rel="manifest" href="/site.webmanifest?v=7000" />
+  <title>Whylee · Profile</title>
+
+  <!-- Brand & Avatar Styles -->
+  <link rel="stylesheet" href="/styles/brand.css?v=7005" />
+  <link rel="stylesheet" href="/styles/avatar.css?v=7005" />
+
+  <!-- Favicons -->
   <link rel="icon" href="/media/icons/favicon.svg" type="image/svg+xml" />
-  <link rel="stylesheet" href="/style.css?v=7000" />
-  <link rel="stylesheet" href="/styles/animations.css?v=7000" />
+  <link rel="apple-touch-icon" href="/media/icons/whylee-icon-192.png" />
 </head>
+<body class="page-profile">
 
-<body>
-  <header class="app-header"><h1 class="brand">Profile</h1></header>
+  <!-- HEADER -->
+  <header class="app-header">
+    <button class="icon" onclick="history.back()" aria-label="Back">←</button>
+    <h1 class="brand">Profile</h1>
+  </header>
 
-  <main id="app" class="app-shell">
-    <div class="profile-card">
-      <img class="avatar" src="/media/avatars/fox-default.png" alt="avatar" />
-      <h2 id="username">Guest</h2>
-      <p>XP: <span id="xp-count">0</span></p>
-      <p>Daily streak: <span id="streak-count">0 days</span></p>
-      <button id="sign-in-btn" class="secondary">Sign in</button>
-    </div>
+  <!-- MAIN CONTENT -->
+  <main class="container" style="padding:24px; max-width:960px; margin:0 auto;">
+    <!-- User section -->
+    <section class="profile-card" style="display:flex; gap:16px; align-items:center; flex-wrap:wrap;">
+      <div class="avatar-wrap tier-free"
+           data-tier="free"
+           data-progress="0"
+           data-base="/media/avatars/profile-default.svg">
+        <img class="avatar-base" src="/media/avatars/profile-default.svg" alt="User avatar" />
+        <div class="avatar-ring" aria-hidden="true"></div>
+        <img class="avatar-badge" src="/media/badges/crown-gold.svg" alt="" aria-hidden="true" style="display:none" />
+        <span class="avatar-dot" aria-hidden="true" style="display:none"></span>
+      </div>
+
+      <div class="meta">
+        <h2 class="user-name" style="margin:0 0 4px">Player</h2>
+        <p class="user-tier" style="margin:0; opacity:.85">Free Player</p>
+        <p class="user-streak" style="margin:8px 0 0; opacity:.7">Daily Streak: 0</p>
+      </div>
+    </section>
+
+    <hr class="hr-soft" style="margin:24px 0; opacity:.2" />
+
+    <!-- Buttons -->
+    <section class="controls" style="display:flex; gap:12px; flex-wrap:wrap">
+      <button id="btn-free" class="btn-secondary">Set Free</button>
+      <button id="btn-pro" class="btn-primary">Set Pro</button>
+      <button id="btn-leader" class="btn-primary" style="background:linear-gradient(135deg, var(--whylee-lime,#D8FF72), #C5FFA6); color:#061522;">Set Leader</button>
+    </section>
   </main>
 
-  <footer class="app-footer">
-    <a href="index.html">Home</a>
-    <a href="menu.html">Menu</a>
+  <!-- FOOTER -->
+  <footer class="app-footer" style="margin-top:48px; text-align:center; opacity:.6; font-size:.9em;">
+    <p>&copy; 2025 Whylee · Daily Brain Training</p>
   </footer>
 
-  <!-- Firebase bridge -->
-  <script type="module" src="/scripts/firebase-bridge.js?v=7000"></script>
-  <script type="module" src="/scripts/profile.js?v=7000"></script>
+  <!-- JS: Avatar Overlay Module -->
+  <script type="module" src="/scripts/ui/avatar.js?v=7005"></script>
+
+  <!-- Inline demo logic (can also move to /scripts/profile.js) -->
+  <script type="module">
+    import { renderAvatar } from '/scripts/ui/avatar.js?v=7005';
+
+    const wrap = document.querySelector('.avatar-wrap');
+    const nameEl = document.querySelector('.user-name');
+    const tierEl = document.querySelector('.user-tier');
+    const streakEl = document.querySelector('.user-streak');
+
+    const user = window.currentUser || JSON.parse(localStorage.getItem('wl_user') || '{}');
+    const displayName = user.displayName || 'Player';
+    const tier = user.tier || 'free';
+    const streak = Number(localStorage.getItem('wl_streak') || '0');
+
+    nameEl.textContent = displayName;
+    tierEl.textContent = (tier === 'pro') ? 'Pro Member' : (tier === 'leader' ? 'Leaderboard Tier' : 'Free Player');
+    streakEl.textContent = `Daily Streak: ${streak}`;
+
+    renderAvatar(wrap, {
+      tier,
+      progress: (streak % 100),
+      badge: (tier === 'pro') ? '/media/badges/crown-gold.svg' :
+             (tier === 'leader') ? '/media/badges/star-silver.svg' : null,
+      baseSrc: (tier === 'pro') ? '/media/avatars/profile-pro-gold.svg' :
+               (tier === 'leader') ? '/media/avatars/profile-pro-silver.svg' :
+               '/media/avatars/profile-default.svg',
+      showDot: tier !== 'free'
+    });
+
+    // Demo tier toggle (for dev use)
+    const setTier = (t) => {
+      const newUser = { ...user, tier: t };
+      localStorage.setItem('wl_user', JSON.stringify(newUser));
+      tierEl.textContent = (t === 'pro') ? 'Pro Member' : (t === 'leader' ? 'Leaderboard Tier' : 'Free Player');
+      renderAvatar(wrap, {
+        tier: t,
+        progress: (Number(localStorage.getItem('wl_streak') || 0) % 100),
+        badge: (t === 'pro') ? '/media/badges/crown-gold.svg' :
+               (t === 'leader') ? '/media/badges/star-silver.svg' : null,
+        baseSrc: (t === 'pro') ? '/media/avatars/profile-pro-gold.svg' :
+                 (t === 'leader') ? '/media/avatars/profile-pro-silver.svg' :
+                 '/media/avatars/profile-default.svg',
+        showDot: t !== 'free'
+      });
+    };
+
+    document.getElementById('btn-free').addEventListener('click', () => setTier('free'));
+    document.getElementById('btn-pro').addEventListener('click', () => setTier('pro'));
+    document.getElementById('btn-leader').addEventListener('click', () => setTier('leader'));
+  </script>
 </body>
 </html>
