@@ -1,39 +1,70 @@
+# ────────────────────────────────
+# Whylee — Netlify Configuration
+# v7006 (Autonomous Build)
+# ────────────────────────────────
+
 [build]
   publish = "."
-  # (Optional) build command if you add tooling later:
-  # command = "npm run build"
+  command = "npm run build"
+  functions = "netlify/functions"
 
-[functions]
-  directory = "netlify/functions"
-  node_bundler = "esbuild"
+[dev]
+  command = "npm run start"
+  port = 8888
 
-# --- Caching for heavy/static assets ---
-[[headers]]
-  for = "/media/*"
-  [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
+# Environment variables are set in the Netlify UI:
+# FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, FIREBASE_PRIVATE_KEY
+# STRIPE_SECRET_KEY, STRIPE_PRICE_ID, LEADERBOARD_COLLECTION, LEADERBOARD_LIMIT
 
-# Manifest served with correct type
-[[headers]]
-  for = "/site.webmanifest"
-  [headers.values]
-    Content-Type = "application/manifest+json; charset=UTF-8"
+# ────────────────────────────────
+# Redirects
+# ────────────────────────────────
+[[redirects]]
+  from = "/"
+  to = "/index.html"
+  status = 200
 
-# Basic security hardening (adjust as needed)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# ────────────────────────────────
+# Scheduled (CRON) Functions
+# ────────────────────────────────
+# Run the daily question generator once a day at 05:00 UTC.
+[[scheduled.functions]]
+  name = "generateDailyQuestions"
+  cron = "0 5 * * *"
+
+# ────────────────────────────────
+# Headers
+# ────────────────────────────────
 [[headers]]
   for = "/*"
   [headers.values]
-    X-Content-Type-Options = "nosniff"
-    Referrer-Policy = "strict-origin-when-cross-origin"
+    Access-Control-Allow-Origin = "*"
     X-Frame-Options = "DENY"
-    Permissions-Policy = "geolocation=(), camera=(), microphone=()"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "no-referrer-when-downgrade"
 
-# --- Scheduled Functions (autonomous daily questions) ---
-[[functions]]
-  schedule = "@daily"
-  function = "generateDailyQuestions"
+# ────────────────────────────────
+# PWA Cache Policy
+# ────────────────────────────────
+[[headers]]
+  for = "/service-worker.js"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
 
-# NOTE:
-# - SPA routing is handled by the `_redirects` file:
-#       /*  /index.html  200
-# - Set env vars in Netlify UI: FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, FIREBASE_PRIVATE_KEY, STRIPE_SECRET_KEY
+# ────────────────────────────────
+# Function Timeouts (optional tuning)
+# ────────────────────────────────
+[functions]
+  node_bundler = "esbuild"
+  included_files = ["media/questions/daily.csv"]
+  timeout = 30
+  memory = 256
+
+# ────────────────────────────────
+# END
+# ────────────────────────────────
