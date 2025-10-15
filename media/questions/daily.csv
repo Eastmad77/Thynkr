@@ -1,0 +1,9 @@
+date,level,type,question,answer1,answer2,answer3,answer4,pairs
+,1,mcq,Which planet is known as the Red Planet?,Mars,Venus,Jupiter,Saturn,
+,1,mcq,What is 9 × 7?,63,56,72,54,
+,1,mcq,Which sense does the olfactory bulb support?,Smell,Sight,Hearing,Taste,
+,2,pairs,Match the capital to the country,,,,,"France|Paris; Japan|Tokyo; Canada|Ottawa; Brazil|Brasília"
+,2,pairs,Match the animal to its class,,,,,"Frog|Amphibian; Eagle|Bird; Salmon|Fish; Tiger|Mammal"
+,3,mcq,Who wrote “1984”?,George Orwell,Aldous Huxley,Ray Bradbury,Arthur C. Clarke,
+,3,mcq,The derivative of x² is…,2x,x,2x²,1,
+,3,mcq,What gas do plants primarily absorb?,Carbon Dioxide,Oxygen,Nitrogen,Hydrogen,
