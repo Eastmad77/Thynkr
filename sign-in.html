@@ -4,48 +4,28 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#0a2a43" />
-  <meta name="description" content="Sign in to sync progress" />
+  <meta name="description" content="Whylee — Sign In" />
+  <title>Sign In · Whylee</title>
+
   <link rel="manifest" href="/site.webmanifest?v=7000" />
   <link rel="icon" href="/media/icons/favicon.svg" type="image/svg+xml" />
-  <link rel="apple-touch-icon" href="/media/icons/whylee-icon-192.png" />
-  <title>Sign In · Whylee</title>
-  <link rel="preload" href="/style.css?v=7000" as="style" />
   <link rel="stylesheet" href="/style.css?v=7000" />
   <link rel="stylesheet" href="/styles/animations.css?v=7000" />
-  <link rel="preload" href="/shell.js?v=7000" as="script" />
-  <link rel="preload" href="/app.js?v=7000" as="script" />
 </head>
+
 <body>
-  <noscript>Enable JavaScript to use Whylee.</noscript>
+  <header class="app-header"><h1 class="brand">Sign In</h1></header>
 
-  <header class="app-header">
-    <button class="icon" id="btn-menu" aria-label="Toggle menu" title="Menu" hidden>☰</button>
-    <h1 class="brand">Whylee</h1>
-    <div class="header-actions">
-      <button id="btn-refresh" class="secondary">Refresh</button>
-      <button id="btn-install" class="primary wl-nudge" hidden>Install</button>
-    </div>
-  </header>
-
-  <main id="app" class="app-shell" role="main" aria-live="polite">
-    <section class="route route--signin">
-      <button id="google-login">Continue with Google</button>
-      <p>Or continue as Guest → <a href="index.html">Start</a></p>
-    </section>
+  <main class="app-shell">
+    <button id="google-login" class="primary">Sign in with Google</button>
   </main>
 
   <footer class="app-footer">
-    <nav class="tabs" aria-label="Primary">
-      <a href="#/home" data-tab>Home</a>
-      <a href="#/tasks" data-tab>Tasks</a>
-      <a href="#/about" data-tab>About</a>
-    </nav>
-    <small id="app-version" class="muted"></small>
+    <a href="index.html">Home</a>
   </footer>
 
-  <script src="/shell.js?v=7000" defer></script>
-  <script src="/app.js?v=7000" defer></script>
-  <script src="/scripts/ui/updatePrompt.js?v=7000" defer></script>
+  <!-- Firebase bridge -->
+  <script type="module" src="/scripts/firebase-bridge.js?v=7000"></script>
   <script type="module" src="/scripts/signin.js?v=7000"></script>
 </body>
 </html>
