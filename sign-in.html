@@ -1,48 +1,51 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <meta name="theme-color" content="#1e74f1"/>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0a2a43" />
+  <meta name="description" content="Sign in to sync progress" />
+  <link rel="manifest" href="/site.webmanifest?v=7000" />
+  <link rel="icon" href="/media/icons/favicon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="/media/icons/whylee-icon-192.png" />
   <title>Sign In · Whylee</title>
-  <link rel="manifest" href="/site.webmanifest?v=6007"/>
-  <link rel="icon" href="/media/icons/favicon.svg" type="image/svg+xml"/>
-  <link rel="stylesheet" href="/style.css?v=6007"/>
+  <link rel="preload" href="/style.css?v=7000" as="style" />
+  <link rel="stylesheet" href="/style.css?v=7000" />
+  <link rel="stylesheet" href="/styles/animations.css?v=7000" />
+  <link rel="preload" href="/shell.js?v=7000" as="script" />
+  <link rel="preload" href="/app.js?v=7000" as="script" />
 </head>
 <body>
+  <noscript>Enable JavaScript to use Whylee.</noscript>
+
   <header class="app-header">
-    <div class="brand"><img class="logo" src="/media/icons/whylee-fox.svg" alt="" width="28" height="28"/><h1>Sign In</h1></div>
+    <button class="icon" id="btn-menu" aria-label="Toggle menu" title="Menu" hidden>☰</button>
+    <h1 class="brand">Whylee</h1>
+    <div class="header-actions">
+      <button id="btn-refresh" class="secondary">Refresh</button>
+      <button id="btn-install" class="primary wl-nudge" hidden>Install</button>
+    </div>
   </header>
-  <main class="app-shell">
-    <section class="card">
-      <h2>Welcome Back</h2>
-      <p class="muted">Account features are optional. You can play without signing in.</p>
-      <div class="list">
-        <button class="primary" id="btn-google">Continue with Google</button>
-        <button class="secondary" id="btn-guest">Continue as Guest</button>
-      </div>
-      <div id="si-status" class="muted" style="margin-top:8px"></div>
+
+  <main id="app" class="app-shell" role="main" aria-live="polite">
+    <section class="route route--signin">
+      <button id="google-login">Continue with Google</button>
+      <p>Or continue as Guest → <a href="index.html">Start</a></p>
     </section>
   </main>
+
   <footer class="app-footer">
-    <nav class="tabs">
-      <a href="/#/home">Home</a>
-      <a href="/#/tasks">Tasks</a>
-      <a class="active" href="/sign-in.html">Sign In</a>
+    <nav class="tabs" aria-label="Primary">
+      <a href="#/home" data-tab>Home</a>
+      <a href="#/tasks" data-tab>Tasks</a>
+      <a href="#/about" data-tab>About</a>
     </nav>
+    <small id="app-version" class="muted"></small>
   </footer>
 
-  <script>
-    // Placeholder handlers (wire to Firebase later)
-    document.getElementById('btn-google')?.addEventListener('click', ()=> {
-      document.getElementById('si-status').textContent = 'Google sign-in coming soon.';
-    });
-    document.getElementById('btn-guest')?.addEventListener('click', ()=> {
-      location.href = '/#/home';
-    });
-  </script>
-
-  <script src="/app.js?v=6007" defer></script>
-  <script src="/shell.js?v=6007" defer></script>
+  <script src="/shell.js?v=7000" defer></script>
+  <script src="/app.js?v=7000" defer></script>
+  <script src="/scripts/ui/updatePrompt.js?v=7000" defer></script>
+  <script type="module" src="/scripts/signin.js?v=7000"></script>
 </body>
 </html>
