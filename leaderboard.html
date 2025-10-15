@@ -103,19 +103,10 @@
   <script type="module">
     import { renderAvatar } from '/scripts/ui/avatar.js?v=7006';
 
-    // 1) Source data
-    // Replace with Firestore/Netlify fetch when ready.
-    // Expected shape: { uid, name, tier, xp, streak, rank, avatarSrc, badge }
-    const demo = [
-      { uid:'u1', name:'Ava',    tier:'leader', xp: 9820, streak: 46, rank:1, avatarSrc:'/media/avatars/profile-pro-silver.svg', badge:'/media/badges/star-silver.svg' },
-      { uid:'u2', name:'Max',    tier:'pro',    xp: 9340, streak: 41, rank:2, avatarSrc:'/media/avatars/profile-pro-gold.svg',   badge:'/media/badges/crown-gold.svg' },
-      { uid:'u3', name:'Riley',  tier:'pro',    xp: 9020, streak: 38, rank:3, avatarSrc:'/media/avatars/profile-pro-gold.svg',   badge:'/media/badges/crown-gold.svg' },
-      { uid:'u4', name:'Casey',  tier:'free',   xp: 7880, streak: 22, rank:4, avatarSrc:'/media/avatars/profile-default.svg',     badge:null },
-      { uid:'u5', name:'Sam',    tier:'free',   xp: 7440, streak: 19, rank:5, avatarSrc:'/media/avatars/profile-default.svg',     badge:null },
-      { uid:'u6', name:'Jordan', tier:'pro',    xp: 7110, streak: 17, rank:6, avatarSrc:'/media/avatars/profile-pro-gold.svg',   badge:'/media/badges/crown-gold.svg' },
-      { uid:'u7', name:'Taylor', tier:'leader', xp: 7025, streak: 15, rank:7, avatarSrc:'/media/avatars/profile-pro-silver.svg', badge:'/media/badges/star-silver.svg' },
-      { uid:'u8', name:'Quinn',  tier:'free',   xp: 6680, streak: 12, rank:8, avatarSrc:'/media/avatars/profile-default.svg',     badge:null }
-    ];
+    import { fetchLeaderboard } from '/scripts/data/fetchLeaderboard.js?v=7006';
+
+// 1) Load static leaderboard
+const demo = await fetchLeaderboard();
 
     // 2) Render cards
     const grid = document.getElementById('grid');
