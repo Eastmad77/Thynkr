@@ -1,9 +1,12 @@
-# Whylee Release v7 (Netlify + Firebase)
+# Whylee — Daily Brain Bolt (PWA)
 
-**Prepared:** 2025-10-15 UTC  
+A cinematic brain-training web app built as a PWA, deployed on Netlify, with autonomous daily content via Firestore.
 
-## Overview
-Whylee v7 is a cinematic, gamified daily brain-training PWA.  
-It features autonomous daily-question generation, offline caching, and Pro-tier billing via Stripe and Play Billing.
+## 🌟 Features
+- 3 daily levels: Warm-up MCQ, Matching Pairs, Trivia/Logic
+- Offline-ready, installable (PWA)
+- XP, streaks, badge events, reflections
+- Free (ad-supported) + Pro (ad-free, bonus level, global leaderboard)
+- Autonomous daily question generation (Netlify cron → Firestore)
 
-## Structure
+## 🗂 Project Structure
