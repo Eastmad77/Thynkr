@@ -1,0 +1,14 @@
+Whylee is a premium, cinematic brain-training PWA that turns 5 minutes a day into a focused mental workout.
+
+• Level 1: Warm-up logic (MCQ)
+• Level 2: Matching pairs (cognitive recall)
+• Level 3: Mixed trivia & reasoning
+• Pro: Bonus round, ad-free, global leaderboard, reflection sync
+
+Why you’ll love it:
+• Dark, minimalist visuals with animated posters
+• Calming soundscape with satisfying feedback
+• Offline-ready, fast, and installable
+• Free tier with fair rewards; optional 3-day Pro trial
+
+Upgrade to Pro to remove ads, unlock bonus levels, join global leaderboards, and sync your reflections. Make learning feel like art — one day at a time.
