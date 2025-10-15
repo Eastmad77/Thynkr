@@ -11,6 +11,7 @@
   <!-- Brand & Avatar Styles -->
   <link rel="stylesheet" href="/styles/brand.css?v=7005" />
   <link rel="stylesheet" href="/styles/avatar.css?v=7005" />
+  <link rel="stylesheet" href="/styles/avatar-badge.css?v=7006" />
 
   <!-- Favicons -->
   <link rel="icon" href="/media/icons/favicon.svg" type="image/svg+xml" />
@@ -28,7 +29,7 @@
   <main class="container" style="padding:24px; max-width:960px; margin:0 auto;">
     <!-- User section -->
     <section class="profile-card" style="display:flex; gap:16px; align-items:center; flex-wrap:wrap;">
-      <div class="avatar-wrap tier-free"
+      <div class="avatar-wrap tier-free pop-in"
            data-tier="free"
            data-progress="0"
            data-base="/media/avatars/profile-default.svg">
@@ -63,7 +64,7 @@
   <!-- JS: Avatar Overlay Module -->
   <script type="module" src="/scripts/ui/avatar.js?v=7005"></script>
 
-  <!-- Inline demo logic (can also move to /scripts/profile.js) -->
+  <!-- Inline demo logic -->
   <script type="module">
     import { renderAvatar } from '/scripts/ui/avatar.js?v=7005';
 
@@ -92,7 +93,7 @@
       showDot: tier !== 'free'
     });
 
-    // Demo tier toggle (for dev use)
+    // Demo tier toggle
     const setTier = (t) => {
       const newUser = { ...user, tier: t };
       localStorage.setItem('wl_user', JSON.stringify(newUser));
