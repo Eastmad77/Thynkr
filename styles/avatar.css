@@ -20,6 +20,13 @@
   isolation: isolate;
   display: inline-block;
   overflow: hidden;
+  background: radial-gradient(140% 140% at 40% 20%, rgba(255,255,255,.04), rgba(0,0,0,.08));
+  box-shadow: 0 6px 20px rgba(0,0,0,.35);
+  transition: transform 0.25s ease;
+}
+
+.avatar-wrap:hover {
+  transform: scale(1.03);
 }
 
 /* Base image */
@@ -29,8 +36,6 @@
   object-fit: cover;
   border-radius: 50%;
   display: block;
-  background: radial-gradient(120% 120% at 40% 20%, rgba(255,255,255,.08), rgba(0,0,0,.08));
-  box-shadow: 0 6px 18px rgba(0,0,0,.35);
 }
 
 /* Progress / prestige ring */
@@ -46,18 +51,6 @@
   z-index: 2;
 }
 
-/* Badge overlay */
-.avatar-badge {
-  position: absolute;
-  width: 34%;
-  right: -4%;
-  bottom: -4%;
-  transform: rotate(-6deg);
-  filter: drop-shadow(0 4px 10px rgba(0,0,0,.5));
-  pointer-events: none;
-  z-index: 3;
-}
-
 /* Notification / online dot */
 .avatar-dot {
   position: absolute;
@@ -69,6 +62,14 @@
   background: var(--dot);
   box-shadow: 0 0 0 2px var(--bg-navy);
   z-index: 4;
+  opacity: 0;
+  transform: scale(0);
+  transition: all 0.25s ease;
+}
+
+.avatar-wrap.has-dot .avatar-dot {
+  opacity: 1;
+  transform: scale(1);
 }
 
 /* Tier-specific ring colors */
