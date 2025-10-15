@@ -1,45 +1,42 @@
-/**
- * Create a new Stripe Checkout session for a 3-day trial + subscription
- * Runs as Netlify Function
- */
-
+// Netlify Function: createCheckoutSession
+// Env: STRIPE_SECRET_KEY, STRIPE_PRICE_ID
 import Stripe from 'stripe';
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2022-11-15' });
 
-export const handler = async (event) => {
+const headers = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  'Content-Type': 'application/json; charset=utf-8',
+};
+
+export async function handler(event) {
+  if (event.httpMethod === 'OPTIONS') return { statusCode: 200, headers, body: '' };
+  if (event.httpMethod !== 'POST') return { statusCode: 405, headers, body: JSON.stringify({ error: 'Method not allowed' }) };
+
   try {
-    const origin = event.headers.origin;
-    const successUrl = `${origin}/?session_id={CHECKOUT_SESSION_ID}`;
-    const cancelUrl = `${origin}/pro.html?canceled=true`;
+    const { STRIPE_SECRET_KEY, STRIPE_PRICE_ID } = process.env;
+    if (!STRIPE_SECRET_KEY || !STRIPE_PRICE_ID) throw new Error('Stripe env missing');
+
+    const stripe = new Stripe(STRIPE_SECRET_KEY, { apiVersion: '2024-06-20' });
+
+    const body = JSON.parse(event.body || '{}');
+    const { customer_email } = body;
 
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
-      payment_method_types: ['card'],
-      line_items: [
-        {
-          price: process.env.STRIPE_PRICE_ID, // your priced plan ID
-          quantity: 1
-        }
-      ],
+      line_items: [{ price: STRIPE_PRICE_ID, quantity: 1 }],
+      allow_promotion_codes: true,
+      customer_email,
+      success_url: `${event.headers.origin || 'https://dailybrainbolt.com'}/pro.html?status=success`,
+      cancel_url: `${event.headers.origin || 'https://dailybrainbolt.com'}/pro.html?status=cancel`,
       subscription_data: {
         trial_period_days: 3
-      },
-      metadata: {
-        origin
-      },
-      success_url: successUrl,
-      cancel_url: cancelUrl
+      }
     });
 
-    return {
-      statusCode: 200,
-      body: JSON.stringify({ url: session.url })
-    };
+    return { statusCode: 200, headers, body: JSON.stringify({ id: session.id, url: session.url }) };
   } catch (err) {
-    console.error('createCheckoutSession error', err);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: err.message })
-    };
+    console.error('createCheckoutSession error:', err);
+    return { statusCode: 500, headers, body: JSON.stringify({ error: 'Internal error' }) };
   }
-};
+}
