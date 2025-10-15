@@ -1,12 +1,13 @@
 {
   "name": "Whylee",
   "short_name": "Whylee",
-  "start_url": "/index.html",
+  "start_url": "/?source=pwa",
   "display": "standalone",
-  "background_color": "#0b0c10",
-  "theme_color": "#0b0c10",
+  "background_color": "#0a2a43",
+  "theme_color": "#0a2a43",
   "icons": [
-    { "src": "media/icons/whylee-icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "media/icons/whylee-icon-512.png", "sizes": "512x512", "type": "image/png" }
+    { "src": "/media/icons/whylee-icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/media/icons/whylee-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/media/icons/whylee-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ]
 }
