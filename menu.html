@@ -9,11 +9,15 @@
   <link rel="icon" href="/media/icons/favicon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="/media/icons/whylee-icon-192.png" />
   <title>Menu · Whylee</title>
+
   <link rel="preload" href="/style.css?v=7000" as="style" />
   <link rel="stylesheet" href="/style.css?v=7000" />
   <link rel="stylesheet" href="/styles/animations.css?v=7000" />
   <link rel="preload" href="/shell.js?v=7000" as="script" />
   <link rel="preload" href="/app.js?v=7000" as="script" />
+
+  <!-- AdSense global (load once per document) -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXX" crossorigin="anonymous"></script>
 </head>
 <body>
   <noscript>Enable JavaScript to use Whylee.</noscript>
@@ -37,6 +41,23 @@
         <li><a href="about.html">About</a></li>
         <li><a href="contact.html">Contact</a></li>
       </ul>
+
+      <!-- Responsive AdSense block (shown when online & Free users) -->
+      <section id="ad-section" class="wl-ad">
+        <ins class="adsbygoogle"
+             style="display:block"
+             data-ad-client="ca-pub-XXXXXXXXXXXX"
+             data-ad-slot="1234567890"
+             data-ad-format="auto"
+             data-full-width-responsive="true"></ins>
+      </section>
+      <script>
+        if (navigator.onLine && !(window.WhyleePro && window.WhyleePro.isPro && window.WhyleePro.isPro())) {
+          try { (adsbygoogle = window.adsbygoogle || []).push({}); } catch(e){}
+        } else {
+          document.getElementById('ad-section')?.remove();
+        }
+      </script>
     </section>
   </main>
 
