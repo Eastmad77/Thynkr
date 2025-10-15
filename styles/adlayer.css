@@ -1,0 +1,89 @@
+/* ───────────────────────────────
+   AD + POSTER VISUAL LAYER (v7000)
+   ─────────────────────────────── */
+
+/* Overlay poster presentation */
+.overlay-poster {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(0, 0, 0, 0.9);
+  z-index: 9999;
+  animation: fadeIn 0.4s ease forwards;
+}
+.overlay-poster img, .overlay-poster video {
+  max-width: 90vw;
+  max-height: 90vh;
+  border-radius: 20px;
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.65);
+  transition: transform 0.3s ease;
+}
+.overlay-poster img:hover {
+  transform: scale(1.02);
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* AdSense blocks */
+.wl-ad {
+  margin: 1.6rem auto;
+  padding: 0.5rem 0;
+  text-align: center;
+  width: 100%;
+  max-width: 728px;
+  opacity: 0.95;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.wl-ad ins.adsbygoogle {
+  display: block;
+  min-height: 60px;
+}
+
+/* Blink feedback for answers */
+.blink-ok { animation: blinkOk 0.25s ease; }
+.blink-bad { animation: blinkBad 0.25s ease; }
+@keyframes blinkOk  { 0%,100%{background:none;} 50%{background:rgba(0,255,100,.15);} }
+@keyframes blinkBad { 0%,100%{background:none;} 50%{background:rgba(255,60,60,.15);} }
+
+/* Pair-match cards */
+.pairs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill,minmax(120px,1fr));
+  gap: 1rem;
+  margin-top: 1.2rem;
+}
+.pair-card {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 12px;
+  color: #fff;
+  padding: 0.8rem;
+  cursor: pointer;
+  transition: all .2s ease;
+}
+.pair-card.selected {
+  background: rgba(100,200,255,0.15);
+  transform: scale(1.04);
+}
+.pair-card.matched {
+  background: rgba(50,255,150,0.25);
+  opacity: .8;
+}
+
+/* End-of-session section */
+.route--end {
+  display: grid;
+  place-items: center;
+  text-align: center;
+  min-height: 70vh;
+}
+.route--end h2 { font-size: 1.6rem; margin-bottom: 0.5rem; }
+.route--end p { margin-bottom: 1rem; color: #9bb; }
+
+/* Smooth transition on poster close */
+.overlay-poster[closing] { animation: fadeOut 0.4s ease forwards; }
+@keyframes fadeOut { from{opacity:1;} to{opacity:0;} }
