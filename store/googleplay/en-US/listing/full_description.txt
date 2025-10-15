@@ -1,0 +1,10 @@
+Whylee is a cinematic, daily brain-training app that fits your day in minutes. 
+Warm-Up, Matching Pairs, and Trivia flow seamlessly with premium motion, sound, and posters.
+
+• Daily sessions that adapt to your pace
+• Matching Pairs & Trivia for balanced challenge
+• Streaks, XP, and achievements that feel rewarding
+• Pro trial: deeper stats, premium posters, and themes
+• Works offline; installable PWA
+
+Upgrade to Pro for immersive visuals and extra depth. Train your mind, keep your streak, and level up—one day at a time.
