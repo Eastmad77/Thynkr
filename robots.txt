@@ -1,42 +1,26 @@
-{
-  "name": "Whylee",
-  "short_name": "Whylee",
-  "description": "Smart daily quiz companion — intuitive, sleek, and rewarding.",
-  "version": "6.0.7",
-  "author": "Whylee Studios",
-  "start_url": "/index.html",
-  "display": "standalone",
-  "orientation": "portrait-primary",
-  "background_color": "#0a2a43",
-  "theme_color": "#1e74f1",
-  "icons": [
-    {
-      "src": "/media/icons/whylee-icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png"
-    },
-    {
-      "src": "/media/icons/whylee-icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png"
-    }
-  ],
-  "permissions": ["storage", "notifications", "vibration"],
-  "launch_handler": {
-    "client_mode": ["focus-existing", "auto"]
-  },
-  "protocol_handlers": [
-    {
-      "protocol": "whylee",
-      "url": "/#/home"
-    }
-  ],
-  "categories": ["education", "quiz", "productivity", "entertainment"],
-  "related_applications": [
-    {
-      "platform": "play",
-      "url": "https://play.google.com/store/apps/details?id=com.whylee.app",
-      "id": "com.whylee.app"
-    }
-  ]
-}
+# ---------------------------------------
+# Robots.txt — Whylee App (Daily Brain Bolt)
+# ---------------------------------------
+
+User-agent: *
+Allow: /
+
+# Prevent bots from crawling service worker and backend configs
+Disallow: /firebase-messaging-sw.js
+Disallow: /netlify/
+Disallow: /scripts/admin.js
+Disallow: /netlify/functions/
+
+# Important files allowed
+Allow: /manifest.json
+Allow: /site.webmanifest
+Allow: /sitemap.xml
+Allow: /media/
+Allow: /styles/
+Allow: /scripts/
+
+# Sitemap for search engines
+Sitemap: https://dailybrainbolt.com/sitemap.xml
+
+# Hints for crawlers
+Host: https://dailybrainbolt.com
