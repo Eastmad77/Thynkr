@@ -8,24 +8,21 @@
 
   <title>Whylee · Leaderboard</title>
 
-  <!-- Brand & Avatars -->
+  <!-- Brand & Avatar Styles -->
   <link rel="stylesheet" href="/styles/brand.css?v=7005" />
   <link rel="stylesheet" href="/styles/avatar.css?v=7005" />
   <link rel="stylesheet" href="/styles/avatar-badge.css?v=7006" />
 
   <style>
-    /* Page chrome (minimal, dark, cinematic) */
     body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Inter, sans-serif; margin:0; background:#0A2A43; color:#E9F3FF; }
     .app-header { display:flex; align-items:center; gap:12px; padding:16px 20px; border-bottom:1px solid rgba(233,243,255,.08); }
     .app-header .brand { margin:0; font-size:1.25rem; letter-spacing: .3px; }
     .container { max-width:1100px; margin:0 auto; padding:20px; }
-
     .toolbar { display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin: 8px 0 18px; }
     .pill { padding:8px 12px; border-radius:999px; border:1px solid rgba(233,243,255,.1); background:rgba(255,255,255,.02); }
     .btn { cursor:pointer; padding:10px 14px; border-radius:10px; border:0; color:#061522; background: linear-gradient(135deg, var(--whylee-blue,#11A7FF), #57D1FF); box-shadow:0 8px 28px rgba(17,167,255,.25); }
     .btn.secondary { background:rgba(233,243,255,.06); color:#E9F3FF; box-shadow:none; border:1px solid rgba(233,243,255,.1); }
 
-    /* Grid */
     .leaderboard-grid {
       display:grid;
       grid-template-columns: repeat(12, 1fr);
@@ -50,16 +47,10 @@
     .meta { display:flex; flex-direction:column; gap:4px; min-width:0; }
     .name { font-weight:700; letter-spacing:.2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
     .sub { opacity:.8; font-size:.92rem; display:flex; gap:10px; flex-wrap:wrap; }
-    .rank {
-      margin-left:auto; font-weight:800; font-size:1.1rem; color:#D8FF72;
-      text-shadow:0 0 14px rgba(216,255,114,.15);
-    }
-
-    /* Tiny strip under cards to show XP % (visual reinforcement) */
+    .rank { margin-left:auto; font-weight:800; font-size:1.1rem; color:#D8FF72; text-shadow:0 0 14px rgba(216,255,114,.15); }
     .xp-bar { height:4px; background:rgba(233,243,255,.08); border-radius:99px; overflow:hidden; margin-top:10px; }
     .xp-fill { height:100%; width:0; background: linear-gradient(90deg, #11A7FF, #57D1FF); }
 
-    /* Top-3 glow variants */
     .top-1 { border-color: rgba(255,215,96,.35); box-shadow: 0 0 0 1px rgba(255,215,96,.15) inset; }
     .top-2 { border-color: rgba(200,220,245,.28); box-shadow: 0 0 0 1px rgba(200,220,245,.12) inset; }
     .top-3 { border-color: rgba(216,255,114,.28); box-shadow: 0 0 0 1px rgba(216,255,114,.12) inset; }
@@ -99,56 +90,73 @@
   <!-- Avatar module -->
   <script type="module" src="/scripts/ui/avatar.js?v=7006"></script>
 
-  <!-- Page logic -->
+  <!-- Leaderboard logic (fetch from Netlify Function or static JSON) -->
   <script type="module">
     import { renderAvatar } from '/scripts/ui/avatar.js?v=7006';
 
-    import { fetchLeaderboard } from '/scripts/data/fetchLeaderboard.js?v=7006';
+    async function fetchLeaderboardFromFunction() {
+      try {
+        // Try Netlify Function first (production)
+        const res = await fetch('/.netlify/functions/fetchLeaderboard', { cache: 'no-store' });
+        if (res.ok) return await res.json();
+        throw new Error('Function fallback');
+      } catch {
+        // Fallback to static JSON (local dev or offline)
+        const res = await fetch('/data/leaderboard.json?v=7006', { cache: 'no-store' });
+        return res.ok ? await res.json() : [];
+      }
+    }
 
-// 1) Load static leaderboard
-const demo = await fetchLeaderboard();
+    // Load leaderboard
+    const rows = await fetchLeaderboardFromFunction();
 
-    // 2) Render cards
-    const grid = document.getElementById('grid');
-    renderGrid(demo);
-
-    // 3) Update "You" pill from local
+    // Update "You" pill from local storage
     const you = JSON.parse(localStorage.getItem('wl_user') || '{}');
     const youTier = (you.tier || 'free').toLowerCase();
     const youStreak = Number(localStorage.getItem('wl_streak') || '0');
     document.getElementById('youTier').textContent = youTier;
     document.getElementById('youStreak').textContent = youStreak;
 
-    // Optional: Refresh button (re-renders with same data here)
-    document.getElementById('btnRefresh').addEventListener('click', () => renderGrid(demo));
+    const grid = document.getElementById('grid');
+    renderGrid(rows);
 
-    // ---- Helpers ----
+    document.getElementById('btnRefresh').addEventListener('click', async () => {
+      const newRows = await fetchLeaderboardFromFunction();
+      renderGrid(newRows);
+    });
+
     function renderGrid(rows) {
       grid.innerHTML = '';
-      rows.forEach((p, idx) => {
+      rows.forEach((p) => {
         const card = document.createElement('article');
         card.className = 'card' + (p.rank === 1 ? ' top-1' : p.rank === 2 ? ' top-2' : p.rank === 3 ? ' top-3' : '');
 
-        // Avatar wrap
         const wrap = document.createElement('div');
         wrap.className = 'avatar-wrap';
         wrap.setAttribute('data-tier', p.tier);
         wrap.setAttribute('data-progress', String(Math.min(100, p.streak % 100)));
         wrap.setAttribute('data-base', p.avatarSrc);
         if (p.badge) wrap.setAttribute('data-badge', p.badge);
-        wrap.setAttribute('data-dot', '');
 
-        // Inner meta
-        const meta = document.createElement('div'); meta.className = 'meta';
-        const name = document.createElement('div'); name.className = 'name'; name.textContent = p.name;
-        const sub = document.createElement('div'); sub.className = 'sub';
+        const meta = document.createElement('div');
+        meta.className = 'meta';
+        const name = document.createElement('div');
+        name.className = 'name';
+        name.textContent = p.name;
+
+        const sub = document.createElement('div');
+        sub.className = 'sub';
         sub.innerHTML = `Tier: ${p.tier} · XP: ${p.xp.toLocaleString()} · Streak: ${p.streak}`;
-        const rank = document.createElement('div'); rank.className = 'rank'; rank.textContent = '#' + p.rank;
 
-        // XP bar
-        const xpBar = document.createElement('div'); xpBar.className = 'xp-bar';
-        const xpFill = document.createElement('div'); xpFill.className = 'xp-fill';
-        xpFill.style.width = `${Math.min(100, (p.xp % 10000)/100)}%`;
+        const rank = document.createElement('div');
+        rank.className = 'rank';
+        rank.textContent = '#' + p.rank;
+
+        const xpBar = document.createElement('div');
+        xpBar.className = 'xp-bar';
+        const xpFill = document.createElement('div');
+        xpFill.className = 'xp-fill';
+        xpFill.style.width = `${Math.min(100, (p.xp % 10000) / 100)}%`;
         xpBar.appendChild(xpFill);
 
         meta.appendChild(name);
@@ -160,7 +168,6 @@ const demo = await fetchLeaderboard();
         card.appendChild(rank);
         grid.appendChild(card);
 
-        // Render avatar layers
         renderAvatar(wrap, {
           tier: p.tier,
           progress: Math.min(100, p.streak % 100),
