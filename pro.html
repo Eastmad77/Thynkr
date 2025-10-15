@@ -1,61 +1,52 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <meta name="theme-color" content="#0a2a43"/>
-  <title>Whylee Pro</title>
-  <link rel="manifest" href="/site.webmanifest?v=7000"/>
-  <link rel="icon" href="/media/icons/favicon.svg" type="image/svg+xml"/>
-  <link rel="stylesheet" href="/css/style.css?v=7000"/>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0a2a43" />
+  <meta name="description" content="Upgrade to Whylee Pro with a 3-day trial" />
+  <link rel="manifest" href="/site.webmanifest?v=7000" />
+  <link rel="icon" href="/media/icons/favicon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="/media/icons/whylee-icon-192.png" />
+  <title>Go Pro · Whylee</title>
+  <link rel="preload" href="/style.css?v=7000" as="style" />
+  <link rel="stylesheet" href="/style.css?v=7000" />
+  <link rel="stylesheet" href="/styles/animations.css?v=7000" />
+  <link rel="preload" href="/shell.js?v=7000" as="script" />
+  <link rel="preload" href="/app.js?v=7000" as="script" />
 </head>
-<body class="theme-dark">
+<body>
+  <noscript>Enable JavaScript to use Whylee.</noscript>
+
   <header class="app-header">
-    <a class="brand" href="/"><img src="/media/icons/app-icon.svg" alt="" class="brand-icon"/>Whylee</a>
-    <nav class="top-nav">
-      <a href="/leaderboard.html" class="top-link">Leaderboard</a>
-      <a href="/achievements.html" class="top-link">Badges</a>
-    </nav>
+    <button class="icon" id="btn-menu" aria-label="Toggle menu" title="Menu" hidden>☰</button>
+    <h1 class="brand">Whylee</h1>
+    <div class="header-actions">
+      <button id="btn-refresh" class="secondary">Refresh</button>
+      <button id="btn-install" class="primary wl-nudge" hidden>Install</button>
+    </div>
   </header>
 
-  <main class="app-shell">
-    <section class="card">
-      <h1>Upgrade to Pro</h1>
-      <ul class="tick">
-        <li>Animated posters & ambient audio</li>
-        <li>Priority offline support</li>
-        <li>Leaderboards & Pro avatars</li>
-        <li>Golden Run events & reflections+</li>
-      </ul>
-      <div class="row gap">
-        <button id="btnStartTrial" class="btn primary">Start 3-Day Trial</button>
-        <span id="proStatus" class="muted"></span>
-      </div>
+  <main id="app" class="app-shell" role="main" aria-live="polite">
+    <section class="route route--pro">
+      <p>Unlock premium avatars, advanced reflection mode, and XP boosts.</p>
+      <button id="start-trial">Start 3-Day Trial</button>
+      <p id="trial-status" class="muted"></p>
     </section>
   </main>
 
   <footer class="app-footer">
-    <nav class="tabs">
-      <a href="/#/home">Home</a>
-      <a href="/pro.html" class="active">Pro</a>
-      <a href="/leaderboard.html">Leaderboard</a>
+    <nav class="tabs" aria-label="Primary">
+      <a href="#/home" data-tab>Home</a>
+      <a href="#/tasks" data-tab>Tasks</a>
+      <a href="#/about" data-tab>About</a>
     </nav>
+    <small id="app-version" class="muted"></small>
   </footer>
 
-  <script>
-    document.getElementById('btnStartTrial')?.addEventListener('click', async ()=>{
-      try{
-        // Stripe Netlify Function (implemented in /api/stripe/createCheckoutSession.js)
-        const res = await fetch('/api/stripe/createCheckoutSession', { method:'POST' });
-        const { url, error } = await res.json();
-        if (url) location.href = url;
-        else document.getElementById('proStatus').textContent = error || 'Checkout unavailable.';
-      }catch(err){
-        document.getElementById('proStatus').textContent = 'Network error.';
-        console.error(err);
-      }
-    });
-  </script>
-  <script src="/js/app.js?v=7000" defer></script>
+  <script src="/shell.js?v=7000" defer></script>
+  <script src="/app.js?v=7000" defer></script>
+  <script src="/scripts/ui/updatePrompt.js?v=7000" defer></script>
+  <script type="module" src="/scripts/pro.js?v=7000"></script>
 </body>
 </html>
