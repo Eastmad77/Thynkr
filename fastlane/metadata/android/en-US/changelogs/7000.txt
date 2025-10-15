@@ -1,0 +1,6 @@
+v7000
+• Autonomous daily content (Netlify Function + Firestore)
+• Matching Pairs level added (Level 2)
+• Ad monetization (AdSense + sponsor poster slots)
+• 3-day Pro trial flow and billing glue
+• SW update toast, stability and offline improvements
