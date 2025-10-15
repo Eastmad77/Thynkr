@@ -1,16 +1,68 @@
 {
-  "v": 1,
+  "v": 2,
   "items": [
-    { "id": "poster-start",      "src": "/media/posters/v1/poster-01-start.jpg" },
-    { "id": "poster-mode",       "src": "/media/posters/v1/poster-02-mode.jpg" },
-    { "id": "poster-reward",     "src": "/media/posters/v1/poster-03-reward.jpg" },
-    { "id": "poster-reflection", "src": "/media/posters/v1/poster-04-reflection.jpg" },
-    { "id": "poster-upgrade",    "src": "/media/posters/v1/poster-05-upgrade.jpg" },
-    { "id": "poster-challenge",  "src": "/media/posters/v1/poster-06-challenge.jpg" },
-    { "id": "poster-pro",        "src": "/media/posters/v1/poster-07-pro.jpg" },
-    { "id": "poster-levelup",    "src": "/media/posters/v1/poster-08-levelup.jpg" },
-    { "id": "poster-community",  "src": "/media/posters/v1/poster-09-community.jpg" },
-    { "id": "poster-brand",      "src": "/media/posters/v1/poster-10-brand.jpg" },
-    { "id": "countdown",         "src": "/media/posters/v1/countdown.png" }
-  ]
+    {
+      "id": "poster-start",
+      "src": "/media/posters/v1/poster-01-start.jpg",
+      "thumb": "/media/thumbnails/poster-01-start-thumb.jpg"
+    },
+    {
+      "id": "poster-mode",
+      "src": "/media/posters/v1/poster-02-mode.jpg",
+      "thumb": "/media/thumbnails/poster-02-mode-thumb.jpg"
+    },
+    {
+      "id": "poster-reward",
+      "src": "/media/posters/v1/poster-03-reward.jpg",
+      "thumb": "/media/thumbnails/poster-03-reward-thumb.jpg"
+    },
+    {
+      "id": "poster-reflection",
+      "src": "/media/posters/v1/poster-04-reflection.jpg",
+      "thumb": "/media/thumbnails/poster-04-reflection-thumb.jpg"
+    },
+    {
+      "id": "poster-upgrade",
+      "src": "/media/posters/v1/poster-05-upgrade.jpg",
+      "thumb": "/media/thumbnails/poster-05-upgrade-thumb.jpg"
+    },
+    {
+      "id": "poster-challenge",
+      "src": "/media/posters/v1/poster-06-challenge.jpg",
+      "thumb": "/media/thumbnails/poster-06-challenge-thumb.jpg"
+    },
+    {
+      "id": "poster-pro",
+      "src": "/media/posters/v1/poster-07-pro.jpg",
+      "thumb": "/media/thumbnails/poster-07-pro-thumb.jpg"
+    },
+    {
+      "id": "poster-levelup",
+      "src": "/media/posters/v1/poster-08-levelup.jpg",
+      "thumb": "/media/thumbnails/poster-08-levelup-thumb.jpg"
+    },
+    {
+      "id": "poster-community",
+      "src": "/media/posters/v1/poster-09-community.jpg",
+      "thumb": "/media/thumbnails/poster-09-community-thumb.jpg"
+    },
+    {
+      "id": "poster-brand",
+      "src": "/media/posters/v1/poster-10-brand.jpg",
+      "thumb": "/media/thumbnails/poster-10-brand-thumb.jpg"
+    },
+    {
+      "id": "countdown",
+      "src": "/media/posters/v1/countdown.png",
+      "thumb": "/media/thumbnails/countdown-thumb.jpg"
+    }
+  ],
+  "feature": {
+    "src": "/media/branding/feature-graphic-1024x500.png",
+    "thumb": "/media/thumbnails/feature-thumb.jpg"
+  },
+  "logo": {
+    "src": "/media/branding/logo-w-mark.png",
+    "thumb": "/media/thumbnails/logo-thumb.png"
+  }
 }
