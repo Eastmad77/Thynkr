@@ -1,11 +1,10 @@
 // netlify/functions/generateDailyQuestions.js — v7000 (MCQ + Pairs + AdPoster)
-// Env vars (Netlify): FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, FIREBASE_PRIVATE_KEY
 const admin = require('firebase-admin');
 
 const creds = {
   projectId: process.env.FIREBASE_PROJECT_ID,
   clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-  privateKey: (process.env.FIREBASE_PRIVATE_KEY || '').replace(/\\n/g, '\n'),
+  privateKey: (process.env.FIREBASE_PRIVATE_KEY || '').replace(/\\n/g, '\n')
 };
 
 if (!admin.apps.length) {
@@ -13,11 +12,8 @@ if (!admin.apps.length) {
 }
 const db = admin.firestore();
 
-function todayStr(d = new Date()) {
-  return d.toISOString().slice(0, 10);
-}
+function todayStr(d = new Date()) { return d.toISOString().slice(0, 10); }
 
-// ---- Sample generators (replace with LLM later) ----
 function genMCQ(count, { category = 'logic', difficulty = 'easy' } = {}) {
   return Array.from({ length: count }).map((_, i) => ({
     question: `Sample ${category} Q${i + 1} (${difficulty}) — pick the correct option`,
@@ -33,13 +29,12 @@ function genPairs(pairCount, { theme = 'synonyms' } = {}) {
     ['Happy','Joyful'], ['Quick','Rapid'], ['Smart','Clever'],
     ['Begin','Start'], ['Silent','Quiet'], ['Big','Large'],
     ['Tiny','Small'], ['Angry','Mad'], ['Brave','Courageous'],
-    ['Calm','Peaceful'],
+    ['Calm','Peaceful']
   ];
   const take = basePairs.slice(0, pairCount);
   return take.map(([left, right]) => ({ left, right, theme }));
 }
 
-// ---- Validator ----
 function validatePayload(p) {
   if (!p?.levels || !Array.isArray(p.levels)) return false;
   for (const lvl of p.levels) {
@@ -69,7 +64,6 @@ exports.handler = async () => {
       return { statusCode: 200, body: JSON.stringify({ ok: true, message: 'exists', date: today }) };
     }
 
-    // --- Daily ad poster pool (filenames in /media/posters/v1/) ---
     const adPool = [
       'poster-ad-sponsor.png',
       'poster-ad-energy.png',
@@ -80,11 +74,11 @@ exports.handler = async () => {
     const payload = {
       date: today,
       version: 7000,
-      adPoster, // ← NEW
+      adPoster,
       levels: [
-        { level: 1, type: 'mcq',   items: genMCQ(12, { category: 'warmup', difficulty: 'easy'   }) },
-        { level: 2, type: 'pairs', items: genPairs(6,  { theme: 'synonyms' }) }, // 6 pairs → 12 cards
-        { level: 3, type: 'mcq',   items: genMCQ(12, { category: 'trivia', difficulty: 'medium' }) },
+        { level: 1, type: 'mcq',   items: genMCQ(12, { category: 'warmup', difficulty: 'easy' }) },
+        { level: 2, type: 'pairs', items: genPairs(6,  { theme: 'synonyms' }) },  // 6 pairs → 12 cards
+        { level: 3, type: 'mcq',   items: genMCQ(12, { category: 'trivia', difficulty: 'medium' }) }
       ],
       createdAt: admin.firestore.FieldValue.serverTimestamp()
     };
