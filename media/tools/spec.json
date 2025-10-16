@@ -1,1 +1,16 @@
+{
+  "version": "1.0",
+  "sequence": [
+    { "file": "poster-01-start.jpg", "output": "poster-01-start.jpg", "caption": "Tap to Begin — Your Smart Companion Awaits." },
+    { "file": "poster-02-mode.jpg", "output": "poster-02-mode.jpg", "caption": "Choose Your Path — Play Free or Go Pro." },
+    { "file": "poster-03-reward.jpg", "output": "poster-03-reward.jpg", "caption": "XP +150 Earned! New Badge Unlocked – Daily Streak 5 Days!" },
+    { "file": "poster-04-reflection.jpg", "output": "poster-04-reflection.jpg", "caption": "Daily Reflection — Pause. Think. Grow." },
+    { "file": "poster-05-upgrade.jpg", "output": "poster-05-upgrade.jpg", "caption": "Go Pro — Unlock Your Full Potential. 3-Day Free Trial Available." },
+    { "file": "poster-06-challenge.jpg", "output": "poster-06-challenge.jpg", "caption": "Challenge Mode — Test Your Mind. Beat Your Best." },
+    { "file": "poster-07-pro.jpg", "output": "poster-07-pro.jpg", "caption": "Whylee Pro Rewards — Earn Exclusive Badges & Benefits." },
+    { "file": "poster-08-levelup.jpg", "output": "poster-08-levelup.jpg", "caption": "Level Up — Unlock Brilliance Through Progress." },
+    { "file": "poster-09-community.jpg", "output": "poster-09-community.jpg", "caption": "Evolve. Learn. Achieve. Join the Whylee Crew." },
+    { "file": "poster-10-brand.jpg", "output": "poster-10-brand.jpg", "caption": "Your Smart Companion. Every Day." }
+  ]
+}
 
