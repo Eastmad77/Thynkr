@@ -1,101 +1,109 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-anim="on">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="theme-color" content="#0a1b2e" />
-  <title>Whylee — Profile</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="theme-color" content="#0a0e17" />
+  <title>Whylee · Profile</title>
 
-  <!-- PWA & icons -->
-  <link rel="manifest" href="/site.webmanifest?v=7006" />
-  <link rel="icon" href="/media/icons/favicon-32.png" sizes="32x32" />
-  <link rel="apple-touch-icon" href="/media/icons/whylee-icon-192.png" />
+  <!-- Core CSS (reuse your site styles) -->
+  <link rel="preload" href="/style.css?v=7000" as="style" />
+  <link rel="stylesheet" href="/style.css?v=7000" />
+  <link rel="stylesheet" href="/styles/animations.css?v=7000" />
 
-  <!-- Preload sprite for faster first paint -->
-  <link rel="preload" href="/media/avatars/avatars-sprite.svg" as="image" />
-
-  <!-- Core styles -->
-  <link rel="stylesheet" href="/styles/style.css?v=7006" />
-  <link rel="stylesheet" href="/styles/animations.css?v=7006" />
-
-  <!-- Avatar system -->
-  <link rel="stylesheet" href="/styles/avatar.css?v=7006" />
-  <link rel="stylesheet" href="/styles/avatar-badge.css?v=7006" />
   <style>
-    /* Page-local layout */
-    .page { max-width: 1040px; margin: 0 auto; padding: 20px; }
-    header { display:flex; align-items:center; justify-content:space-between; }
-    .hero { display:flex; gap:20px; align-items:center; margin-top:24px; }
-    .hero .meta h1 { margin:0 0 6px; font-size:1.6rem; }
-    .card { background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.06);
-            border-radius:16px; padding:16px; }
-    .grid { display:grid; gap:16px; grid-template-columns: repeat(auto-fit, minmax(240px,1fr)); margin-top:20px; }
-    .stat { display:flex; align-items:center; gap:10px; }
+    :root{ --bg:#0a0e17; --panel:#0f1422; --edge:#101623; --text:#dbe2ea; --muted:#9aa3ad; --accent:#2f7cff; --radius:18px; }
+    body{ background: radial-gradient(1000px 700px at 15% -10%, #0f1a2f 0%, transparent 60%), var(--bg); color:var(--text) }
+    .wrap{ max-width:1000px; margin:40px auto 80px; padding:0 18px; }
+    .card{
+      background: linear-gradient(180deg,#0b1020,#0a0f1d);
+      border:1px solid var(--edge); border-radius:var(--radius); padding:18px; box-shadow:0 10px 30px rgba(0,0,0,.45);
+    }
+    .grid{ display:grid; gap:18px; grid-template-columns: 360px 1fr; }
+    @media (max-width: 920px){ .grid{ grid-template-columns: 1fr } }
+    .frame{ position:relative; aspect-ratio:1/1; border-radius:16px; overflow:hidden; background:#070a12; }
+    .frame img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+    .ring{ position:absolute; inset:0; object-fit:cover; }
+    .base{ position:absolute; inset:0; object-fit:cover; mix-blend-mode:screen; opacity:.9; }
+    .mascot{ position:absolute; inset:0; object-fit:cover; }
+    h1{ margin:0 0 10px; font-size:clamp(20px,3vw,28px); }
+    label{ font-size:13px; color:#c7d0db }
+    input, select, button{
+      background:#0b1222; border:1px solid #16223a; color:#dbe2ea; border-radius:10px;
+      padding:10px 12px; font-size:14px;
+    }
+    button.primary{ background:#0c1d3a; border-color:#1a3a76 }
+    .row{ display:grid; gap:10px; grid-template-columns: 1fr 140px; align-items:end }
+    .badge{ display:inline-block; font-size:12px; padding:6px 10px; border:1px solid #17233b; border-radius:999px; background:#0b1222 }
+    .toast{ transition:opacity .25s ease }
   </style>
 </head>
-<body class="theme-dark">
-  <div class="page">
-    <header>
-      <a href="/index.html" class="brand">Whylee</a>
-      <nav>
-        <a href="/leaderboard.html" class="link">Leaderboard</a>
-        <a href="/pro.html" class="button primary">Go Pro</a>
-      </nav>
-    </header>
+<body>
+  <header class="wrap" style="margin-top:20px">
+    <div style="display:flex; align-items:baseline; gap:10px">
+      <h1>Profile</h1>
+      <span class="badge" title="Your current plan">Plan: <strong data-prof="tier">FREE</strong></span>
+    </div>
+  </header>
 
-    <section class="hero card">
-      <!-- Your requested element -->
-      <div class="avatar-wrap"
-           aria-label="Tom — Pro subscriber, streak 12"
-           data-tier="pro"
-           data-name="Tom"
-           data-progress="42"
-           data-sprite="avatar-pro-gold"
-           data-badge="crown-gold"
-           data-dot>
+  <main class="wrap">
+    <section class="card grid">
+      <!-- Avatar / Mascot preview -->
+      <div>
+        <div class="frame">
+          <img class="ring"   data-prof="avatar-ring"  alt="Avatar ring"    src="/media/avatars/ring-default.svg">
+          <img class="base"   data-prof="avatar-base"  alt="Avatar frame"   src="/media/avatars/profile-default.svg">
+          <img class="mascot" data-prof="mascot"       alt="Mascot"         src="/media/avatars/fox-default.png">
+        </div>
       </div>
 
-      <div class="meta">
-        <h1>Tom</h1>
-        <div class="muted">Pro · 12-day streak · 2,840 total questions</div>
-        <div id="xpBar" class="progress" aria-label="XP progress">
-          <div class="progress-bar" style="width:42%"></div>
+      <!-- Profile form -->
+      <div>
+        <div style="display:grid; gap:12px">
+          <div class="row">
+            <div>
+              <label for="name">Display name</label>
+              <input id="name" data-prof="name" placeholder="Your name" />
+            </div>
+            <button class="primary" data-prof="save">Save</button>
+          </div>
+
+          <div class="row" style="grid-template-columns: 1fr 1fr">
+            <div>
+              <label for="mood">Mascot mood (Free)</label>
+              <select id="mood" data-prof="mood">
+                <option value="default">Default</option>
+                <option value="happy">Happy</option>
+                <option value="focused">Focused</option>
+                <option value="curious">Curious</option>
+                <option value="sad">Sad</option>
+              </select>
+            </div>
+            <div>
+              <label>Streak</label>
+              <div class="badge"><span id="streak-count">—</span> days</div>
+            </div>
+          </div>
+
+          <p style="color:#9aa3ad; font-size:13px; margin:4px 0 0">
+            Tip: Upgrading to Pro swaps the mascot to your tier’s character and unlocks export features.
+          </p>
         </div>
       </div>
     </section>
+  </main>
 
-    <section class="grid">
-      <div class="card">
-        <h3>Daily Record</h3>
-        <div id="dailyDots" class="streak-dots" aria-label="Daily streak"></div>
-      </div>
+  <script type="module">
+    import { initProfilePage } from "/js/app.js";
+    import { getStreak } from "/js/_streak-proxy.js";
+    // _streak-proxy is optional. If you don’t use it, you can inline:
+    // document.getElementById('streak-count').textContent = (JSON.parse(localStorage.getItem('whylee.streak')||'{}').count||0);
 
-      <div class="card">
-        <h3>Stats</h3>
-        <div class="stat"><span>Perfect Levels</span><strong>4</strong></div>
-        <div class="stat"><span>Accuracy</span><strong>96%</strong></div>
-        <div class="stat"><span>Badges</span><strong>15</strong></div>
-      </div>
-    </section>
-  </div>
-
-  <!-- App core (if your shell needs it) -->
-  <script defer src="/shell.js?v=7006"></script>
-
-  <!-- Avatar system (renders .avatar-wrap elements) -->
-  <script type="module" src="/scripts/ui/avatar.js?v=7006"></script>
-
-  <script>
-    // Example: populate streak dots quickly
-    (function () {
-      const root = document.getElementById('dailyDots');
-      const days = 7, filled = 6;
-      for (let i = 1; i <= days; i++) {
-        const d = document.createElement('span');
-        d.className = 'dot' + (i <= filled ? ' filled' : '');
-        root.appendChild(d);
-      }
-    })();
+    initProfilePage();
+    try {
+      const s = getStreak ? getStreak() : { count: (JSON.parse(localStorage.getItem('whylee.streak')||'{}').count||0) };
+      document.getElementById('streak-count').textContent = s.count || 0;
+    } catch { document.getElementById('streak-count').textContent = 0; }
   </script>
 </body>
 </html>
