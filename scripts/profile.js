@@ -1,36 +1,10 @@
-/* Whylee — Profile view (v7004)
-   Shows current user name, avatar, tier, and streak info
-*/
-
-document.addEventListener('DOMContentLoaded', async () => {
-  const nameEl = document.querySelector('.user-name');
-  const tierEl = document.querySelector('.user-tier');
-  const streakEl = document.querySelector('.user-streak');
-  const avatarImg = document.querySelector('.avatar');
-
-  // Example user data from Firebase/Auth or localStorage
-  const user = window.currentUser || JSON.parse(localStorage.getItem('wl_user') || '{}');
-
-  // Fallback values
-  const displayName = user.displayName || 'Player';
-  const tier = user.tier || 'free';
-  const streak = localStorage.getItem('wl_streak') || 0;
-
-  nameEl.textContent = displayName;
-  tierEl.textContent = tier === 'pro' ? 'Pro Member' :
-                       tier === 'leader' ? 'Leaderboard Tier' :
-                       'Free Player';
-  streakEl.textContent = `Daily Streak: ${streak}`;
-
-  // 🔸 Avatar assignment logic
-  if (tier === 'pro') {
-    avatarImg.src = '/media/avatars/profile-pro-gold.svg';
-  } else if (tier === 'leader') {
-    avatarImg.src = '/media/avatars/profile-pro-silver.svg';
-  } else {
-    avatarImg.src = '/media/avatars/profile-default.svg';
-  }
-
-  // Optional: add small animation on load
-  avatarImg.classList.add('pop-in');
-});
+const AVATARS = [
+  { id:"fox-pro", label:"Fox", src:"/media/avatars/fox-pro.png", pro:true },
+  { id:"panda-pro", label:"Panda", src:"/media/avatars/panda-pro.png", pro:true },
+  { id:"owl-pro", label:"Owl", src:"/media/avatars/owl-pro.png", pro:true },
+  { id:"cat-pro", label:"Cat", src:"/media/avatars/cat-pro.png", pro:true },
+  { id:"wolf-pro", label:"Wolf", src:"/media/avatars/wolf-pro.png", pro:true },
+  { id:"tiger-pro", label:"Tiger", src:"/media/avatars/tiger-pro.png", pro:true },
+  { id:"nightowl-pro", label:"Night Owl", src:"/media/avatars/nightowl-pro.png", pro:true },
+  { id:"dragon-pro", label:"Dragon", src:"/media/avatars/dragon-pro.png", pro:true }
+];
