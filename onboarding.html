@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Whylee • Get Started</title>
+
+  <link rel="icon" href="/favicon.svg">
+  <link rel="stylesheet" href="/styles/brand.css?v=8000">
+  <link rel="stylesheet" href="/styles/style.css?v=8000">
+  <link rel="stylesheet" href="/styles/animations.css?v=8000">
+
+  <style>
+    /* Lightweight page-scoped helpers */
+    .wrap { max-width: 900px; margin: 0 auto; padding: 24px; }
+    .step { display: none; }
+    .step.active { display: block; }
+    .grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill,minmax(96px,1fr)); }
+    .avatar-card {
+      position: relative; border-radius: 16px; padding: 8px; background: var(--bg-surface);
+      box-shadow: var(--shadow-sm); cursor: pointer; transition: transform .12s ease;
+    }
+    .avatar-card:hover { transform: translateY(-2px); }
+    .avatar-card.selected { outline: 2px solid var(--brand-primary); }
+    .avatar-card .lock {
+      position:absolute; top:8px; right:8px; background: rgba(0,0,0,.55); color:#fff;
+      border-radius: 999px; font-size:12px; padding:4px 6px;
+    }
+    .choice-emoji { font-size: 28px; line-height: 48px; padding: 8px 0; text-align:center;
+      border-radius: 12px; background: var(--bg-surface); cursor: pointer;
+    }
+    .choice-emoji.selected { outline: 2px solid var(--brand-cyan); }
+    .controls { display:flex; gap:12px; justify-content:flex-end; margin-top:16px; }
+    .muted { color: var(--text-muted); font-size: 14px; }
+    .helper { margin-top: 8px; }
+    .banner { background: var(--bg-elevated); border: 1px solid var(--border-soft);
+      padding: 12px 14px; border-radius: 12px; display:flex; gap:10px; align-items:center; }
+    .banner .badge { background: var(--brand-gold-700); color:#fff; font-weight:600; border-radius: 10px; padding:2px 8px; }
+    .ava-img { width: 100%; aspect-ratio: 1/1; object-fit: cover; border-radius: 12px; }
+  </style>
+</head>
+<body class="page page--surface">
+  <main class="wrap">
+    <h1 class="h2">Welcome to Whylee</h1>
+    <p class="muted">Pick your name, your look, and a tiny emoji for quick displays.</p>
+
+    <!-- Step 1: Username -->
+    <section id="step-1" class="step active">
+      <h2 class="h4">1) Choose your display name</h2>
+      <div class="banner"><span class="badge">Tip</span> Keep it 3–16 chars, letters &amp; numbers only.</div>
+      <form id="name-form">
+        <label class="label">Display name</label>
+        <input id="displayName" class="input" placeholder="e.g., NovaFox" autocomplete="off" required>
+        <div id="nameHelp" class="helper muted"></div>
+        <div class="controls">
+          <button type="submit" class="btn btn--brand">Continue</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- Step 2: Avatar -->
+    <section id="step-2" class="step">
+      <h2 class="h4">2) Choose your avatar</h2>
+      <div id="proInfo" class="helper muted"></div>
+      <div id="avatarGrid" class="grid" aria-live="polite"></div>
+      <div class="controls">
+        <button type="button" id="back1" class="btn btn--ghost">Back</button>
+        <button type="button" id="toStep3" class="btn btn--brand" disabled>Continue</button>
+      </div>
+    </section>
+
+    <!-- Step 3: Emoji -->
+    <section id="step-3" class="step">
+      <h2 class="h4">3) Pick a mini emoji (optional)</h2>
+      <p class="muted">This shows on leaderboards &amp; compact UI.</p>
+      <div id="emojiGrid" class="grid" aria-live="polite"></div>
+      <div class="controls">
+        <button type="button" id="back2" class="btn btn--ghost">Back</button>
+        <button type="button" id="finish" class="btn btn--brand">Finish</button>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="/scripts/onboarding.js?v=8000"></script>
+  <script type="module" src="/scripts/auth.js?v=8000"></script>
+</body>
+</html>
