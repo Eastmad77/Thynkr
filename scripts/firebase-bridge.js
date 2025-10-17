@@ -1,10 +1,22 @@
-// scripts/firebase-bridge.js — v7000
-(async () => {
-  try {
-    const mod = await import('/firebase-config.js'); // exports: app, db, messaging
-    window.WHYLEE_DB = mod.db;
-    window.dispatchEvent(new Event('whylee:db-ready'));
-  } catch (e) {
-    console.warn('[firebase-bridge] No Firebase db available yet.', e);
-  }
-})();
+/**
+ * Whylee Firebase Bridge v8
+ * Centralizes Firebase initialization for all modules.
+ */
+
+import { initializeApp } from "firebase/app";
+import { getAuth } from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
+import { getFunctions } from "firebase/functions";
+
+// --- CONFIG IMPORT ---
+import { firebaseConfig } from "../firebase-config.js";
+
+// --- INIT FIREBASE APP ---
+const app = initializeApp(firebaseConfig);
+
+// --- EXPORT SERVICES ---
+export const auth = getAuth(app);
+export const db = getFirestore(app);
+export const functions = getFunctions(app);
+
+console.log("[Firebase Bridge] Firebase initialized and shared globally.");
