@@ -1,1 +1,32 @@
+/* /styles/brand.css */
+/* ------------------------------------------------------
+   Whylee Brand Tokens
+   Shared color palette and design constants
+------------------------------------------------------ */
+
+:root {
+  --whylee-blue: #2F7CFF;
+  --whylee-gold: #F5D36B;
+  --whylee-bg: #0A0E17;
+  --whylee-text: #E6ECF6;
+  --whylee-muted: #9EA9BA;
+  --whylee-font: "Inter", system-ui, -apple-system, sans-serif;
+  --whylee-glow: 0 0 12px rgba(47, 124, 255, 0.4);
+  --whylee-radius: 16px;
+  --whylee-transition: 0.25s ease;
+}
+
+/* Utility Classes */
+.btn-gold {
+  background: linear-gradient(90deg, #F5D36B, #FFD88C);
+  color: #0A0E17;
+  border-radius: var(--whylee-radius);
+  font-weight: 600;
+  box-shadow: 0 0 20px rgba(245, 211, 107, 0.2);
+  transition: var(--whylee-transition);
+}
+.btn-gold:hover { box-shadow: 0 0 24px rgba(245, 211, 107, 0.35); }
+
+.text-muted { color: var(--whylee-muted); }
+.bg-gradient { background: linear-gradient(180deg, #0A0E17, #101522); }
 
