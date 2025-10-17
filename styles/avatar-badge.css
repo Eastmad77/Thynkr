@@ -1,91 +1,45 @@
-/* Whylee – Avatar Badge Layer (v7006)
-   Extends /styles/avatar.css
-   Animations for crown, star, and lightning badges
-   Placement: top-right overlay on .avatar-wrap
-*/
-
-/* Avatar containers already used for rings */
-.avatar-wrap,
-.avatar-ring {
+.avatar {
   position: relative;
+  display: inline-block;
+  margin: 0.5rem;
+  border-radius: 50%;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  width: 120px;
+  height: 120px;
 }
 
-/* Crown badge placement (Pro tier) */
-.avatar-badge {
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatar.active {
+  box-shadow: 0 0 12px var(--brand-gold);
+  transform: scale(1.05);
+}
+
+.avatar.pro img {
+  border: 2px solid var(--brand-gold);
+  box-shadow: 0 0 10px rgba(245, 211, 107, 0.6);
+  background: radial-gradient(circle at center, rgba(47,124,255,0.15), transparent);
+}
+
+.avatar.locked img {
+  opacity: 0.5;
+  filter: grayscale(100%);
+}
+
+.pro-badge {
   position: absolute;
-  top: -4px;
-  right: -4px;
-  width: 22px;
-  height: 22px;
-  filter: drop-shadow(0 2px 6px rgba(0,0,0,.35));
-  pointer-events: none; /* decorative */
-  z-index: 5;
-  opacity: 0;
-  animation: crownPop .28s ease-out forwards, crownGlow 2.8s ease-in-out infinite;
-}
-
-@keyframes crownPop {
-  0% { transform: scale(.6) rotate(-12deg); opacity: 0; }
-  100% { transform: scale(1) rotate(0deg); opacity: 1; }
-}
-@keyframes crownGlow {
-  0%,100% { filter: drop-shadow(0 0 0 rgba(255,180,60,0)); }
-  50%     { filter: drop-shadow(0 0 8px rgba(255,180,60,.35)); }
-}
-
-/* Star badge (Leaderboard tier) */
-.avatar-badge.star {
-  width: 20px;
-  height: 20px;
-  top: -2px;
-  right: -2px;
-  animation: starPop .3s ease-out forwards, starPulse 2.5s ease-in-out infinite;
-}
-
-@keyframes starPop {
-  0% { transform: scale(.4) rotate(-15deg); opacity: 0; }
-  100% { transform: scale(1) rotate(0deg); opacity: 1; }
-}
-@keyframes starPulse {
-  0%,100% { filter: drop-shadow(0 0 0 rgba(255,255,255,0)); }
-  50%     { filter: drop-shadow(0 0 6px rgba(255,255,255,.35)); }
-}
-
-/* Lightning badge (XP or achievement pulse) */
-.avatar-badge.lightning {
-  width: 18px;
-  height: 18px;
-  top: 2px;
-  right: 2px;
-  animation: boltPop .25s ease-out forwards, boltFlash 1.8s ease-in-out infinite;
-}
-
-@keyframes boltPop {
-  0% { transform: scale(.5) rotate(-10deg); opacity: 0; }
-  100% { transform: scale(1) rotate(0deg); opacity: 1; }
-}
-@keyframes boltFlash {
-  0%,100% { filter: drop-shadow(0 0 0 rgba(17,167,255,0)); }
-  50%     { filter: drop-shadow(0 0 10px rgba(17,167,255,.4)); }
-}
-
-/* Optional: pulse ring glow when badge active */
-.avatar-wrap.has-badge .avatar-ring {
-  filter: drop-shadow(0 0 10px rgba(255,195,70,.3));
-  transition: filter .3s ease;
-}
-
-/* Tier overrides (optional aesthetic) */
-.tier-pro .avatar-badge { animation-name: crownPop, crownGlow; }
-.tier-leader .avatar-badge { animation-name: starPop, starPulse; }
-.tier-free .avatar-badge { animation: none; filter: none; opacity: 0; }
-
-/* Mobile scaling */
-@media (max-width: 480px) {
-  .avatar-badge {
-    width: 16px;
-    height: 16px;
-    top: -3px;
-    right: -3px;
-  }
+  top: 5px;
+  right: 5px;
+  background: linear-gradient(45deg, #F5D36B, #FFD97A);
+  color: #0A0E17;
+  font-size: 0.7rem;
+  font-weight: 700;
+  border-radius: 4px;
+  padding: 2px 6px;
 }
