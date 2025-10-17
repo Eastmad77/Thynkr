@@ -1,36 +1,165 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="system">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Your Profile – Whylee</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Your Profile — Whylee</title>
 
   <link rel="stylesheet" href="/styles/brand.css?v=8000">
   <link rel="stylesheet" href="/styles/style.css?v=8000">
   <link rel="stylesheet" href="/styles/animations.css?v=8000">
+
+  <style>
+    .wrap { width:min(1100px,94%); margin: 2rem auto; }
+    .section { background: var(--whylee-panel); border:1px solid var(--whylee-edge); border-radius:16px; padding:1.25rem; margin-bottom:1rem; }
+    .avatar-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:1rem; }
+    .avatar-item { text-align:center; padding:.75rem; border-radius:14px; border:1px solid var(--whylee-edge); background:var(--whylee-surface); transition:transform .2s; }
+    .avatar-item:hover { transform: translateY(-2px); }
+    .avatar-item img { width:96px; height:96px; border-radius:50%; border:3px solid var(--whylee-edge); background:#000; }
+    .avatar-item.active { outline:2px solid var(--whylee-blue); outline-offset:3px; }
+    .badge-pro { display:inline-block; margin-top:.4rem; padding:.15rem .45rem; font-size:.75rem; border-radius:999px; background: var(--whylee-gradient-gold); color:#111; font-weight:700; }
+    .gate { opacity:.7; position:relative; }
+    .gate::after { content:"PRO"; position:absolute; top:8px; right:8px; font-size:.7rem; background: var(--whylee-gradient-gold); color:#111; font-weight:700; border-radius:999px; padding:.15rem .4rem; }
+    .row { display:flex; gap:1rem; align-items:center; flex-wrap:wrap; }
+    .row > * { flex: 1 1 260px; }
+    .muted small { opacity:.85; }
+  </style>
 </head>
 <body>
-  <header>
+  <header class="app-header">
     <h1>Your Profile</h1>
     <nav>
-      <a href="menu.html">Menu</a>
-      <a href="pro.html">Pro</a>
+      <a href="/index.html">Home</a>
+      <a href="/leaderboard.html">Leaderboard</a>
+      <a href="/pro.html">Pro</a>
     </nav>
   </header>
 
-  <main class="container">
-    <div class="card">
-      <h2>Choose Your Avatar</h2>
-      <div class="avatar-grid">
-        <img src="/media/avatars/fox-happy.png" class="avatar" alt="Fox Avatar">
-        <img src="/media/avatars/panda-pro.png" class="avatar" alt="Panda Avatar">
-        <img src="/media/avatars/owl-pro.png" class="avatar" alt="Owl Avatar">
+  <main class="wrap">
+    <!-- Identity -->
+    <section class="section">
+      <h2>Avatar</h2>
+      <p class="muted">Choose how you appear on the leaderboard and in challenges.</p>
+
+      <div id="avatarGrid" class="avatar-grid" aria-live="polite"></div>
+
+      <div class="row" style="margin-top:1rem;">
+        <div>
+          <button id="saveAvatar" class="btn">Save Selection</button>
+        </div>
+        <div class="muted"><small>Pro avatars are highlighted. Upgrade to unlock them.</small></div>
       </div>
-    </div>
+    </section>
+
+    <!-- Theme -->
+    <section class="section">
+      <h2>Theme</h2>
+      <div class="row">
+        <label for="themeSelect">Appearance</label>
+        <select id="themeSelect" data-theme-choose>
+          <option value="system">System</option>
+          <option value="light">Light</option>
+          <option value="dark" selected>Dark</option>
+          <option value="midnight">Midnight</option>
+        </select>
+      </div>
+      <p class="muted" style="margin-top:.5rem;">Themes apply instantly across the app.</p>
+    </section>
+
+    <!-- Account -->
+    <section class="section">
+      <h2>Account</h2>
+      <div class="row">
+        <div>
+          <div id="userEmail" class="muted">Signed out</div>
+        </div>
+        <div style="text-align:right">
+          <a href="/auth.html" class="btn">Sign In</a>
+          <button id="logoutBtn" class="btn" style="margin-left:.5rem;">Sign Out</button>
+        </div>
+      </div>
+    </section>
   </main>
 
-  <footer>
-    Whylee | Connected via CloudSync
-  </footer>
+  <footer><small>© 2025 Whylee</small></footer>
+
+  <script type="module">
+    import { initCloudSync, onUserSnapshot, setAvatar, getUserDoc } from "/scripts/auth/cloudsync.js?v=8000";
+    import { initTheme } from "/scripts/theme/theme.js?v=8000";
+    import { auth } from "/scripts/firebase-bridge.js?v=8000";
+    import { logoutUser } from "/scripts/auth.js?v=8000";
+
+    initCloudSync(); initTheme();
+
+    const AVATARS = [
+      { id:"fox-default", label:"Fox (Default)",   src:"/media/avatars/fox-default.png", pro:false },
+      { id:"fox-happy",   label:"Fox (Happy)",     src:"/media/avatars/fox-happy.png",   pro:false },
+      { id:"fox-focused", label:"Fox (Focused)",   src:"/media/avatars/fox-focused.png", pro:false },
+      { id:"fox-curious", label:"Fox (Curious)",   src:"/media/avatars/fox-curious.png", pro:false },
+      { id:"panda-pro",   label:"Panda (Pro)",     src:"/media/avatars/panda-pro.png",   pro:true  },
+      { id:"owl-pro",     label:"Owl (Pro)",       src:"/media/avatars/owl-pro.png",     pro:true  },
+      { id:"cat-pro",     label:"Cat (Pro)",       src:"/media/avatars/cat-pro.png",     pro:true  }
+    ];
+
+    const grid = document.getElementById('avatarGrid');
+    const saveBtn = document.getElementById('saveAvatar');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const emailEl = document.getElementById('userEmail');
+
+    let selected = null;
+    let isPro = false;
+
+    function render(avatarId){
+      grid.innerHTML = "";
+      AVATARS.forEach(a => {
+        const item = document.createElement('button');
+        item.className = "avatar-item" + (a.id === avatarId ? " active" : "");
+        item.setAttribute("type","button");
+        if (a.pro && !isPro) item.classList.add("gate");
+        item.innerHTML = `
+          <img src="${a.src}" alt="${a.label}">
+          <div style="margin-top:.35rem">${a.label}</div>
+          ${a.pro ? `<span class="badge-pro">PRO</span>` : ""}
+        `;
+        item.addEventListener('click', () => {
+          if (a.pro && !isPro) { window.location.href = "/pro.html"; return; }
+          selected = a.id;
+          [...grid.children].forEach(c => c.classList.remove("active"));
+          item.classList.add("active");
+        });
+        grid.appendChild(item);
+      });
+    }
+
+    saveBtn.addEventListener('click', async () => {
+      if (!selected) return;
+      try {
+        await setAvatar(selected);
+        alert("Avatar saved!");
+      } catch (e) {
+        alert(e.message);
+      }
+    });
+
+    logoutBtn.addEventListener('click', () => logoutUser());
+
+    onUserSnapshot(async (data) => {
+      isPro = !!data?.proStatus;
+      selected = data?.avatar || "fox-default";
+      render(selected);
+    });
+
+    auth.onAuthStateChanged(async (user) => {
+      emailEl.textContent = user ? `Signed in as: ${user.email}` : "Signed out";
+      if (user) {
+        const data = await getUserDoc();
+        isPro = !!data?.proStatus;
+        selected = data?.avatar || "fox-default";
+        render(selected);
+      } else {
+        isPro = false; selected = "fox-default"; render(selected);
+      }
+    });
+  </script>
 </body>
 </html>
