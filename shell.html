@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="system">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Whylee Shell</title>
+
+  <link rel="stylesheet" href="/styles/brand.css?v=8000">
+  <link rel="stylesheet" href="/styles/style.css?v=8000">
+  <link rel="stylesheet" href="/styles/animations.css?v=8000">
+</head>
+
+<body>
+  <div id="shell">
+    <nav id="nav">
+      <a href="/index.html">Home</a>
+      <a href="/leaderboard.html">Leaderboard</a>
+      <a href="/profile.html">Profile</a>
+      <a href="/pro.html">Pro</a>
+    </nav>
+
+    <main id="view"></main>
+  </div>
+
+  <script type="module">
+    import { initCloudSync } from "/scripts/auth/cloudsync.js?v=8000";
+    import { initTheme } from "/scripts/theme/theme.js?v=8000";
+    initCloudSync();
+    initTheme();
+  </script>
+</body>
+</html>
