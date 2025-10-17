@@ -1,35 +1,150 @@
-<script type="module">
-  import { initCloudSync, addSessionResult } from "/scripts/auth/cloudsync.js?v=8000";
-  import { initTheme } from "/scripts/theme/theme.js?v=8000";
-  import { auth } from "/scripts/firebase-bridge.js?v=8000";
-  import { initQuestionEngine } from "/scripts/ai/questionEngine.js?v=8000";
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Whylee Game</title>
 
-  initCloudSync(); initTheme();
+  <!-- Core app styles -->
+  <link rel="stylesheet" href="/styles/brand.css?v=8000">
+  <link rel="stylesheet" href="/styles/style.css?v=8000">
+  <link rel="stylesheet" href="/styles/animations.css?v=8000">
 
-  const eng = await initQuestionEngine({ mode: "daily", count: 5 });
-  let current = eng.next();
-
-  function render(q) {
-    // ... render like your existing scaffold (q.q, q.choices, q.correctIndex hidden)
-  }
-
-  function onSubmit(guessIndex, timeMs) {
-    eng.submit(guessIndex, timeMs);
-    if (eng.isComplete()) {
-      const r = eng.results({ pro: /* read from user doc if needed */ false });
-      await addSessionResult({
-        correct: r.correct,
-        total: r.total,
-        durationMs: r.durationMs,
-        mode: r.mode,
-        xpEarned: r.xpEarned // optional; server will recompute
-      });
-      // ... show summary screen
-    } else {
-      current = eng.next();
-      render(current);
+  <style>
+    body {
+      background: var(--bg-page);
+      color: var(--text);
+      font-family: var(--font-ui, 'Inter', sans-serif);
+      overflow: hidden;
     }
-  }
 
-  render(current);
-</script>
+    main {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      padding: 1rem;
+    }
+
+    /* HUD (top bar with user + score) */
+    #hud {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.8rem 1rem;
+      background: rgba(0,0,0,0.25);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      z-index: 10;
+    }
+
+    #hudUser {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    #hudScore {
+      font-weight: 700;
+      font-size: 1.2rem;
+      color: var(--brand);
+    }
+
+    /* Gameplay area */
+    #gameArea {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1.5rem;
+      text-align: center;
+      color: var(--text);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.8rem 1.2rem;
+      border: none;
+      border-radius: 12px;
+      font-weight: 700;
+      background: var(--brand);
+      color: #fff;
+      cursor: pointer;
+      transition: transform 0.15s ease;
+    }
+    .btn:hover { transform: translateY(-2px); }
+  </style>
+</head>
+
+<body>
+  <!-- HUD -->
+  <div id="hud">
+    <div id="hudUser"></div>
+    <div id="hudScore">XP: 0</div>
+  </div>
+
+  <!-- Gameplay Core -->
+  <main>
+    <div id="gameArea">
+      <h1 class="h3">Daily Brain Challenge</h1>
+      <p>Answer today’s 10 questions to earn XP and boost your streak.</p>
+      <button id="startBtn" class="btn">Start Challenge</button>
+    </div>
+  </main>
+
+  <!-- AvatarBadge HUD Component -->
+  <script type="module">
+    import { mountAvatarBadge } from "/scripts/components/avatarBadge.js?v=8000";
+    import { auth } from "/scripts/firebase-bridge.js?v=8000";
+
+    // Mounts and auto-subscribes to current user
+    await mountAvatarBadge("#hudUser", {
+      size: 56,
+      uid: auth.currentUser?.uid
+    });
+  </script>
+
+  <!-- Example: Game Logic -->
+  <script type="module">
+    import { auth, db, doc, getDoc, updateDoc } from "/scripts/firebase-bridge.js?v=8000";
+    import { evaluateMilestones, persistMilestones } from "/scripts/milestones.js?v=8000";
+
+    const startBtn = document.getElementById("startBtn");
+    const scoreEl = document.getElementById("hudScore");
+
+    startBtn.addEventListener("click", async () => {
+      const uid = auth.currentUser?.uid;
+      if (!uid) return alert("Please sign in to play!");
+
+      // Example game session (simplified)
+      let earnedXP = Math.floor(100 + Math.random() * 200);
+      const ref = doc(db, "users", uid);
+      const snap = await getDoc(ref);
+      const user = snap.data() || {};
+
+      const newXP = (user.xp || 0) + earnedXP;
+      const newStreak = (user.streak || 0) + 1;
+
+      await updateDoc(ref, { xp: newXP, streak: newStreak });
+
+      // Evaluate milestones and unlocks
+      const evald = evaluateMilestones({ ...user, xp: newXP, streak: newStreak, pro: user.pro });
+      await persistMilestones(uid, user, evald);
+
+      scoreEl.textContent = `XP: ${newXP.toLocaleString()}`;
+
+      if (evald.newly.length) {
+        alert(`🎉 New unlocks: ${evald.newly.map(m => m.id).join(", ")}`);
+      }
+    });
+  </script>
+</body>
+</html>
