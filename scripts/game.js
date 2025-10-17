@@ -1,14 +1,16 @@
 /**
- * Whylee Gameplay (v8)
+ * Whylee Gameplay (v8+)
  * - Mounts HUD AvatarBadge (A)
  * - Runs a session with QuestionEngine
  * - On completion, updates XP/streak and evaluates milestones (B)
+ * - Syncs leaderboard stats (C)
  */
 
 import { auth, db, doc, getDoc, updateDoc } from "/scripts/firebase-bridge.js";
 import { mountAvatarBadge } from "/scripts/components/avatarBadge.js";
 import { initQuestionEngine } from "/scripts/ai/questionEngine.js";
 import { evaluateMilestones, persistMilestones } from "/scripts/milestones.js";
+import { syncLeaderboard } from "/scripts/leaderboardSync.js";   // ⬅️ new import
 
 // ----- HUD mount (A) ----------------------------------------------------------
 const hudScore = document.getElementById("hudScore");
@@ -140,16 +142,26 @@ finishBtn.addEventListener("click", async () => {
 
     // Evaluate milestones & persist new unlocks
     const evald = evaluateMilestones({ ...user, xp: newXp, streak: newStreak, pro: user.pro });
-    const write = await persistMilestones(uid, user, evald);
+    await persistMilestones(uid, user, evald);
+
+    // ----- (C) Sync to leaderboard ------------------------------------------
+    await syncLeaderboard(uid, {
+      name: user.name || "Player",
+      xp: newXp,
+      streak: newStreak,
+      avatarId: user.avatarId || "fox-default",
+      emoji: user.emoji || "🧠"
+    });
 
     // Update HUD XP text
     document.getElementById("hudScore").textContent = `XP: ${newXp.toLocaleString()}`;
 
+    // New milestone pop-up
     if (evald.newly.length) {
       const names = evald.newly.map(m => m.id.replace(/^(skin|badge|boost):/, "").replace(/-/g," "));
-      // Simple toast
       alert(`🎉 Unlocked: ${names.join(", ")}`);
     }
+
   } catch (e) {
     console.error(e);
   }
