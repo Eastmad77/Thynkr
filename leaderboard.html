@@ -1,133 +1,40 @@
-<!DOCTYPE html>
-<html lang="en" data-theme="system">
+<!doctype html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Leaderboard — Whylee</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Leaderboard • Whylee</title>
 
   <link rel="stylesheet" href="/styles/brand.css?v=8000">
   <link rel="stylesheet" href="/styles/style.css?v=8000">
   <link rel="stylesheet" href="/styles/animations.css?v=8000">
 
   <style>
-    .board-wrap { width: min(1100px, 94%); margin: 2rem auto; }
-    .board-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:1rem; }
-    .board-header h1 { margin: 0; }
-    .tier-legend { font-size:.9rem; color:var(--whylee-text-muted); }
-    .board { display:grid; grid-template-columns: 64px 1fr 140px 120px; gap: 0.75rem; }
-    .row { background: var(--whylee-panel); border:1px solid var(--whylee-edge); border-radius:12px; padding:.75rem 1rem; display:contents; }
-    .cell { display:flex; align-items:center; }
-    .rank { justify-content:center; font-weight:700; color:var(--whylee-blue); }
-    .user { gap:.75rem; }
-    .user img { width:42px; height:42px; border-radius:50%; border:2px solid var(--whylee-edge); }
-    .badges { gap:.35rem; justify-content:flex-start; }
-    .badges img { width:22px; height:22px; filter: drop-shadow(0 0 4px rgba(0,0,0,.35)); }
-    .xp { justify-content:flex-end; font-weight:700; }
-    .cta { text-align:center; margin:2rem 0; }
-    @media (max-width:720px){
-      .board { grid-template-columns: 48px 1fr 100px; }
-      .badges { display:none; }
+    .lb { list-style:none; padding:0; margin:16px 0 32px; display:grid; gap:8px; }
+    .lb-row {
+      display:grid; grid-template-columns: 32px 1fr auto auto; align-items:center;
+      gap:10px; background: var(--bg-surface); border-radius: 12px; padding: 8px 10px;
+      border:1px solid var(--border-soft);
     }
+    .lb-rank { font-weight:700; text-align:center; color:var(--text-muted); }
+    .lb-ava { width:32px; height:32px; border-radius: 8px; object-fit: cover; }
+    .lb-name { font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .lb-emoji { opacity:.9; }
+    .lb-xp { font-variant-numeric: tabular-nums; color: var(--text-muted); }
+    main { max-width:860px; margin:0 auto; padding:18px; }
   </style>
 </head>
 <body>
-  <header class="app-header">
-    <h1>Leaderboard</h1>
-    <nav>
-      <a href="/index.html">Home</a>
-      <a href="/profile.html">Profile</a>
-      <a href="/pro.html">Pro</a>
-    </nav>
-  </header>
+  <main>
+    <header style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      <h1 class="h3" style="margin:0">Whylee League</h1>
+      <a class="btn" href="/index.html">← Back</a>
+    </header>
+    <p class="muted" style="margin-top:0">See where you rank this week!</p>
 
-  <main class="board-wrap">
-    <div class="board-header">
-      <div>
-        <h2 class="muted" style="margin:.25rem 0 0;">This Week</h2>
-        <div class="tier-legend">🥇 Gold • 🥈 Silver • ⚡ Lightning</div>
-      </div>
-      <div>
-        <select id="range" aria-label="Range">
-          <option value="week" selected>This Week</option>
-          <option value="month">This Month</option>
-          <option value="all">All Time</option>
-        </select>
-      </div>
-    </div>
-
-    <section id="board" class="board" aria-live="polite" aria-busy="true"></section>
-
-    <div class="cta">
-      <p class="muted">Want bonus XP and exclusive avatars?</p>
-      <a href="/pro.html" class="btn-pro">Upgrade to Whylee Pro</a>
-    </div>
+    <ul id="leaderboardList" class="lb"></ul>
   </main>
 
-  <footer><small>© 2025 Whylee</small></footer>
-
-  <script type="module">
-    import { auth, db } from "/scripts/firebase-bridge.js?v=8000";
-    import { collection, query, orderBy, limit, getDocs } from "firebase/firestore";
-    import { initCloudSync } from "/scripts/auth/cloudsync.js?v=8000";
-    import { initTheme } from "/scripts/theme/theme.js?v=8000";
-
-    initCloudSync(); initTheme();
-
-    const board = document.getElementById('board');
-    const range = document.getElementById('range');
-
-    async function fetchLeaders(scope="week"){
-      // Example: simple top XP list from /public/leaders/<scope> or users ordered by xp
-      // Fallback to users collection (demo)
-      const q = query(collection(db, "users"), orderBy("xp", "desc"), limit(20));
-      const snap = await getDocs(q);
-      return snap.docs.map((d, i) => ({
-        rank: i+1,
-        name: d.data().displayName || d.data().email || "Player",
-        avatar: `/media/avatars/fox-default.png`,
-        badges: (d.data().badges || []).slice(0,3),
-        xp: d.data().xp || 0
-      }));
-    }
-
-    function badgeIcon(id){
-      if(id?.includes("crown")) return "/media/badges/crown-gold.svg";
-      if(id?.includes("star")) return "/media/badges/star-silver.svg";
-      if(id?.includes("lightning")) return "/media/badges/lightning-blue.svg";
-      // simple rotation
-      return "/media/badges/star-silver.svg";
-    }
-
-    function render(rows){
-      board.setAttribute("aria-busy","false");
-      board.innerHTML = "";
-      rows.forEach(row => {
-        const rowEl = document.createElement('div');
-        rowEl.className = "row fade-in";
-        rowEl.innerHTML = `
-          <div class="cell rank">#${row.rank}</div>
-          <div class="cell user">
-            <img src="${row.avatar}" alt="">
-            <div>
-              <div style="font-weight:600">${row.name}</div>
-              <div class="muted">Leveling up…</div>
-            </div>
-          </div>
-          <div class="cell badges" style="display:flex">
-            ${row.badges.map(b => `<img src="${badgeIcon(b)}" alt="badge">`).join("")}
-          </div>
-          <div class="cell xp">${row.xp.toLocaleString()} XP</div>
-        `;
-        board.appendChild(rowEl);
-      });
-    }
-
-    range.addEventListener('change', async () => {
-      board.setAttribute("aria-busy","true");
-      render(await fetchLeaders(range.value));
-    });
-
-    (async () => render(await fetchLeaders()))();
-  </script>
+  <script type="module" src="/scripts/leaderboard.js?v=8000"></script>
 </body>
 </html>
