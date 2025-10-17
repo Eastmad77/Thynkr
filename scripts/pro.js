@@ -1,52 +1,83 @@
-// scripts/pro.js — v7000
-import { Entitlements } from './entitlements.js';
-import { Plans } from './plan.js';
-import { startStripeCheckout } from './stripe.js';
-import { startPlayPurchase } from './play.js';
+/**
+ * Whylee Pro Subscription Client (v8)
+ * Path: /scripts/pro.js
+ *
+ * Uses Firebase Functions endpoints:
+ *  - POST /createCheckoutSession      (Functions)
+ *  - Stripe webhook turns proStatus on server-side
+ */
 
-function $ (s) { return document.querySelector(s); }
+import { auth } from "./auth/firebase-bridge.js";         // keep your existing pathing if different
+import { getUserDoc, setProEnabled } from "./auth/cloudsync.js";
 
-function renderStatus() {
-  const statusEl = $('#trial-status');
-  if (!statusEl) return;
+const FN_BASE =
+  // If hosted on Firebase Hosting, relative paths proxy to CF v2 by domain.
+  // If on Netlify, set NETLIFY_FN_BASE in env and pass full path.
+  window.NETLIFY_FN_BASE || "https://us-central1-dailybrainbolt.cloudfunctions.net";
 
-  if (Entitlements.isPro()) {
-    statusEl.textContent = 'You are Pro. Enjoy your perks!';
-    return;
-  }
-
-  const t = Entitlements.trialStatus();
-  if (t.active) {
-    statusEl.textContent = `Trial active — ${t.remaining} day(s) left`;
-  } else {
-    statusEl.textContent = `Includes a ${Plans.pro.trialDays}-day free trial`;
-  }
+export async function getProStatus() {
+  const data = await getUserDoc();
+  return !!data?.proStatus;
 }
 
-function onStartTrial() {
-  const t = Entitlements.trialStatus();
-  if (!t.active && !Entitlements.isPro()) {
-    Entitlements.startTrial();
-    renderStatus();
-    alert('Your 3-day Pro trial has started. Enjoy!');
-  } else {
-    alert('You already have Pro or an active trial.');
-  }
-}
+/**
+ * Start checkout with Stripe
+ * @param {string} priceId Stripe Price ID
+ * @param {Object} opts { successUrl?, cancelUrl? }
+ */
+export async function startProCheckout(priceId, opts = {}) {
+  const user = auth.currentUser;
+  if (!user) throw new Error("Must be signed in");
+  const success_url = opts.successUrl || `${location.origin}/pro-success.html`;
+  const cancel_url  = opts.cancelUrl  || `${location.origin}/pro.html`;
 
-function onBuyPro() {
-  // Prefer Play Billing when in Android TWA, fallback to Stripe otherwise
-  startPlayPurchase('pro_monthly').then(ok => {
-    if (!ok) startStripeCheckout();
+  const res = await fetch(`${FN_BASE}/createCheckoutSession`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      uid: user.uid,
+      priceId,
+      success_url,
+      cancel_url
+    })
   });
+
+  const json = await res.json();
+  if (!json.ok || !json.url) throw new Error(json.error || "Checkout error");
+  // Redirect to Stripe Hosted Checkout
+  location.href = json.url;
 }
 
-window.addEventListener('DOMContentLoaded', () => {
-  const btnTrial = document.getElementById('start-trial');
-  if (btnTrial) btnTrial.addEventListener('click', onStartTrial);
+/**
+ * Helper to reflect Pro state in UI immediately (optimistic),
+ * while webhook will confirm server-side within seconds.
+ */
+export async function markProOptimistic() {
+  try { await setProEnabled(true); } catch (_) {}
+}
 
-  const buyBtn = document.getElementById('buy-pro');
-  if (buyBtn) buyBtn.addEventListener('click', onBuyPro);
+/**
+ * Wire basic UI:
+ *  - #goProBtn starts checkout
+ *  - [data-pro-gate] elements toggle visibility by status
+ */
+export function wireProUI({ priceId }) {
+  const btn = document.querySelector("#goProBtn");
+  if (btn) {
+    btn.addEventListener("click", () => startProCheckout(priceId).catch(err => alert(err.message)));
+  }
 
-  renderStatus();
-});
+  const gates = [...document.querySelectorAll("[data-pro-gate]")];
+  const render = async () => {
+    const isPro = await getProStatus();
+    gates.forEach(el => {
+      const mode = el.getAttribute("data-pro-gate"); // "pro-only" | "free-only"
+      const show = (mode === "pro-only") ? isPro : !isPro;
+      el.style.display = show ? "" : "none";
+    });
+  };
+
+  // run at start and when auth changes
+  render();
+  auth.onAuthStateChanged(render);
+}
