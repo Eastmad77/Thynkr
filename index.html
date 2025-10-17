@@ -1,62 +1,46 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0A0E17" />
   <title>Whylee — Daily Brain Training</title>
 
-  <!-- PWA -->
-  <link rel="manifest" href="/site.webmanifest">
-  <meta name="theme-color" content="#0A0D12">
+  <!-- v8 unified styles -->
+  <link rel="stylesheet" href="/styles/brand.css?v=8000">
+  <link rel="stylesheet" href="/styles/style.css?v=8000">
+  <link rel="stylesheet" href="/styles/animations.css?v=8000">
 
-  <!-- Icons -->
-  <link rel="icon" href="/media/icons/whylee-icon-192.png" sizes="192x192">
-  <link rel="apple-touch-icon" href="/media/icons/whylee-icon-512.png" sizes="512x512">
-
-  <!-- Styles (correct paths) -->
-  <link rel="stylesheet" href="/css/style.css?v=7006">
-  <link rel="stylesheet" href="/css/animations.css?v=7006">
-  <link rel="stylesheet" href="/styles/avatar.css?v=7006">
-  <link rel="stylesheet" href="/styles/avatar-badge.css?v=7006">
+  <link rel="manifest" href="/site.webmanifest" />
+  <link rel="icon" type="image/png" href="/media/icons/favicon-32.png" />
 </head>
-<body class="theme-dark">
-  <div id="app">
-    <!-- Minimal shell -->
-    <header class="site-header">
-      <img src="/media/icons/whylee-icon-192.png" alt="Whylee" width="32" height="32" />
-      <h1>Whylee</h1>
-    </header>
 
-    <main id="root">
-      <!-- Your app renders here -->
-      <section class="hero">
-        <h2>Daily Brain Training</h2>
-        <p>Sharpen focus, learn, and improve with cinematic flow.</p>
-      </section>
-    </main>
-  </div>
+<body>
+  <header>
+    <img src="/media/icons/whylee-icon-192.png" alt="Whylee Logo" class="logo" />
+    <h1>Whylee</h1>
+    <p>Train your mind — every day, anywhere.</p>
+  </header>
 
-  <!-- Service worker -->
-  <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/service-worker.js')
-        .catch(e => console.warn('[SW] register failed:', e));
-    }
-  </script>
+  <main>
+    <section class="card intro">
+      <h2>Welcome to Whylee</h2>
+      <p>Your daily brain workout awaits. Challenge memory, focus, and problem-solving through interactive sessions crafted to build smarter habits.</p>
+      <button onclick="window.location='menu.html'">Start Now</button>
+    </section>
 
-  <!-- Firebase (CDN) – allowed by CSP -->
-  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js" defer></script>
-  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js" defer></script>
-  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-messaging.js" defer></script>
+    <section class="card">
+      <h2>Go Pro</h2>
+      <p>Unlock bonus rounds, exclusive avatars, and ad-free play. Enjoy cloud sync and a cinematic brain-training journey.</p>
+      <button class="btn-secondary" onclick="window.location='pro.html'">Upgrade to Pro</button>
+    </section>
+  </main>
 
-  <!-- Your Firebase config (must exist) -->
-  <script src="/firebase-config.js" defer></script>
+  <footer>
+    <p>&copy; 2025 Whylee. All rights reserved.</p>
+    <p class="muted">Tip: Press Ctrl/Cmd + / – to zoom.</p>
+  </footer>
 
-  <!-- App bootstrap (correct paths) -->
-  <script src="/js/shell.js?v=7006" defer></script>
-  <script src="/js/app.js?v=7006" defer></script>
-
-  <!-- UI: avatar overlays (correct path) -->
-  <script type="module" src="/scripts/ui/avatar.js?v=7006"></script>
+  <script type="module" src="/scripts/shell.js?v=8000"></script>
 </body>
 </html>
