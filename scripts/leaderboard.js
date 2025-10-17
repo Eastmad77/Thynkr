@@ -1,52 +1,50 @@
-// scripts/leaderboard.js — v7000
-import { Achievements } from './achievements.js';
+// leaderboard.js
+import {
+  db, collection, query, orderBy, limit, getDocs
+} from "./firebase-bridge.js";
 
-const LIST_ID = 'leaderboard-list';
+const list = document.querySelector("#leaderboardList");
 
-function render(items) {
-  const ul = document.getElementById(LIST_ID);
-  if (!ul) return;
-  ul.innerHTML = items.map((u, i) => `
-    <li class="lb-item">
-      <span class="rank">#${i + 1}</span>
-      <img class="avatar" src="${u.avatar || '/media/avatars/fox-default.png'}" alt="" />
-      <span class="name">${u.name || 'Player'}</span>
-      <span class="xp">${u.xp ?? 0} XP</span>
-      <span class="streak">${u.streak ?? 0}🔥</span>
-    </li>
-  `).join('');
+(async function render() {
+  const q = query(collection(db, "leaders"), orderBy("weeklyXp","desc"), limit(50));
+  const snap = await getDocs(q);
+
+  list.innerHTML = "";
+  snap.forEach(docSnap => {
+    const row = docSnap.data(); // { uid, displayName, avatarId, emoji, weeklyXp }
+    const li = document.createElement("li");
+    li.className = "lb-row";
+
+    const avatarSrc = avatarPath(row.avatarId || "fox");
+    const em = row.emoji || fallbackEmoji(row.avatarId);
+
+    li.innerHTML = `
+      <img class="lb-ava" src="${avatarSrc}" alt="" loading="lazy" decoding="async">
+      <span class="lb-name">${escapeHtml(row.displayName || "Player")}</span>
+      <span class="lb-emoji">${em || ""}</span>
+      <span class="lb-xp">${row.weeklyXp ?? 0} XP</span>
+    `;
+    list.appendChild(li);
+  });
+})();
+
+function avatarPath(id) {
+  const map = {
+    fox: "/media/avatars/fox-default.png",
+    cat: "/media/avatars/cat-pro.png",
+    panda: "/media/avatars/panda-pro.png",
+    owl: "/media/avatars/owl-pro.png",
+    tiger: "/media/avatars/tiger-pro.png",
+    bear: "/media/avatars/bear-pro.png",
+    dragon:"/media/avatars/dragon-pro.png",
+    wolf: "/media/avatars/wolf-pro.png",
+  };
+  return map[id] || map.fox;
 }
 
-async function fetchFirestoreTop() {
-  try {
-    if (!window.WHYLEE_DB) return null;
-    const { getDocs, query, collection, orderBy, limit } =
-      await import('https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js');
-    const q = query(collection(window.WHYLEE_DB, 'leaderboard'), orderBy('xp', 'desc'), limit(50));
-    const snap = await getDocs(q);
-    const rows = [];
-    snap.forEach(d => rows.push(d.data()));
-    return rows;
-  } catch (e) {
-    console.warn('[leaderboard] Firestore read failed', e);
-    return null;
-  }
+function fallbackEmoji(id) {
+  const map = { fox:"🦊", cat:"🐱", panda:"🐼", owl:"🦉", tiger:"🐯", bear:"🐻", dragon:"🐲", wolf:"🐺" };
+  return map[id] || "✨";
 }
 
-async function init() {
-  let data = await fetchFirestoreTop();
-  if (!data || !data.length) {
-    // Fallback: show local user only
-    const me = {
-      name: localStorage.getItem('wl_username') || 'You',
-      avatar: localStorage.getItem('wl_avatar') || '/media/avatars/fox-default.png',
-      xp: Achievements.state.xp,
-      streak: Achievements.state.streak
-    };
-    data = [me];
-  }
-  render(data);
-}
-
-window.addEventListener('whylee:db-ready', init);
-window.addEventListener('DOMContentLoaded', init);
+function escapeHtml(s){ return (s||"").replace(/[&<>"']/g,m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[m])); }
