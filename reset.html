@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Password Reset – Whylee</title>
+
+  <link rel="stylesheet" href="/styles/brand.css?v=8000">
+  <link rel="stylesheet" href="/styles/style.css?v=8000">
+  <link rel="stylesheet" href="/styles/animations.css?v=8000">
+</head>
+<body>
+  <header>
+    <h1>Password Reset</h1>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="menu.html">Menu</a>
+      <a href="pro.html">Pro</a>
+      <a href="auth.html">Sign In</a>
+    </nav>
+  </header>
+
+  <main class="container narrow">
+    <div class="card auth-card">
+      <h2>Reset Your Password</h2>
+      <p>Enter the email address you used to sign up.  
+      We’ll send you a secure link to reset your password.</p>
+
+      <form id="resetForm">
+        <label for="email">Email</label>
+        <input type="email" id="email" placeholder="you@example.com" required>
+
+        <button type="submit" class="btn">Send Reset Link</button>
+      </form>
+
+      <div id="resetMessage" class="hidden"></div>
+
+      <p style="margin-top:1rem; text-align:center;">
+        <a href="auth.html">Return to Sign In</a>
+      </p>
+    </div>
+  </main>
+
+  <footer>
+    &copy; 2025 Whylee | Secure Access Portal
+  </footer>
+
+  <script type="module">
+    const form = document.getElementById('resetForm');
+    const message = document.getElementById('resetMessage');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('email').value;
+
+      // Placeholder — replace with Firebase call later
+      console.log(`[Auth] Password reset requested for ${email}`);
+      message.textContent = `If an account exists for ${email}, a reset link has been sent.`;
+      message.classList.remove('hidden');
+      message.style.color = 'var(--whylee-accent)';
+    });
+  </script>
+</body>
+</html>
