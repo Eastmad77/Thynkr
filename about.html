@@ -1,50 +1,43 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="theme-color" content="#0a2a43" />
-  <meta name="description" content="About the Whylee app" />
-  <link rel="manifest" href="/site.webmanifest?v=7000" />
-  <link rel="icon" href="/media/icons/favicon.svg" type="image/svg+xml" />
-  <link rel="apple-touch-icon" href="/media/icons/whylee-icon-192.png" />
-  <title>About · Whylee</title>
-  <link rel="preload" href="/style.css?v=7000" as="style" />
-  <link rel="stylesheet" href="/style.css?v=7000" />
-  <link rel="stylesheet" href="/styles/animations.css?v=7000" />
-  <link rel="preload" href="/shell.js?v=7000" as="script" />
-  <link rel="preload" href="/app.js?v=7000" as="script" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About – Whylee</title>
+
+  <link rel="stylesheet" href="/styles/brand.css?v=8000">
+  <link rel="stylesheet" href="/styles/style.css?v=8000">
+  <link rel="stylesheet" href="/styles/animations.css?v=8000">
 </head>
 <body>
-  <noscript>Enable JavaScript to use Whylee.</noscript>
-
-  <header class="app-header">
-    <button class="icon" id="btn-menu" aria-label="Toggle menu" title="Menu" hidden>☰</button>
-    <h1 class="brand">Whylee</h1>
-    <div class="header-actions">
-      <button id="btn-refresh" class="secondary">Refresh</button>
-      <button id="btn-install" class="primary wl-nudge" hidden>Install</button>
-    </div>
+  <header>
+    <h1>About Whylee</h1>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="menu.html">Menu</a>
+      <a href="pro.html">Pro</a>
+      <a href="profile.html">Profile</a>
+    </nav>
   </header>
 
-  <main id="app" class="app-shell" role="main" aria-live="polite">
-    <section class="route route--about">
-      <p>Whylee is a cinematic daily brain-training platform combining puzzles, reflection, and learning to sharpen your focus and memory.</p>
-      <p>© 2025 Brendan Hayman. All rights reserved.</p>
-    </section>
+  <main class="container">
+    <div class="card">
+      <h2>Our Mission</h2>
+      <p>Whylee is built to make daily focus, creativity, and memory training engaging and cinematic. 
+      Designed around quick sessions, smart progress tracking, and motivational design, it turns short bursts of concentration into long-term cognitive improvement.</p>
+
+      <h3>The Experience</h3>
+      <p>Each challenge takes just a few minutes, blending psychology, gamification, and storytelling to strengthen memory, logic, and decision-making. 
+      Whether you’re a casual learner or a high-performance thinker, Whylee adapts to your pace.</p>
+
+      <h3>Behind the Design</h3>
+      <p>Developed by Connetics’ Lighting & Smart Cities Team as a passion project, Whylee draws inspiration from neuroscience, UX design, and interactive learning research. 
+      Every screen is designed for clarity, purpose, and flow — no clutter, just focus.</p>
+    </div>
   </main>
 
-  <footer class="app-footer">
-    <nav class="tabs" aria-label="Primary">
-      <a href="#/home" data-tab>Home</a>
-      <a href="#/tasks" data-tab>Tasks</a>
-      <a href="#/about" data-tab>About</a>
-    </nav>
-    <small id="app-version" class="muted"></small>
+  <footer>
+    &copy; 2025 Whylee | Focus Daily | All Rights Reserved
   </footer>
-
-  <script src="/shell.js?v=7000" defer></script>
-  <script src="/app.js?v=7000" defer></script>
-  <script src="/scripts/ui/updatePrompt.js?v=7000" defer></script>
 </body>
 </html>
