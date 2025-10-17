@@ -1,61 +1,95 @@
-/**
- * /scripts/profile.js
- * Handles avatar selection and profile state
- */
+// profile.js
+import {
+  auth, db, doc, getDoc, updateDoc, serverTimestamp
+} from "./firebase-bridge.js";
+import { isPro } from "./entitlements.js";
+import { AVATARS } from "./onboarding.js";
 
-import { auth } from "/scripts/firebase-bridge.js";
-import { doc, getDoc, updateDoc } from "firebase/firestore";
-import { db } from "/scripts/firebase-bridge.js";
+const avatarGrid = sel("#profileAvatarGrid");
+const emojiGrid  = sel("#profileEmojiGrid");
+const statusEl   = sel("#profileSaveStatus");
+const saveBtn    = sel("#profileSaveBtn");
 
-const grid = document.querySelector("#avatar-grid");
-const status = document.querySelector("#avatar-status");
+const EMOJIS = ["🦊","🐼","🦉","🐯","🐻","🐲","🐺","✨","⭐️","🔥","🎯","💡","🎮","🌈","⚡️"];
 
-async function loadAvatars() {
-  const res = await fetch("/media/avatars/avatars.json");
-  const json = await res.json();
-  return json.avatars;
+let state = { uid:null, pro:false, current:{ avatarId:"fox", emoji:"🦊" }, selected:{ avatarId:null, emoji:null } };
+
+init().catch(console.error);
+
+async function init() {
+  const user = auth.currentUser;
+  if (!user) return;
+  state.uid = user.uid;
+  state.pro = await isPro(user.uid);
+
+  const snap = await getDoc(doc(db, "users", user.uid));
+  if (snap.exists()) {
+    const u = snap.data();
+    state.current.avatarId = u.avatarId || "fox";
+    state.current.emoji    = u.emoji || "🦊";
+  }
+  state.selected = { ...state.current };
+
+  renderAvatars();
+  renderEmojis();
+
+  saveBtn.addEventListener("click", save);
 }
 
-function renderAvatars(avatars, userData) {
-  grid.innerHTML = "";
-  avatars.forEach(a => {
-    const el = document.createElement("div");
-    el.className = `avatar ${a.pro ? "pro" : ""}`;
-    el.innerHTML = `
-      <img src="${a.src}" alt="${a.label}" title="${a.label}">
-      ${a.pro ? '<div class="pro-badge">PRO</div>' : ""}
+function renderAvatars() {
+  avatarGrid.innerHTML = "";
+  AVATARS.forEach(a => {
+    const locked = (a.tier === "pro" && !state.pro);
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "avatar-card";
+    btn.innerHTML = `
+      <img class="ava-img" src="${a.src}" alt="${a.name}">
+      <div class="muted" style="margin-top:6px;text-align:center">${a.name}</div>
     `;
-    if (a.id === userData?.avatarId) el.classList.add("active");
-    if (a.pro && !userData?.proStatus) {
-      el.classList.add("locked");
-      el.addEventListener("click", () => alert("Available with Whylee Pro"));
-    } else {
-      el.addEventListener("click", () => selectAvatar(a.id));
+    if (locked) {
+      const l = document.createElement("span");
+      l.className = "lock";
+      l.textContent = "🔒 Pro";
+      btn.appendChild(l);
     }
-    grid.appendChild(el);
+    if (a.id === state.selected.avatarId) btn.classList.add("selected");
+    btn.addEventListener("click", () => {
+      if (locked) { alert("That avatar requires Whylee Pro."); return; }
+      state.selected.avatarId = a.id;
+      Array.from(avatarGrid.children).forEach(c => c.classList.remove("selected"));
+      btn.classList.add("selected");
+    });
+    avatarGrid.appendChild(btn);
   });
 }
 
-async function selectAvatar(avatarId) {
-  const user = auth.currentUser;
-  if (!user) return;
-  const ref = doc(db, "users", user.uid);
-  await updateDoc(ref, { avatarId });
-  status.textContent = `✅ Avatar updated to ${avatarId}`;
-  document.querySelectorAll(".avatar").forEach(a => a.classList.remove("active"));
-  document.querySelector(`img[alt='${avatarId}']`)?.parentElement?.classList.add("active");
+function renderEmojis() {
+  emojiGrid.innerHTML = "";
+  EMOJIS.forEach(e => {
+    const div = document.createElement("div");
+    div.className = "choice-emoji";
+    div.textContent = e;
+    if (e === state.selected.emoji) div.classList.add("selected");
+    div.addEventListener("click", () => {
+      state.selected.emoji = e;
+      Array.from(emojiGrid.children).forEach(c => c.classList.remove("selected"));
+      div.classList.add("selected");
+    });
+    emojiGrid.appendChild(div);
+  });
 }
 
-async function initProfile() {
-  const avatars = await loadAvatars();
-  const user = auth.currentUser;
-  if (!user) {
-    status.textContent = "Please sign in to edit profile.";
-    return;
-  }
-  const snap = await getDoc(doc(db, "users", user.uid));
-  const data = snap.data();
-  renderAvatars(avatars, data);
+async function save() {
+  statusEl.textContent = "Saving…";
+  await updateDoc(doc(db, "users", state.uid), {
+    avatarId: state.selected.avatarId,
+    emoji: state.selected.emoji,
+    updatedAt: serverTimestamp()
+  });
+  statusEl.textContent = "Saved ✓";
+  setTimeout(()=>statusEl.textContent="",1500);
 }
 
-document.addEventListener("DOMContentLoaded", initProfile);
+// helpers
+function sel(s){ return document.querySelector(s); }
