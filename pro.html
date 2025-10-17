@@ -1,33 +1,58 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="system">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Whylee Pro</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Whylee Pro | Unlock Your Potential</title>
 
   <link rel="stylesheet" href="/styles/brand.css?v=8000">
   <link rel="stylesheet" href="/styles/style.css?v=8000">
   <link rel="stylesheet" href="/styles/animations.css?v=8000">
 </head>
+
 <body>
-  <header>
+  <header class="app-header">
     <h1>Whylee Pro</h1>
-    <nav>
-      <a href="index.html">Home</a>
-      <a href="profile.html">Profile</a>
-    </nav>
   </header>
 
-  <main class="container">
-    <div class="card">
-      <h2>Unlock Whylee Pro</h2>
-      <p>Go ad-free, earn faster rewards, and unlock exclusive avatars.</p>
-      <button class="btn-pro">Upgrade to Pro</button>
+  <main>
+    <section id="pro-intro">
+      <p>Level up your cognitive training with Whylee Pro — exclusive games, avatars, and advanced insights.</p>
+    </section>
+
+    <section id="pro-benefits">
+      <ul>
+        <li>⚡ Bonus rounds and milestones</li>
+        <li>🎨 Avatar customisation</li>
+        <li>🌙 Dark & Midnight themes</li>
+        <li>📊 Cloud sync and analytics</li>
+      </ul>
+    </section>
+
+    <div id="pro-actions">
+      <button id="goProBtn" class="btn-primary">Upgrade to Pro</button>
     </div>
+
+    <section id="pro-gate-samples">
+      <div data-pro-gate="pro-only" class="pro-feature">
+        <h3>Exclusive Challenge Mode</h3>
+        <p>Pro members can unlock advanced puzzles every Friday.</p>
+      </div>
+      <div data-pro-gate="free-only" class="free-feature">
+        <h3>Join Whylee Pro to unlock more!</h3>
+      </div>
+    </section>
   </main>
 
   <footer>
-    Whylee Pro © 2025 | Cognitive Mastery Unlocked
+    <small>© 2025 Whylee</small>
   </footer>
+
+  <!-- Scripts -->
+  <script type="module" src="/scripts/pro.js?v=8000"></script>
+  <script type="module">
+    import { wireProUI } from "/scripts/pro.js?v=8000";
+    wireProUI({ priceId: "price_12345" }); // replace with your live Stripe price ID
+  </script>
 </body>
 </html>
