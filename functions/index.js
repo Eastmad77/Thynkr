@@ -3,11 +3,11 @@
  * Node 20 / Firebase Functions v2
  *
  * Endpoints:
- *  - GET  /health                      -> quick status
- *  - POST /createCheckoutSession       -> Stripe Checkout (subscription)
- *  - POST /stripeWebhook               -> Stripe webhook (raw body signature verify)
- *  - GET  /getDailyQuestions?date=...  -> fetch daily questions
- *  - POST /submitResults               -> write user session + XP
+ *  - GET  /health
+ *  - POST /createCheckoutSession
+ *  - POST /stripeWebhook
+ *  - GET  /getDailyQuestions?date=YYYY-MM-DD
+ *  - POST /submitResults
  */
 
 const { onRequest } = require("firebase-functions/v2/https");
@@ -18,18 +18,15 @@ const cors = require("cors")({ origin: true });
 const { initializeApp } = require("firebase-admin/app");
 const { getFirestore, FieldValue, Timestamp, runTransaction } = require("firebase-admin/firestore");
 
-// Initialize Admin SDK once
 initializeApp();
 const db = getFirestore();
 
-// Functions defaults
 setGlobalOptions({
   region: "us-central1",
   maxInstances: 10,
   timeoutSeconds: 60,
 });
 
-// ---------- Utilities ----------
 function ok(res, data) {
   res.status(200).json({ ok: true, ...data });
 }
@@ -37,7 +34,7 @@ function bad(res, msg, code = 400) {
   res.status(code).json({ ok: false, error: msg });
 }
 
-// ---------- 1) Health ----------
+// ---------- HEALTH CHECK ----------
 exports.health = onRequest(async (req, res) => {
   cors(req, res, async () => {
     ok(res, {
@@ -48,21 +45,12 @@ exports.health = onRequest(async (req, res) => {
   });
 });
 
-// ---------- 2) Stripe: Checkout Session ----------
+// ---------- STRIPE CHECKOUT ----------
 const Stripe = require("stripe");
 const stripe = new Stripe(process.env.STRIPE_SECRET || "", {
   apiVersion: "2024-06-20",
 });
 
-/**
- * Body:
- *  {
- *    "uid": "<firebase uid>",
- *    "priceId": "price_XXX",
- *    "success_url": "https://yourapp/success",
- *    "cancel_url": "https://yourapp/cancel"
- *  }
- */
 exports.createCheckoutSession = onRequest({ secrets: ["STRIPE_SECRET"] }, async (req, res) => {
   cors(req, res, async () => {
     try {
@@ -86,31 +74,19 @@ exports.createCheckoutSession = onRequest({ secrets: ["STRIPE_SECRET"] }, async 
   });
 });
 
-// ---------- 3) Stripe: Webhook ----------
-/**
- * Set secrets before deploy:
- *   firebase functions:secrets:set STRIPE_SECRET
- *   firebase functions:secrets:set STRIPE_WEBHOOK_SECRET
- *
- * Stripe dashboard: add endpoint
- *    https://us-central1-<PROJECT_ID>.cloudfunctions.net/stripeWebhook
- * and copy the Signing Secret to STRIPE_WEBHOOK_SECRET
- */
+// ---------- STRIPE WEBHOOK ----------
 exports.stripeWebhook = onRequest(
   { secrets: ["STRIPE_SECRET", "STRIPE_WEBHOOK_SECRET"], cors: false },
   async (req, res) => {
-    // Stripe requires raw body for signature verification
     const sig = req.headers["stripe-signature"];
     let event;
     try {
-      const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
-      event = stripe.webhooks.constructEvent(req.rawBody, sig, endpointSecret);
+      event = stripe.webhooks.constructEvent(req.rawBody, sig, process.env.STRIPE_WEBHOOK_SECRET);
     } catch (err) {
-      logger.error("Stripe webhook signature verification failed", err);
+      logger.error("Stripe signature check failed", err);
       return res.status(400).send(`Webhook Error: ${err.message}`);
     }
 
-    // Handle selected subscription events
     try {
       switch (event.type) {
         case "checkout.session.completed": {
@@ -128,9 +104,7 @@ exports.stripeWebhook = onRequest(
           break;
         }
         case "customer.subscription.deleted": {
-          // Optional: mark pro off when canceled
-          const subscription = event.data.object;
-          const uid = subscription.metadata?.uid;
+          const uid = event.data.object.metadata?.uid;
           if (uid) {
             await db.doc(`users/${uid}`).set(
               { proStatus: false, proUpdatedAt: Timestamp.now() },
@@ -140,7 +114,6 @@ exports.stripeWebhook = onRequest(
           break;
         }
         default:
-          // no-op
           break;
       }
 
@@ -152,12 +125,7 @@ exports.stripeWebhook = onRequest(
   }
 );
 
-// ---------- 4) Daily Questions ----------
-/**
- * GET /getDailyQuestions?date=YYYY-MM-DD
- * Reads: /daily_questions/{date}
- * Fallback: /daily_questions/latest
- */
+// ---------- DAILY QUESTIONS ----------
 exports.getDailyQuestions = onRequest(async (req, res) => {
   cors(req, res, async () => {
     try {
@@ -173,17 +141,7 @@ exports.getDailyQuestions = onRequest(async (req, res) => {
   });
 });
 
-// ---------- 5) Submit Results / XP sync ----------
-/**
- * Body:
- *  {
- *    "uid": "<firebase uid>",
- *    "correct": 7,
- *    "total": 10,
- *    "durationMs": 54000,
- *    "mode": "daily" | "challenge"
- *  }
- */
+// ---------- XP / RESULTS ----------
 exports.submitResults = onRequest(async (req, res) => {
   cors(req, res, async () => {
     try {
@@ -198,9 +156,8 @@ exports.submitResults = onRequest(async (req, res) => {
 
       await runTransaction(db, async (tx) => {
         const userSnap = await tx.get(userRef);
-        const base = userSnap.exists ? userSnap.data() : { xp: 0, level: 1, streak: 0, badges: [] };
+        const base = userSnap.exists ? userSnap.data() : { xp: 0, level: 1 };
 
-        // Simple leveling: 1000 xp per level
         const newXp = (base.xp || 0) + xpEarned;
         const newLevel = Math.max(1, Math.floor(newXp / 1000) + 1);
 
