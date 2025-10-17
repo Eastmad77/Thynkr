@@ -1,22 +1,20 @@
 /**
  * Whylee Firebase Bridge v8
- * Centralizes Firebase initialization for all modules.
+ * Central shared Firebase instance for all client modules.
  */
 
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getFunctions } from "firebase/functions";
-
-// --- CONFIG IMPORT ---
 import { firebaseConfig } from "../firebase-config.js";
 
-// --- INIT FIREBASE APP ---
+// Initialize app
 const app = initializeApp(firebaseConfig);
 
-// --- EXPORT SERVICES ---
+// Export shared services
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const functions = getFunctions(app);
 
-console.log("[Firebase Bridge] Firebase initialized and shared globally.");
+console.log("[Firebase Bridge] Initialized global Firebase services.");
