@@ -1,21 +1,21 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // --- User Collection ---
+
+    // 🔹 Core user profiles
     match /users/{uid} {
       allow read, write: if request.auth.uid == uid;
     }
 
-    // --- Optional: Public Content or Leaderboard ---
-    match /public/{document=**} {
-      allow read: if true;
-      allow write: if false;
+    // 🔹 Public leaderboard
+    match /leaderboard/{uid} {
+      allow read: if true; // anyone can see leaderboard
+      allow write: if request.auth.uid == uid;
     }
 
-    // --- Optional: App Configs (read-only) ---
-    match /config/{document=**} {
-      allow read: if true;
-      allow write: if false;
+    // 🔹 Milestone unlocks
+    match /milestones/{uid} {
+      allow read, write: if request.auth.uid == uid;
     }
   }
 }
