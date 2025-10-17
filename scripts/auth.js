@@ -1,12 +1,10 @@
 /**
- * Whylee Auth Module v8
- * Handles login, signup, and password reset via Firebase.
- * Integrates with /auth.html and /reset.html.
+ * Whylee Auth Module v8 (Bridge-Based)
+ * Handles Firebase Auth for login, signup, reset, and logout.
+ * Imports from /scripts/firebase-bridge.js
  */
 
-import { initializeApp } from "firebase/app";
 import {
-  getAuth,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   sendPasswordResetEmail,
@@ -14,13 +12,7 @@ import {
   signOut
 } from "firebase/auth";
 
-import { firebaseConfig } from "../firebase-config.js";
-
-// -------------------------
-// INIT
-// -------------------------
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
+import { auth } from "./firebase-bridge.js";
 
 // -------------------------
 // HELPERS
@@ -70,7 +62,7 @@ export async function signUpUser(email, password) {
 export async function resetPassword(email) {
   try {
     await sendPasswordResetEmail(auth, email);
-    showMessage("📧 Password reset link sent to " + email);
+    showMessage(`📧 Reset link sent to ${email}. Check your inbox.`);
   } catch (error) {
     console.error("[Auth] Reset failed:", error.message);
     showMessage("⚠️ " + error.message, "var(--whylee-warn)");
@@ -92,22 +84,22 @@ export async function logoutUser() {
 }
 
 // -------------------------
-// AUTH STATE LISTENER
+// AUTH STATE WATCHER
 // -------------------------
 export function initAuthState() {
   onAuthStateChanged(auth, (user) => {
     if (user) {
-      console.log("[Auth] User logged in:", user.email);
+      console.log("[Auth] Logged in:", user.email);
       localStorage.setItem("whyleeUser", user.email);
     } else {
-      console.log("[Auth] No user session detected.");
+      console.log("[Auth] No user session found.");
       localStorage.removeItem("whyleeUser");
     }
   });
 }
 
 // -------------------------
-// PAGE BINDING LOGIC
+// PAGE EVENT BINDINGS
 // -------------------------
 document.addEventListener("DOMContentLoaded", () => {
   const form = document.querySelector("#authForm");
