@@ -1,33 +1,22 @@
 /**
- * Whylee Cloud Sync Module v8
- * Handles user progress storage, retrieval, and sync between
- * localStorage and Firebase Firestore.
- *
+ * Whylee CloudSync Module v8
+ * Syncs user progress, XP, avatars, and badges between localStorage and Firestore.
  * Integrates with:
- *  - auth.js  (for user identity)
- *  - entitlements.js (for Pro state)
- *  - profile.js (for avatar, name)
+ *  - firebase-bridge.js (shared Firebase instance)
+ *  - auth.js (user session)
+ *  - entitlements.js (Pro status)
+ *  - profile.js (avatar/theme)
  */
 
-import { initializeApp } from "firebase/app";
+import { db, auth } from "./firebase-bridge.js";
 import {
-  getFirestore,
   doc,
-  setDoc,
   getDoc,
+  setDoc,
   updateDoc,
   serverTimestamp
 } from "firebase/firestore";
-
-import { firebaseConfig } from "../firebase-config.js";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
-
-// ---------------------------
-// INITIALISE
-// ---------------------------
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const auth = getAuth(app);
+import { onAuthStateChanged } from "firebase/auth";
 
 // ---------------------------
 // CONSTANTS
@@ -58,50 +47,46 @@ function mergeData(local, remote) {
 // ---------------------------
 
 /**
- * Syncs user data from Firestore to localStorage.
- * Called on login or refresh.
+ * Pull user data from Firestore → local cache
  */
 export async function fetchUserData(uid) {
   try {
     const ref = doc(db, "users", uid);
     const snap = await getDoc(ref);
-
     if (snap.exists()) {
-      const remoteData = snap.data();
-      const merged = mergeData(getLocalCache(), remoteData);
+      const remote = snap.data();
+      const merged = mergeData(getLocalCache(), remote);
       saveLocalCache(merged);
-      console.log("[CloudSync] Remote data synced:", merged);
+      console.log("[CloudSync] Synced from Firestore:", merged);
       return merged;
     } else {
-      console.log("[CloudSync] No remote data found. Creating baseline.");
+      console.log("[CloudSync] No data found — creating new baseline.");
       await initUserData(uid);
       return {};
     }
-  } catch (error) {
-    console.error("[CloudSync] Fetch error:", error);
+  } catch (err) {
+    console.error("[CloudSync] Fetch error:", err);
     return getLocalCache();
   }
 }
 
 /**
- * Pushes local progress to Firestore.
- * Triggered on XP gain, avatar change, or logout.
+ * Push local data → Firestore (safe merge)
  */
 export async function pushUserData(uid, data) {
   try {
     const ref = doc(db, "users", uid);
-    const payload = { ...getLocalCache(), ...data, lastSync: serverTimestamp() };
-    await setDoc(ref, payload, { merge: true });
-    saveLocalCache(payload);
+    const merged = { ...getLocalCache(), ...data, lastSync: serverTimestamp() };
+    await setDoc(ref, merged, { merge: true });
+    saveLocalCache(merged);
     console.log("[CloudSync] Data pushed successfully.");
-  } catch (error) {
-    console.error("[CloudSync] Push error:", error);
+  } catch (err) {
+    console.error("[CloudSync] Push error:", err);
   }
 }
 
 /**
- * Updates partial user data (non-destructive).
- * e.g., XP increment or new badge.
+ * Partial updates for small changes (XP, avatar, etc.)
  */
 export async function updateUserProgress(uid, updates) {
   try {
@@ -109,17 +94,17 @@ export async function updateUserProgress(uid, updates) {
     await updateDoc(ref, { ...updates, lastUpdate: serverTimestamp() });
     const cache = getLocalCache();
     saveLocalCache({ ...cache, ...updates });
-    console.log("[CloudSync] Progress updated:", updates);
-  } catch (error) {
-    console.error("[CloudSync] Update error:", error);
+    console.log("[CloudSync] Updated fields:", updates);
+  } catch (err) {
+    console.error("[CloudSync] Update error:", err);
   }
 }
 
 /**
- * Creates new baseline record on first login.
+ * Initialize a new user's baseline document
  */
 export async function initUserData(uid) {
-  const baseData = {
+  const base = {
     xp: 0,
     level: 1,
     avatar: "fox-default",
@@ -131,16 +116,16 @@ export async function initUserData(uid) {
     lastSync: serverTimestamp()
   };
   try {
-    await setDoc(doc(db, "users", uid), baseData);
-    saveLocalCache(baseData);
+    await setDoc(doc(db, "users", uid), base);
+    saveLocalCache(base);
     console.log("[CloudSync] User baseline created.");
-  } catch (error) {
-    console.error("[CloudSync] Init error:", error);
+  } catch (err) {
+    console.error("[CloudSync] Init error:", err);
   }
 }
 
 /**
- * Clears local cache on sign-out.
+ * Clear cached data on logout
  */
 export function clearLocalData() {
   localStorage.removeItem(LOCAL_KEY);
@@ -148,13 +133,13 @@ export function clearLocalData() {
 }
 
 // ---------------------------
-// AUTO BINDING
+// AUTO-SYNC BINDING
 // ---------------------------
 onAuthStateChanged(auth, async (user) => {
   if (user) {
-    console.log("[CloudSync] Logged in as", user.email);
+    console.log("[CloudSync] Detected login:", user.email);
     await fetchUserData(user.uid);
   } else {
-    console.log("[CloudSync] No user logged in — local only mode.");
+    console.log("[CloudSync] Signed out — local mode only.");
   }
 });
