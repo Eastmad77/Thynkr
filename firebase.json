@@ -4,11 +4,30 @@
     "ignore": [
       "firebase.json",
       "**/.*",
-      "**/node_modules/**"
+      "**/node_modules/**",
+      "README.md",
+      "package.json"
     ],
     "cleanUrls": true,
     "rewrites": [
-      { "source": "**", "destination": "/index.html" }
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ],
+    "headers": [
+      {
+        "source": "**/*.@(js|css|html)",
+        "headers": [
+          { "key": "Cache-Control", "value": "public, max-age=3600, must-revalidate" }
+        ]
+      },
+      {
+        "source": "**/*.@(png|jpg|jpeg|svg|webp)",
+        "headers": [
+          { "key": "Cache-Control", "value": "public, max-age=86400" }
+        ]
+      }
     ]
   },
   "firestore": {
@@ -16,6 +35,10 @@
     "indexes": "firestore.indexes.json"
   },
   "functions": {
-    "source": "functions"
+    "source": "functions",
+    "runtime": "nodejs20"
+  },
+  "storage": {
+    "rules": "storage.rules"
   }
 }
