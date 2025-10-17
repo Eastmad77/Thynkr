@@ -1,0 +1,22 @@
+{
+  "name": "Whylee",
+  "short_name": "Whylee",
+  "description": "Daily cinematic brain training. Focus, compete, and grow.",
+  "start_url": "/index.html",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0A0E17",
+  "theme_color": "#2F7CFF",
+  "orientation": "portrait",
+  "icons": [
+    { "src": "/media/icons/whylee-icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable any" },
+    { "src": "/media/icons/whylee-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable any" },
+    { "src": "/media/icons/apple-touch-icon.png", "sizes": "180x180", "type": "image/png" }
+  ],
+  "screenshots": [
+    { "src": "/media/screenshots/screen-01.png", "sizes": "1080x1920", "type": "image/png", "form_factor": "narrow" },
+    { "src": "/media/screenshots/screen-02.png", "sizes": "1080x1920", "type": "image/png", "form_factor": "narrow" }
+  ],
+  "categories": ["education", "productivity", "health_fitness"],
+  "prefer_related_applications": false
+}
