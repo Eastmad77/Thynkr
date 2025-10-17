@@ -1,233 +1,156 @@
-/* Whylee — core game logic (v7005)
-   Levels: 1 Warm-Up, 2 Pairs, 3 Trivia
-   - 12 Q per level (36 total)
-   - 3-in-a-row redemption removes one wrong
-   - Daily streak tracked (≥1 level cleared)
-   - Posters & reflections at milestones
-   - Supports Pro upgrade and ad insertion
-   - 🔸 Poster IDs: poster-start, poster-levelup, poster-success, poster-night, poster-countdown, poster-perfect, poster-reward, poster-reflection
-*/
+/**
+ * Whylee Gameplay (v8)
+ * - Mounts HUD AvatarBadge (A)
+ * - Runs a session with QuestionEngine
+ * - On completion, updates XP/streak and evaluates milestones (B)
+ */
 
-(function(){
-  const $ = s => document.querySelector(s);
-  const $$ = s => Array.from(document.querySelectorAll(s));
+import { auth, db, doc, getDoc, updateDoc } from "/scripts/firebase-bridge.js";
+import { mountAvatarBadge } from "/scripts/components/avatarBadge.js";
+import { initQuestionEngine } from "/scripts/ai/questionEngine.js";
+import { evaluateMilestones, persistMilestones } from "/scripts/milestones.js";
 
-  // 🔊 Audio
-  const sfx = {
-    correct: new Audio('/media/audio/correct.mp3'),
-    wrong: new Audio('/media/audio/wrong.mp3'),
-    levelUp: new Audio('/media/audio/level-up.mp3'),
-    start: new Audio('/media/audio/start-chime.mp3'),
-    gameOver: new Audio('/media/audio/game-over-low.mp3'),
-    click: new Audio('/media/audio/soft-click.mp3')
-  };
-  Object.values(sfx).forEach(a=> a && (a.volume = 0.6));
+// ----- HUD mount (A) ----------------------------------------------------------
+const hudScore = document.getElementById("hudScore");
+await mountAvatarBadge("#hudUser", { size: 56, uid: auth.currentUser?.uid });
 
-  // 🧠 Game state
-  let state = {
-    level: 1,
-    qIndex: 0,
-    correctInRow: 0,
-    wrongCount: 0,
-    totalCorrect: 0,
-    totalAsked: 0,
-    startedAt: 0,
-    running: false,
-    currentSet: [],
-    levelStats: {1:{},2:{},3:{}},
-  };
+// ----- UI refs ----------------------------------------------------------------
+const startBtn  = document.getElementById("startBtn");
+const nextBtn   = document.getElementById("nextBtn");
+const finishBtn = document.getElementById("finishBtn");
+const viewport  = document.getElementById("viewport");
+const qIdxEl    = document.getElementById("qIdx");
+const qTotalEl  = document.getElementById("qTotal");
+const timerEl   = document.getElementById("timer");
 
-  const els = {
-    root: $('#quizRoot'),
-    levelLabel: $('#levelLabel'),
-    streakLabel: $('#streakLabel'),
-    progressLabel: $('#progressLabel'),
-    questionBox: $('#questionBox'),
-    choices: $('#choices'),
-    qTimerBar: $('#qTimerBar'),
-    elapsed: $('#elapsedTime'),
-  };
+// ----- State ------------------------------------------------------------------
+let eng = null;
+let t0 = 0;            // session start ms
+let tickHandle = null; // timer interval
 
-  // ⏱ Helpers
-  function fmtTime(ms){
-    const s = Math.floor(ms/1000), m = Math.floor(s/60), r = s%60;
-    return `${m}:${r<10?'0':''}${r}`;
-  }
+function startTimer(){
+  t0 = Date.now();
+  stopTimer();
+  tickHandle = setInterval(()=> {
+    timerEl.textContent = Math.floor((Date.now()-t0)/1000);
+  }, 1000);
+}
+function stopTimer(){ if (tickHandle) { clearInterval(tickHandle); tickHandle=null; } }
 
-  function elapsedTick(){
-    if (!state.running || !els.elapsed) return;
-    els.elapsed.textContent = fmtTime(Date.now()-state.startedAt);
-    setTimeout(elapsedTick, 500);
-  }
+// ----- Render helpers ---------------------------------------------------------
+function renderQuestion(q, index, total){
+  qIdxEl.textContent = index+1;
+  qTotalEl.textContent = total;
 
-  // 🔥 Streak functions
-  function getDailyKey(){ return new Date().toISOString().slice(0,10); }
-  function getStreak(){ return Number(localStorage.getItem('wl_streak')||'0'); }
-  function setStreak(v){ localStorage.setItem('wl_streak', String(v)); }
-  function markTodayComplete(){
-    const today = getDailyKey();
-    const lastDate = localStorage.getItem('wl_last_date');
-    let streak = getStreak();
-    if (lastDate === today) return;
-    const prev = new Date((lastDate||today)); prev.setDate(prev.getDate()+1);
-    const prevStr = prev.toISOString().slice(0,10);
-    if (!lastDate || prevStr === today) streak += 1; else streak = 1;
-    setStreak(streak);
-    localStorage.setItem('wl_last_date', today);
-    if (window.WhyleeAchievements) window.WhyleeAchievements.maybeAwardStreak(streak);
-  }
+  viewport.innerHTML = `
+    <h2 class="q-title">${q.q}</h2>
+    <div class="answers">
+      ${q.choices.map((label,i)=>`<button data-i="${i}">${label}</button>`).join("")}
+    </div>
+    <p class="muted" style="margin-top:.5rem">Pick one answer</p>
+  `;
 
-  // 🎬 Posters (image or video for Pro)
-  // In game.js, make sure your poster calls use one of these IDs (e.g., show poster-levelup after a strong run).
-  function showPoster(name, {autohide=0}={}){
-    const base = `/media/posters/v1/${name}`;
-    const urlImg = `${base}.png`;
-    const urlVid = `${base}.mp4`;
-    const overlay = document.createElement('div');
-    overlay.className = 'overlay-poster';
-    let played = false;
-
-    if (window.WhyleePro?.isPro()){
-      const v = document.createElement('video');
-      Object.assign(v, { playsInline:true, muted:true, autoplay:true, src:urlVid });
-      v.addEventListener('canplay', ()=> v.play().catch(()=>{}));
-      v.addEventListener('ended', ()=> overlay.remove(), { once:true });
-      v.addEventListener('error', ()=> swapToImage());
-      overlay.appendChild(v);
-    } else {
-      swapToImage();
-    }
-
-    function swapToImage(){
-      if (played) return;
-      played = true;
-      overlay.innerHTML = `<img src="${urlImg}" alt="${name}" />`;
-    }
-
-    document.body.appendChild(overlay);
-    if (autohide>0) setTimeout(()=> overlay.remove(), autohide);
-  }
-
-  // 🪄 Level setup
-  function beginLevel(level){
-    state.level = level;
-    state.qIndex = 0;
-    state.correctInRow = 0;
-    els.levelLabel.textContent = `Level ${level}`;
-    setTheme(level);
-
-    if (level === 1) showPoster('poster-countdown', {autohide:1600});
-    if (level > 1) try { sfx.levelUp.play(); showPoster('poster-levelup', {autohide:1600}); } catch {}
-  }
-
-  function setTheme(level){
-    document.body.classList.remove('theme-level1','theme-level2','theme-level3');
-    document.body.classList.add(`theme-level${level}`);
-  }
-
-  function updateHeader(){
-    const streak = getStreak();
-    els.streakLabel.textContent = `🔥 Streak: ${streak}`;
-    els.progressLabel.textContent = `Q ${state.qIndex+1}/12`;
-    if (els.qTimerBar) els.qTimerBar.style.width = `${Math.floor((state.qIndex/12)*100)}%`;
-  }
-
-  // 🎯 Question loop
-  function paintQuestion(){
-    const subset = state.currentSet.filter(q=> q.Level===state.level);
-    const q = subset[state.qIndex];
-    if (!q) return levelComplete();
-
-    els.questionBox.textContent = q.Question;
-    els.choices.innerHTML = '';
-
-    q.Answers.forEach((t,idx)=>{
-      const b = document.createElement('button');
-      b.className = 'choice';
-      b.textContent = t;
-      b.addEventListener('click', ()=> onAnswer(idx===0, q));
-      els.choices.appendChild(b);
+  viewport.querySelectorAll("button[data-i]").forEach(btn=>{
+    btn.addEventListener("click", () => {
+      const guess = Number(btn.getAttribute("data-i"));
+      const timeMs = Date.now() - t0; // rough per-q meter (ok for client)
+      const correct = eng.submit(guess, timeMs); // record result & adapt difficulty
+      // lock choices
+      viewport.querySelectorAll("button[data-i]").forEach(b => b.disabled = true);
+      // simple feedback
+      btn.style.borderColor = correct ? "var(--brand)" : "crimson";
+      // show next/finish
+      const { asked, total } = eng._debug();
+      nextBtn.style.display   = asked < total ? "" : "none";
+      finishBtn.style.display = asked >= total ? "" : "none";
     });
+  });
+}
 
-    updateHeader();
+function renderSummary(r){
+  viewport.innerHTML = `
+    <div style="text-align:center; padding: 1.25rem 0">
+      <h2 class="h4" style="margin:0 0 .5rem">Great work! 🎉</h2>
+      <p class="muted">You answered <strong>${r.correct}/${r.total}</strong> correctly in <strong>${Math.round(r.durationMs/1000)}s</strong>.</p>
+      <p class="muted">XP earned (client est.): <strong>${r.xpEarned}</strong></p>
+      <div style="margin-top: .75rem; display:flex; gap:.5rem; justify-content:center">
+        <a class="btn btn--ghost" href="/leaderboard.html">Leaderboard</a>
+        <a class="btn btn--brand" href="/game.html">Play Again</a>
+      </div>
+    </div>
+  `;
+  document.querySelector(".controls").style.display = "none";
+}
+
+// ----- Session lifecycle ------------------------------------------------------
+startBtn.addEventListener("click", async () => {
+  // Require sign-in
+  if (!auth.currentUser) {
+    alert("Please sign in to play.");
+    window.location.href = "/signin.html";
+    return;
   }
 
-  function onAnswer(isCorrect, q){
-    state.totalAsked++;
-    if (isCorrect){
-      state.totalCorrect++;
-      state.correctInRow++;
-      try{sfx.correct.play();}catch{}
-      blink(true);
-      if (state.correctInRow>=3 && state.wrongCount>0){
-        state.wrongCount--;
-        // Redemption: remove one wrong answer
-        showPoster('poster-reward', {autohide:1500});
-      }
-      if (window.WhyleeAchievements) window.WhyleeAchievements.addXP(10);
-    } else {
-      state.correctInRow = 0;
-      state.wrongCount++;
-      try{sfx.wrong.play();}catch{}
-      blink(false);
+  // Build engine
+  eng = await initQuestionEngine({ mode: "daily", count: 10 });
+  const debug = eng._debug();
+  qTotalEl.textContent = debug.total;
+
+  // Timer for session
+  startTimer();
+
+  // First question
+  const q = eng.next();
+  renderQuestion(q, 0, debug.total);
+
+  // Buttons
+  startBtn.style.display = "none";
+  nextBtn.style.display = "";
+  finishBtn.style.display = "none";
+});
+
+nextBtn.addEventListener("click", () => {
+  const dbg = eng._debug();
+  if (dbg.asked < dbg.total) {
+    const q = eng.next();
+    renderQuestion(q, dbg.asked - 1, dbg.total);
+  }
+});
+
+finishBtn.addEventListener("click", async () => {
+  stopTimer();
+
+  // Aggregate results (client view)
+  const r = eng.results({ pro: false }); // server remains source of truth
+  renderSummary(r);
+
+  // ----- Award XP & streak, then run milestones (B) --------------------------
+  try {
+    const uid = auth.currentUser?.uid;
+    if (!uid) return;
+
+    const ref = doc(db, "users", uid);
+    const snap = await getDoc(ref);
+    const user = snap.data() || {};
+
+    const newXp = Math.max(0, Math.round((user.xp || 0) + r.xpEarned));
+    const newStreak = (user.streak || 0) + 1;
+
+    await updateDoc(ref, { xp: newXp, streak: newStreak });
+
+    // Evaluate milestones & persist new unlocks
+    const evald = evaluateMilestones({ ...user, xp: newXp, streak: newStreak, pro: user.pro });
+    const write = await persistMilestones(uid, user, evald);
+
+    // Update HUD XP text
+    document.getElementById("hudScore").textContent = `XP: ${newXp.toLocaleString()}`;
+
+    if (evald.newly.length) {
+      const names = evald.newly.map(m => m.id.replace(/^(skin|badge|boost):/, "").replace(/-/g," "));
+      // Simple toast
+      alert(`🎉 Unlocked: ${names.join(", ")}`);
     }
-
-    state.qIndex++;
-    setTimeout(paintQuestion, 320);
+  } catch (e) {
+    console.error(e);
   }
-
-  function blink(ok){
-    els.choices.classList.remove('blink-ok','blink-bad');
-    void els.choices.offsetWidth;
-    els.choices.classList.add(ok?'blink-ok':'blink-bad');
-    setTimeout(()=> els.choices.classList.remove('blink-ok','blink-bad'), 260);
-  }
-
-  function levelComplete(){
-    const perfect = (state.correctInRow >= 12);
-    if (perfect) showPoster('poster-perfect', {autohide:1600});
-
-    if (state.level < 3){
-      beginLevel(state.level+1);
-      paintQuestion();
-    } else {
-      endSession();
-    }
-  }
-
-  function endSession(){
-    state.running = false;
-    markTodayComplete();
-
-    if (state.totalCorrect >= 24){
-      showPoster('poster-success', {autohide:1800});
-    } else {
-      showPoster('poster-night', {autohide:1800});
-    }
-
-    try{sfx.gameOver.play();}catch{}
-    if (window.WhyleeReflections) window.WhyleeReflections.showCard({});
-  }
-
-  // 🚀 Game start
-  async function start(rootEl){
-    if (!rootEl) return;
-    state.running = true;
-    state.startedAt = Date.now();
-    elapsedTick();
-
-    try{
-      state.currentSet = await window.WhyleeQuestions.load();
-    } catch(e){
-      console.warn('Failed to load questions', e);
-      state.currentSet = [];
-    }
-
-    showPoster('poster-start', {autohide:1200});
-    try{sfx.start.play();}catch{}
-    beginLevel(1);
-    paintQuestion();
-  }
-
-  window.WhyleeGame = { start };
-})();
+});
