@@ -1,22 +1,19 @@
 /**
- * Whylee Gameplay (v8+)
- * - Mounts HUD AvatarBadge (A)
- * - Runs a session with QuestionEngine
- * - On completion, updates XP/streak and evaluates milestones (B)
- * - Syncs leaderboard stats (C)
+ * Whylee Gameplay (v8+ MATCH-ready)
+ * - Mounts HUD
+ * - Renders MCQ and MATCH (5 pairs)
+ * - Updates XP/streak, runs milestones, syncs leaderboard
  */
 
 import { auth, db, doc, getDoc, updateDoc } from "/scripts/firebase-bridge.js";
 import { mountAvatarBadge } from "/scripts/components/avatarBadge.js";
 import { initQuestionEngine } from "/scripts/ai/questionEngine.js";
 import { evaluateMilestones, persistMilestones } from "/scripts/milestones.js";
-import { syncLeaderboard } from "/scripts/leaderboardSync.js";   // ⬅️ new import
+import { syncLeaderboard } from "/scripts/leaderboardSync.js";
 
-// ----- HUD mount (A) ----------------------------------------------------------
 const hudScore = document.getElementById("hudScore");
 await mountAvatarBadge("#hudUser", { size: 56, uid: auth.currentUser?.uid });
 
-// ----- UI refs ----------------------------------------------------------------
 const startBtn  = document.getElementById("startBtn");
 const nextBtn   = document.getElementById("nextBtn");
 const finishBtn = document.getElementById("finishBtn");
@@ -25,10 +22,9 @@ const qIdxEl    = document.getElementById("qIdx");
 const qTotalEl  = document.getElementById("qTotal");
 const timerEl   = document.getElementById("timer");
 
-// ----- State ------------------------------------------------------------------
 let eng = null;
-let t0 = 0;            // session start ms
-let tickHandle = null; // timer interval
+let t0 = 0;
+let tickHandle = null;
 
 function startTimer(){
   t0 = Date.now();
@@ -39,33 +35,95 @@ function startTimer(){
 }
 function stopTimer(){ if (tickHandle) { clearInterval(tickHandle); tickHandle=null; } }
 
-// ----- Render helpers ---------------------------------------------------------
 function renderQuestion(q, index, total){
   qIdxEl.textContent = index+1;
   qTotalEl.textContent = total;
 
+  if (q.type === "match") return renderMatch(q);
+
+  // MCQ
   viewport.innerHTML = `
     <h2 class="q-title">${q.q}</h2>
     <div class="answers">
-      ${q.choices.map((label,i)=>`<button data-i="${i}">${label}</button>`).join("")}
+      ${q.choices.map((label,i)=>`<button class="btn-answer" data-i="${i}">${label}</button>`).join("")}
     </div>
     <p class="muted" style="margin-top:.5rem">Pick one answer</p>
   `;
-
-  viewport.querySelectorAll("button[data-i]").forEach(btn=>{
+  viewport.querySelectorAll(".btn-answer").forEach(btn=>{
     btn.addEventListener("click", () => {
       const guess = Number(btn.getAttribute("data-i"));
-      const timeMs = Date.now() - t0; // rough per-q meter (ok for client)
-      const correct = eng.submit(guess, timeMs); // record result & adapt difficulty
-      // lock choices
-      viewport.querySelectorAll("button[data-i]").forEach(b => b.disabled = true);
-      // simple feedback
+      const timeMs = Date.now() - t0;
+      const correct = eng.submit(guess, timeMs);
+      viewport.querySelectorAll(".btn-answer").forEach(b => b.disabled = true);
       btn.style.borderColor = correct ? "var(--brand)" : "crimson";
-      // show next/finish
       const { asked, total } = eng._debug();
       nextBtn.style.display   = asked < total ? "" : "none";
       finishBtn.style.display = asked >= total ? "" : "none";
     });
+  });
+}
+
+function renderMatch(q) {
+  // Build the 5-pair grid
+  let flipped = [];
+  let found = 0;
+  let mistakes = 0;
+  const totalPairs = q.cards.length / 2;
+
+  viewport.innerHTML = `
+    <h2 class="q-title">${q.title}</h2>
+    <p class="muted" style="margin:.25rem 0 .8rem">${q.subtitle}</p>
+    <div class="match-grid">
+      ${q.cards.map(c => `
+        <button class="card" data-id="${c.id}" data-key="${c.key}">
+          <span class="front">?</span>
+          <span class="back">${c.face}</span>
+        </button>
+      `).join("")}
+    </div>
+    <div class="muted" style="margin-top:.6rem">Pairs found: <b id="pairsFound">0</b> / ${totalPairs}</div>
+  `;
+
+  const grid = viewport.querySelector(".match-grid");
+  const pf = viewport.querySelector("#pairsFound");
+
+  grid.addEventListener("click", (e) => {
+    const card = e.target.closest(".card");
+    if (!card || card.classList.contains("matched") || card.classList.contains("flipped")) return;
+
+    // flip
+    card.classList.add("flipped");
+    flipped.push(card);
+
+    if (flipped.length === 2) {
+      const [a, b] = flipped;
+      const same = a.dataset.key === b.dataset.key;
+
+      if (same) {
+        a.classList.add("matched");
+        b.classList.add("matched");
+        found += 1;
+        pf.textContent = String(found);
+        flipped = [];
+        if (found >= totalPairs) {
+          // finish round → submitMatch
+          const seconds = Math.floor((Date.now() - t0)/1000);
+          const res = eng.submitMatch({ pairsFound: found, mistakes, seconds });
+          // show next/finish
+          const { asked, total } = eng._debug();
+          nextBtn.style.display   = asked < total ? "" : "none";
+          finishBtn.style.display = asked >= total ? "" : "none";
+        }
+      } else {
+        mistakes += 1;
+        // brief delay then flip back
+        setTimeout(() => {
+          a.classList.remove("flipped");
+          b.classList.remove("flipped");
+          flipped = [];
+        }, 650);
+      }
+    }
   });
 }
 
@@ -84,28 +142,20 @@ function renderSummary(r){
   document.querySelector(".controls").style.display = "none";
 }
 
-// ----- Session lifecycle ------------------------------------------------------
 startBtn.addEventListener("click", async () => {
-  // Require sign-in
   if (!auth.currentUser) {
     alert("Please sign in to play.");
     window.location.href = "/signin.html";
     return;
   }
-
-  // Build engine
   eng = await initQuestionEngine({ mode: "daily", count: 10 });
   const debug = eng._debug();
   qTotalEl.textContent = debug.total;
 
-  // Timer for session
   startTimer();
-
-  // First question
   const q = eng.next();
   renderQuestion(q, 0, debug.total);
 
-  // Buttons
   startBtn.style.display = "none";
   nextBtn.style.display = "";
   finishBtn.style.display = "none";
@@ -121,12 +171,9 @@ nextBtn.addEventListener("click", () => {
 
 finishBtn.addEventListener("click", async () => {
   stopTimer();
-
-  // Aggregate results (client view)
-  const r = eng.results({ pro: false }); // server remains source of truth
+  const r = eng.results({ pro: false });
   renderSummary(r);
 
-  // ----- Award XP & streak, then run milestones (B) --------------------------
   try {
     const uid = auth.currentUser?.uid;
     if (!uid) return;
@@ -140,28 +187,23 @@ finishBtn.addEventListener("click", async () => {
 
     await updateDoc(ref, { xp: newXp, streak: newStreak });
 
-    // Evaluate milestones & persist new unlocks
     const evald = evaluateMilestones({ ...user, xp: newXp, streak: newStreak, pro: user.pro });
     await persistMilestones(uid, user, evald);
 
-    // ----- (C) Sync to leaderboard ------------------------------------------
     await syncLeaderboard(uid, {
-      name: user.name || "Player",
+      name: user.displayName || "Player",
       xp: newXp,
       streak: newStreak,
       avatarId: user.avatarId || "fox-default",
       emoji: user.emoji || "🧠"
     });
 
-    // Update HUD XP text
     document.getElementById("hudScore").textContent = `XP: ${newXp.toLocaleString()}`;
 
-    // New milestone pop-up
     if (evald.newly.length) {
       const names = evald.newly.map(m => m.id.replace(/^(skin|badge|boost):/, "").replace(/-/g," "));
       alert(`🎉 Unlocked: ${names.join(", ")}`);
     }
-
   } catch (e) {
     console.error(e);
   }
