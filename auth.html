@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign In – Whylee</title>
+
+  <link rel="stylesheet" href="/styles/brand.css?v=8000">
+  <link rel="stylesheet" href="/styles/style.css?v=8000">
+  <link rel="stylesheet" href="/styles/animations.css?v=8000">
+</head>
+<body>
+  <header>
+    <h1>Welcome to Whylee</h1>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="menu.html">Menu</a>
+      <a href="pro.html">Pro</a>
+      <a href="about.html">About</a>
+    </nav>
+  </header>
+
+  <main class="container narrow">
+    <div class="card auth-card">
+      <h2 id="authTitle">Sign In</h2>
+      <p id="authSubtitle">Continue your Whylee journey</p>
+
+      <form id="authForm">
+        <label for="email">Email</label>
+        <input type="email" id="email" placeholder="you@example.com" required>
+
+        <label for="password">Password</label>
+        <input type="password" id="password" placeholder="Enter your password" required>
+
+        <button type="submit" class="btn" id="submitBtn">Sign In</button>
+
+        <p class="auth-toggle">
+          Don’t have an account? <a href="#" id="toggleSignup">Create one</a>
+        </p>
+
+        <p class="auth-forgot">
+          <a href="#" id="forgotPassword">Forgot password?</a>
+        </p>
+      </form>
+
+      <div id="message" class="hidden"></div>
+    </div>
+  </main>
+
+  <footer>
+    &copy; 2025 Whylee | Secure Access Portal
+  </footer>
+
+  <script type="module">
+    // Basic UI mode toggling — production integrates with Firebase Auth later.
+    const title = document.getElementById('authTitle');
+    const subtitle = document.getElementById('authSubtitle');
+    const submitBtn = document.getElementById('submitBtn');
+    const toggleSignup = document.getElementById('toggleSignup');
+    const form = document.getElementById('authForm');
+
+    let mode = 'login';
+
+    toggleSignup.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (mode === 'login') {
+        mode = 'signup';
+        title.textContent = 'Create Account';
+        subtitle.textContent = 'Start your Whylee journey';
+        submitBtn.textContent = 'Sign Up';
+        toggleSignup.textContent = 'Already have an account? Sign in';
+      } else {
+        mode = 'login';
+        title.textContent = 'Sign In';
+        subtitle.textContent = 'Continue your Whylee journey';
+        submitBtn.textContent = 'Sign In';
+        toggleSignup.textContent = 'Create one';
+      }
+    });
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      console.log(`[Auth] ${mode} attempt:`, email);
+      // Future: integrate with firebase-bridge.js for full auth flow
+    });
+  </script>
+</body>
+</html>
