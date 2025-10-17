@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="system">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Achievements — Whylee</title>
+
+  <link rel="stylesheet" href="/styles/brand.css?v=8000">
+  <link rel="stylesheet" href="/styles/style.css?v=8000">
+  <link rel="stylesheet" href="/styles/animations.css?v=8000">
+
+  <style>
+    .wrap { width:min(1100px,94%); margin:2rem auto; }
+    .grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(180px,1fr)); gap:1rem; }
+    .badge {
+      background: var(--whylee-panel); border:1px solid var(--whylee-edge);
+      border-radius:14px; padding:1rem; text-align:center; box-shadow: var(--whylee-shadow-soft);
+    }
+    .badge img { width:56px; height:56px; margin:.35rem auto; display:block; }
+    .badge h3 { margin:.5rem 0 .25rem; font-size:1rem; }
+    .badge .muted { font-size:.9rem; }
+    .locked { opacity:.5; filter: grayscale(0.35); }
+    .header { display:flex; align-items:center; justify-content:space-between; margin: 0 0 1rem; }
+  </style>
+</head>
+<body>
+  <header class="app-header">
+    <h1>Milestones</h1>
+    <nav>
+      <a href="/index.html">Home</a>
+      <a href="/leaderboard.html">Leaderboard</a>
+      <a href="/profile.html">Profile</a>
+    </nav>
+  </header>
+
+  <main class="wrap">
+    <div class="header">
+      <h2 class="muted">Collect badges as you master new challenges</h2>
+      <a href="/pro.html" class="btn-pro">Get Pro Boosts</a>
+    </div>
+
+    <section id="badges" class="grid" aria-live="polite" aria-busy="true"></section>
+  </main>
+
+  <footer><small>© 2025 Whylee</small></footer>
+
+  <script type="module">
+    import { initCloudSync, onUserSnapshot, claimBadge } from "/scripts/auth/cloudsync.js?v=8000";
+    import { initTheme } from "/scripts/theme/theme.js?v=8000";
+    initCloudSync(); initTheme();
+
+    const CATALOG = [
+      { id: "streak-7",   icon: "/media/badges/lightning-blue.svg", name: "Streak: 7 Days",  desc: "Stay consistent for one week." },
+      { id: "streak-30",  icon: "/media/badges/crown-gold.svg",     name: "Streak: 30 Days", desc: "Make focus a habit." },
+      { id: "xp-1000",    icon: "/media/badges/star-silver.svg",    name: "XP: 1,000",       desc: "Level up your mind." },
+      { id: "xp-5000",    icon: "/media/badges/crown-gold.svg",     name: "XP: 5,000",       desc: "Elite training status." },
+      { id: "challenge-5",icon: "/media/badges/lightning-blue.svg", name: "Challenge x5",    desc: "Beat 5 Bonus Rounds." }
+    ];
+
+    const root = document.getElementById('badges');
+
+    function render(obtained = []){
+      root.innerHTML = "";
+      root.setAttribute("aria-busy","false");
+      for (const b of CATALOG){
+        const owned = obtained.includes(b.id);
+        const el = document.createElement('article');
+        el.className = "badge fade-in " + (owned ? "" : "locked");
+        el.innerHTML = `
+          <img src="${b.icon}" alt="">
+          <h3>${b.name}</h3>
+          <div class="muted">${b.desc}</div>
+          ${owned ? `<div style="margin-top:.5rem;color:var(--whylee-gold);font-weight:700">Unlocked</div>` :
+            `<button class="btn" data-claim="${b.id}" style="margin-top:.75rem">Preview Unlock</button>`}
+        `;
+        root.appendChild(el);
+      }
+
+      // demo claim buttons (for QA)
+      root.querySelectorAll("[data-claim]").forEach(btn=>{
+        btn.addEventListener("click", async () => {
+          await claimBadge(btn.getAttribute("data-claim"));
+        });
+      });
+    }
+
+    onUserSnapshot((data)=> render(data?.badges || []));
+  </script>
+</body>
+</html>
