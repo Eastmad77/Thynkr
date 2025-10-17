@@ -1,197 +1,123 @@
-/* ============================
-Whylee style.css — v7000
-============================= */
-:root{
-  --bg:#0b1220;        /* deep slate */
-  --bg-soft:#0e1726;   /* panel */
-  --fg:#e6eef8;        /* text */
-  --muted:#9fb3c8;
-  --brand:#0a2a43;     /* dark azure */
-  --accent:#47b0ff;    /* blue accent */
-  --ok:#52c41a; --warn:#faad14; --err:#ff4d4f;
-  --radius:16px;
-  --shadow:0 10px 30px rgba(0,0,0,.25);
+/* Whylee v8 – Main Layout & Components
+   Inherits colour tokens from brand.css
+   Updated for ThemeManager & responsive UI
+*/
+
+html, body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--whylee-font);
+  background: var(--whylee-bg);
+  color: var(--whylee-text);
+  min-height: 100%;
 }
 
-*{box-sizing:border-box}
-html,body{height:100%}
-html{color-scheme:dark}
-body{
-  margin:0; font:16px/1.4 system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
-  background:linear-gradient(180deg,var(--bg) 0%, #0a1020 100%);
-  color:var(--fg);
+/* Layout grid */
+main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 40px 20px;
+  max-width: 960px;
+  margin: 0 auto;
 }
 
-/* Header / Footer -------------------------------------------------------- */
-.app-header{
-  display:flex; align-items:center; justify-content:space-between;
-  gap:12px; padding:14px 16px; position:sticky; top:0; z-index:20;
-  background:linear-gradient(180deg, rgba(10,16,32,.9), rgba(10,16,32,.65));
-  backdrop-filter:saturate(120%) blur(8px);
-  border-bottom:1px solid rgba(255,255,255,.06);
+/* Header */
+header {
+  text-align: center;
+  padding: 40px 10px 20px;
 }
-.brand{margin:0;font-size:20px;letter-spacing:.5px}
-.header-actions{display:flex; gap:8px}
-button{border:0; padding:10px 14px; border-radius:12px; cursor:pointer; font-weight:600}
-button.primary{background:var(--accent); color:#08192d}
-button.secondary{background:#1b253a; color:var(--fg)}
-button.icon{background:#1b253a; color:var(--fg); padding:8px 10px; border-radius:12px}
-button:disabled{opacity:.6; cursor:not-allowed}
-
-.app-shell{max-width:980px; margin:18px auto; padding:0 16px 120px}
-.card{
-  background:linear-gradient(180deg, #0e1726, #0b1220);
-  border:1px solid rgba(255,255,255,.06);
-  box-shadow:var(--shadow); border-radius:var(--radius); padding:18px; margin:14px 0;
+header img.logo {
+  width: 96px;
+  height: 96px;
+  margin-bottom: 10px;
+  filter: drop-shadow(0 0 6px rgba(47, 124, 255, 0.4));
 }
-.card h2{margin:0 0 8px 0; font-size:18px}
-.muted{color:var(--muted)}
-
-.tabs{display:grid; grid-template-columns:repeat(3,1fr); gap:8px}
-.tabs a{
-  display:block; text-align:center; padding:12px; border-radius:12px; text-decoration:none; color:var(--fg);
-  background:#0f1a2e; border:1px solid rgba(255,255,255,.06)
+header h1 {
+  font-size: 2.2rem;
+  margin: 0;
+  background: var(--whylee-gradient-blue);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
-.tabs a.active{outline:2px solid var(--accent)}
-
-.list{display:grid; gap:10px}
-.row{display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px; border-radius:12px; background:#0f1a2e; border:1px solid rgba(255,255,255,.06)}
-input[type="text"], input[type="search"], textarea{
-  width:100%; background:#0f1a2e; color:var(--fg); border:1px solid rgba(255,255,255,.08);
-  padding:10px 12px; border-radius:12px;
-}
-.toggle{appearance:none; width:42px; height:26px; background:#273650; border-radius:26px; position:relative; outline:none; cursor:pointer; border:1px solid rgba(255,255,255,.06)}
-.toggle:checked{background:#1e2d47}
-.toggle::after{content:""; position:absolute; top:50%; left:4px; transform:translateY(-50%); width:18px; height:18px; border-radius:50%; background:var(--accent); transition:left .2s}
-.toggle:checked::after{left:20px}
-
-.badge{display:inline-flex; align-items:center; gap:6px; padding:6px 8px; border-radius:999px; font-size:12px; background:#13213a; border:1px solid rgba(255,255,255,.06)}
-.kv{display:grid; grid-template-columns:140px 1fr; gap:8px; align-items:center}
-
-.app-footer{
-  position:fixed; inset:auto 0 0 0; background:linear-gradient(180deg, rgba(10,16,32,.0), rgba(10,16,32,.9));
-  backdrop-filter: blur(8px); padding:14px 16px; border-top:1px solid rgba(255,255,255,.06)
+header p {
+  color: var(--whylee-text-muted);
+  font-size: 1rem;
+  margin-top: 0.3rem;
 }
 
-/* Progressive enhancement */
-@media (min-width: 680px){
-  .tabs{gap:12px}
-  .brand{font-size:22px}
+/* Buttons */
+.btn, button {
+  background: var(--whylee-gradient-blue);
+  border: none;
+  border-radius: var(--whylee-radius);
+  color: #fff;
+  font-weight: 600;
+  padding: 0.8rem 1.4rem;
+  cursor: pointer;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+.btn:hover, button:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+.btn-secondary {
+  background: var(--whylee-gradient-gold);
+  color: #000;
 }
 
-/* Offline bar (used by /js/ui/offlineAlert.js) -------------------------- */
-.netbar{
-  position:fixed; top:0; left:0; right:0;
-  background:#7a1f1f; color:#fff; text-align:center;
-  font:14px/1.2 system-ui, sans-serif;
-  padding:8px 12px; z-index:10000; opacity:0; transform:translateY(-100%);
-  transition:opacity .25s, transform .25s;
+/* Cards */
+.card {
+  background: var(--whylee-panel);
+  border-radius: var(--whylee-radius);
+  box-shadow: var(--whylee-shadow-soft);
+  padding: 20px;
+  margin: 20px 0;
+  width: 100%;
+  transition: background 0.3s ease;
 }
-.netbar.visible{ opacity:1; transform:translateY(0) }
-@media (prefers-reduced-motion: reduce){ .netbar{ transition:none } }
-
-/* ===== Quiz UI ========================================================= */
-.hidden{ display:none !important; }
-
-/* Layer */
-.quiz-layer{
-  position:relative;
-  max-width:980px; margin:18px auto; padding:0 16px 160px;
+.card:hover {
+  background: var(--whylee-surface);
 }
 
-/* HUD (streak + labels) */
-.quiz-hud{ display:grid; gap:8px; }
-.streak{
-  position:relative; height:10px; border-radius:999px;
-  background:#0f1a2e; border:1px solid rgba(255,255,255,.06);
-  overflow:hidden;
+/* Sections */
+section {
+  width: 100%;
+  margin: 30px 0;
 }
-.streak-fill{
-  height:100%; width:0%;
-  background:linear-gradient(90deg, #0a2a66, #47b0ff);
-  transition:width .28s ease;
+section h2 {
+  font-size: 1.6rem;
+  margin-bottom: 10px;
 }
-.hud-labels{
-  display:flex; gap:12px; align-items:center; justify-content:flex-start; flex-wrap:wrap;
-}
-
-/* Poster */
-.poster-wrap{ margin:12px 0 }
-.poster{
-  width:100%; height:auto; display:block; border-radius:16px;
-  box-shadow:0 20px 60px rgba(0,0,0,.35);
-  border:1px solid rgba(255,255,255,.06);
+section p {
+  color: var(--whylee-text-muted);
+  font-size: 1rem;
+  line-height: 1.6;
 }
 
-/* Card */
-.quiz-card .quiz-top{
-  display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:8px;
-}
-.q-timer{
-  flex:1; height:8px; border-radius:8px; background:#0f1a2e;
-  overflow:hidden; border:1px solid rgba(255,255,255,.06);
-}
-.q-timer-bar{ height:100%; width:0%; background:#47b0ff; transition:none }
-
-.question{ font-size:20px; margin:8px 0 12px }
-
-/* Choices */
-.choices{ display:grid; gap:10px; }
-.choices button{
-  text-align:left; width:100%;
-  background:#0f1a2e; color:var(--fg); border:1px solid rgba(255,255,255,.08);
-  padding:12px 14px; border-radius:12px; font-weight:600;
-}
-.choices.blink-ok{ animation:blinkOk .25s }
-.choices.blink-bad{ animation:blinkBad .25s }
-@keyframes blinkOk{ from{box-shadow:0 0 0 rgba(70,200,120,.0)} to{box-shadow:0 0 24px rgba(70,200,120,.35)} }
-@keyframes blinkBad{ from{box-shadow:0 0 0 rgba(255,80,80,.0)} to{box-shadow:0 0 24px rgba(255,80,80,.35)} }
-@media (prefers-reduced-motion: reduce){
-  .choices.blink-ok,.choices.blink-bad{ animation:none }
+/* Footer */
+footer {
+  text-align: center;
+  color: var(--whylee-text-muted);
+  font-size: 0.85rem;
+  padding: 40px 0;
+  border-top: 1px solid var(--whylee-edge);
 }
 
-/* Actions + Controls */
-.quiz-actions{ display:flex; gap:8px; margin-top:10px }
-.quiz-controls{
-  position:sticky; bottom:80px; display:flex; gap:8px; justify-content:flex-end;
-  margin-top:10px;
+/* Responsive */
+@media (max-width: 768px) {
+  main {
+    padding: 20px 16px;
+  }
+  header img.logo {
+    width: 72px;
+    height: 72px;
+  }
+  header h1 {
+    font-size: 1.8rem;
+  }
+  .card {
+    padding: 16px;
+  }
 }
-
-/* Countdown */
-.countdown-overlay{
-  position:fixed; inset:0; display:grid; place-items:center; z-index:50;
-  background:linear-gradient(180deg, rgba(10,16,32,.7), rgba(10,16,32,.85));
-  backdrop-filter: blur(4px);
-}
-.countdown-circle{
-  width:160px; height:160px; border-radius:50%;
-  background:radial-gradient(circle at 50% 40%, rgba(255,255,255,.18), rgba(255,255,255,0));
-  display:grid; place-items:center; border:1px solid rgba(255,255,255,.18);
-  box-shadow:0 30px 80px rgba(0,0,0,.35);
-}
-.countnum{ font-size:64px; font-weight:800; color:#e6f1ff; text-shadow:0 6px 24px rgba(0,0,0,.4) }
-
-/* Perfect burst */
-.perfect-burst{
-  position:absolute; inset:auto 0 35% 0; height:0;
-  pointer-events:none; opacity:0;
-  background: radial-gradient(ellipse at center, rgba(71,176,255,.35), rgba(71,176,255,0) 60%);
-  transition:opacity .25s;
-}
-.perfect-burst.active{ opacity:1; animation:burst .9s ease-out }
-@keyframes burst{
-  0%{ height:0; opacity:0 }
-  20%{ height:220px; opacity:1 }
-  100%{ height:0; opacity:0 }
-}
-@media (prefers-reduced-motion: reduce){
-  .perfect-burst.active{ animation:none }
-}
-
-/* Start + Gameover cards */
-.quiz-start, .gameover{ margin-top:14px }
-.start-actions{ display:flex; gap:8px; flex-wrap:wrap }
-
-/* Utility --------------------------------------------------------------- */
-.visually-hidden{ position:absolute !important; width:1px; height:1px; overflow:hidden; clip:rect(1px,1px,1px,1px); white-space:nowrap; }
-
