@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="system">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Welcome to Whylee Pro</title>
+
+  <link rel="stylesheet" href="/styles/brand.css?v=8000">
+  <link rel="stylesheet" href="/styles/style.css?v=8000">
+  <link rel="stylesheet" href="/styles/animations.css?v=8000">
+
+  <style>
+    .wrap { width:min(800px,94%); margin: 8vh auto 6vh; text-align:center; }
+    .poster { width:100%; max-width:720px; border-radius:16px; box-shadow: var(--whylee-shadow-hard); border:1px solid var(--whylee-edge); }
+    .glow { filter: drop-shadow(0 0 25px rgba(245,211,107,.25)); }
+    .actions { margin-top:1.25rem; display:flex; justify-content:center; gap:.75rem; flex-wrap:wrap; }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <img class="poster glow" src="/media/posters/poster-07-pro.jpg" alt="Whylee Pro">
+    <h1 style="margin:1rem 0 .25rem;">You’re Pro! ✨</h1>
+    <p class="muted">Your Pro status is active. Enjoy bonus rounds, premium avatars, and ad-free focus.</p>
+
+    <div class="actions">
+      <a href="/menu.html" class="btn">Return to Menu</a>
+      <a href="/profile.html" class="btn-pro">Pick Your Pro Avatar</a>
+    </div>
+  </main>
+
+  <script type="module">
+    import { markProOptimistic } from "/scripts/pro.js?v=8000";
+    import { initTheme } from "/scripts/theme/theme.js?v=8000";
+    markProOptimistic(); // flip gates immediately; webhook confirms in background
+    initTheme();
+  </script>
+</body>
+</html>
