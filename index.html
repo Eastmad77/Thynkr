@@ -1,46 +1,52 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en" data-theme="system">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#0A0E17" />
-  <title>Whylee — Daily Brain Training</title>
+  <title>Whylee | Boost Your Brain</title>
 
-  <!-- v8 unified styles -->
+  <!-- Styles -->
   <link rel="stylesheet" href="/styles/brand.css?v=8000">
   <link rel="stylesheet" href="/styles/style.css?v=8000">
   <link rel="stylesheet" href="/styles/animations.css?v=8000">
 
-  <link rel="manifest" href="/site.webmanifest" />
-  <link rel="icon" type="image/png" href="/media/icons/favicon-32.png" />
+  <link rel="icon" type="image/png" href="/media/icons/favicon-32.png">
+  <link rel="apple-touch-icon" href="/media/icons/apple-touch-icon.png">
+  <meta name="theme-color" content="#0A3DFF">
 </head>
 
 <body>
-  <header>
-    <img src="/media/icons/whylee-icon-192.png" alt="Whylee Logo" class="logo" />
-    <h1>Whylee</h1>
-    <p>Train your mind — every day, anywhere.</p>
-  </header>
+  <div id="app">
+    <header class="app-header">
+      <img src="/media/icons/whylee-icon-192.png" alt="Whylee Logo" width="48" height="48">
+      <h1>Whylee</h1>
+    </header>
 
-  <main>
-    <section class="card intro">
-      <h2>Welcome to Whylee</h2>
-      <p>Your daily brain workout awaits. Challenge memory, focus, and problem-solving through interactive sessions crafted to build smarter habits.</p>
-      <button onclick="window.location='menu.html'">Start Now</button>
-    </section>
+    <main>
+      <section id="welcome">
+        <h2>Boost Your Brain Daily</h2>
+        <p>Sharpen memory, logic, and learning skills with Whylee’s interactive challenges.</p>
+        <button id="startQuiz">Start Game</button>
+      </section>
+    </main>
+  </div>
 
-    <section class="card">
-      <h2>Go Pro</h2>
-      <p>Unlock bonus rounds, exclusive avatars, and ad-free play. Enjoy cloud sync and a cinematic brain-training journey.</p>
-      <button class="btn-secondary" onclick="window.location='pro.html'">Upgrade to Pro</button>
-    </section>
-  </main>
+  <!-- Scripts -->
+  <script type="module">
+    import { initCloudSync } from "/scripts/auth/cloudsync.js?v=8000";
+    import { initTheme } from "/scripts/theme/theme.js?v=8000";
+    import { auth } from "/scripts/firebase-bridge.js?v=8000";
 
-  <footer>
-    <p>&copy; 2025 Whylee. All rights reserved.</p>
-    <p class="muted">Tip: Press Ctrl/Cmd + / – to zoom.</p>
-  </footer>
+    initCloudSync();
+    initTheme();
 
-  <script type="module" src="/scripts/shell.js?v=8000"></script>
+    document.getElementById('startQuiz').addEventListener('click', () => {
+      if (auth.currentUser) {
+        window.location.href = '/game.html';
+      } else {
+        window.location.href = '/login.html';
+      }
+    });
+  </script>
 </body>
 </html>
