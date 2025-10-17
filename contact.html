@@ -1,50 +1,33 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="theme-color" content="#0a2a43" />
-  <meta name="description" content="Contact Whylee support" />
-  <link rel="manifest" href="/site.webmanifest?v=7000" />
-  <link rel="icon" href="/media/icons/favicon.svg" type="image/svg+xml" />
-  <link rel="apple-touch-icon" href="/media/icons/whylee-icon-192.png" />
-  <title>Contact · Whylee</title>
-  <link rel="preload" href="/style.css?v=7000" as="style" />
-  <link rel="stylesheet" href="/style.css?v=7000" />
-  <link rel="stylesheet" href="/styles/animations.css?v=7000" />
-  <link rel="preload" href="/shell.js?v=7000" as="script" />
-  <link rel="preload" href="/app.js?v=7000" as="script" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Whylee Pro</title>
+
+  <link rel="stylesheet" href="/styles/brand.css?v=8000">
+  <link rel="stylesheet" href="/styles/style.css?v=8000">
+  <link rel="stylesheet" href="/styles/animations.css?v=8000">
 </head>
 <body>
-  <noscript>Enable JavaScript to use Whylee.</noscript>
-
-  <header class="app-header">
-    <button class="icon" id="btn-menu" aria-label="Toggle menu" title="Menu" hidden>☰</button>
-    <h1 class="brand">Whylee</h1>
-    <div class="header-actions">
-      <button id="btn-refresh" class="secondary">Refresh</button>
-      <button id="btn-install" class="primary wl-nudge" hidden>Install</button>
-    </div>
+  <header>
+    <h1>Whylee Pro</h1>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="profile.html">Profile</a>
+    </nav>
   </header>
 
-  <main id="app" class="app-shell" role="main" aria-live="polite">
-    <section class="route route--contact">
-      <p>Email: <a href="mailto:hello@dailybrainbolt.com">hello@dailybrainbolt.com</a></p>
-      <p>Website: <a href="https://dailybrainbolt.com">dailybrainbolt.com</a></p>
-    </section>
+  <main class="container">
+    <div class="card">
+      <h2>Unlock Whylee Pro</h2>
+      <p>Go ad-free, earn faster rewards, and unlock exclusive avatars.</p>
+      <button class="btn-pro">Upgrade to Pro</button>
+    </div>
   </main>
 
-  <footer class="app-footer">
-    <nav class="tabs" aria-label="Primary">
-      <a href="#/home" data-tab>Home</a>
-      <a href="#/tasks" data-tab>Tasks</a>
-      <a href="#/about" data-tab>About</a>
-    </nav>
-    <small id="app-version" class="muted"></small>
+  <footer>
+    Whylee Pro © 2025 | Cognitive Mastery Unlocked
   </footer>
-
-  <script src="/shell.js?v=7000" defer></script>
-  <script src="/app.js?v=7000" defer></script>
-  <script src="/scripts/ui/updatePrompt.js?v=7000" defer></script>
 </body>
 </html>
