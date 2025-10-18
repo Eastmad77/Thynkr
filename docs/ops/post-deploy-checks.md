@@ -1,10 +1,13 @@
-# ✅ Post-Deploy Smoke & Rollback Guide
+# ✅ Post-Deploy Smoke & Rollback
 
-## 🧪 Post-Deploy Smoke Test (Manual QA)
+Automated check runs every 6h: see **Actions → Post-Deploy Check**.
 
-After every production deploy (Netlify → Functions → Play release):
+Manual smoke after deploy:
+- `curl https://YOUR-SITE.netlify.app/health` → HTTP 200, `latencyMs < 500`
+- Open `/game.html` → HUD + streak/pips animate
+- Open `/pro.html` → Play purchase (Android) / Stripe checkout (web)
+- Consent banner (EEA) → footer ad loads
+- `/admin-monitor.html` shows logs & health
 
-### Health Endpoint
-- Run:  
-  ```bash
-  curl https://YOUR-SITE.netlify.app/health
+Rollback:
+- Netlify → Deploys → “Publish previous deploy”
