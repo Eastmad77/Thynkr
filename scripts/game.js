@@ -1,15 +1,22 @@
 /**
- * Whylee Gameplay (v8+ MATCH with sound + progress)
+ * Whylee Gameplay (v8 + Pips)
+ * - HUD AvatarBadge
+ * - QuestionEngine session
+ * - XP/streak + milestones
+ * - NEW: Per-question pip progress with redemption pop-remove
  */
+
 import { auth, db, doc, getDoc, updateDoc } from "/scripts/firebase-bridge.js";
 import { mountAvatarBadge } from "/scripts/components/avatarBadge.js";
 import { initQuestionEngine } from "/scripts/ai/questionEngine.js";
 import { evaluateMilestones, persistMilestones } from "/scripts/milestones.js";
-import { syncLeaderboard } from "/scripts/leaderboardSync.js";
+import { Pips } from "/scripts/components/pips.js";
 
+// ----- HUD mount --------------------------------------------------------------
 const hudScore = document.getElementById("hudScore");
 await mountAvatarBadge("#hudUser", { size: 56, uid: auth.currentUser?.uid });
 
+// ----- UI refs ----------------------------------------------------------------
 const startBtn  = document.getElementById("startBtn");
 const nextBtn   = document.getElementById("nextBtn");
 const finishBtn = document.getElementById("finishBtn");
@@ -18,116 +25,166 @@ const qIdxEl    = document.getElementById("qIdx");
 const qTotalEl  = document.getElementById("qTotal");
 const timerEl   = document.getElementById("timer");
 
-// sounds
-const sndCorrect = new Audio("/media/audio/correct.mp3");
-const sndWrong   = new Audio("/media/audio/incorrect.mp3");
-const sndClick   = new Audio("/media/audio/click.mp3");
+// NEW: pips row
+const pips = new Pips("#hudPips", { total: 10 });
 
-let eng = null, t0 = 0, tickHandle = null;
+// ----- State ------------------------------------------------------------------
+let eng = null;
+let t0 = 0;            // session start ms
+let tickHandle = null; // timer interval
+let wrongCount = 0;    // track ❌ to coordinate with redemption
+let correctInRow = 0;  // track redemption threshold (3)
 
+// ----- Timer ------------------------------------------------------------------
 function startTimer(){
-  t0 = Date.now(); stopTimer();
-  tickHandle = setInterval(()=>timerEl.textContent=Math.floor((Date.now()-t0)/1000),1000);
+  t0 = Date.now();
+  stopTimer();
+  tickHandle = setInterval(()=> {
+    timerEl.textContent = Math.floor((Date.now()-t0)/1000);
+  }, 1000);
 }
-function stopTimer(){ if(tickHandle){clearInterval(tickHandle);tickHandle=null;} }
+function stopTimer(){ if (tickHandle) { clearInterval(tickHandle); tickHandle=null; } }
 
+// ----- Render helpers ---------------------------------------------------------
 function renderQuestion(q, index, total){
   qIdxEl.textContent = index+1;
   qTotalEl.textContent = total;
-  if(q.type==="match") return renderMatch(q);
 
   viewport.innerHTML = `
     <h2 class="q-title">${q.q}</h2>
     <div class="answers">
-      ${q.choices.map((l,i)=>`<button class="btn-answer" data-i="${i}">${l}</button>`).join("")}
-    </div>`;
-  viewport.querySelectorAll(".btn-answer").forEach(btn=>{
-    btn.addEventListener("click",()=>{
-      sndClick.play();
-      const guess=+btn.dataset.i, ok=eng.submit(guess,Date.now()-t0);
-      viewport.querySelectorAll(".btn-answer").forEach(b=>b.disabled=true);
-      btn.style.borderColor=ok?"var(--brand)":"crimson";
-      ok?sndCorrect.play():sndWrong.play();
-      const {asked,total}=eng._debug();
-      nextBtn.style.display=asked<total?"":"none";
-      finishBtn.style.display=asked>=total?"":"none";
+      ${q.choices.map((label,i)=>`<button data-i="${i}">${label}</button>`).join("")}
+    </div>
+    <p class="muted" style="margin-top:.5rem">Pick one answer</p>
+  `;
+
+  viewport.querySelectorAll("button[data-i]").forEach(btn=>{
+    btn.addEventListener("click", () => {
+      const guess  = Number(btn.getAttribute("data-i"));
+      const timeMs = Date.now() - t0;
+
+      // Engine submission (adapts difficulty)
+      const correct = eng.submit(guess, timeMs);
+
+      // Visual lock
+      viewport.querySelectorAll("button[data-i]").forEach(b => b.disabled = true);
+      btn.style.borderColor = correct ? "var(--brand)" : "crimson";
+
+      // --- Pips + Redemption bookkeeping ------------------------------------
+      if (correct) {
+        correctInRow += 1;
+        pips.mark(true);
+
+        // Redemption: 3 in a row -> remove last ❌ if any
+        if (correctInRow >= 3 && wrongCount > 0) {
+          const redeemed = pips.redeemOne();
+          if (redeemed) {
+            wrongCount = Math.max(0, wrongCount - 1);
+            // (Optional) toast
+            // alert("🔄 Redemption! One mistake forgiven.");
+          }
+          correctInRow = 0; // reset the streak after redemption fires
+        }
+      } else {
+        correctInRow = 0;
+        wrongCount += 1;
+        pips.mark(false);
+      }
+
+      // show next/finish
+      const { asked, total } = eng._debug();
+      nextBtn.style.display   = asked < total ? "" : "none";
+      finishBtn.style.display = asked >= total ? "" : "none";
     });
   });
 }
 
-function renderMatch(q){
-  let flipped=[],found=0,mistakes=0;
-  const totalPairs=q.cards.length/2;
-  viewport.innerHTML=`
-    <h2 class="q-title">${q.title}</h2>
-    <div class="progress"><div id="bar"></div></div>
-    <div class="match-grid">
-      ${q.cards.map(c=>`
-        <button class="card" data-id="${c.id}" data-key="${c.key}">
-          <span class="front">?</span>
-          <span class="back">${c.face}</span>
-        </button>`).join("")}
-    </div>
-    <div class="muted" style="margin-top:.6rem">Pairs Found:
-      <b id="pairsFound">0</b> / ${totalPairs}</div>`;
-  const grid=viewport.querySelector(".match-grid"),pf=viewport.querySelector("#pairsFound"),bar=viewport.querySelector("#bar");
-  function updateBar(){bar.style.width=`${(found/totalPairs)*100}%`;}
-
-  grid.addEventListener("click",e=>{
-    const card=e.target.closest(".card");
-    if(!card||card.classList.contains("matched")||card.classList.contains("flipped"))return;
-    card.classList.add("flipped");flipped.push(card);
-    if(flipped.length===2){
-      const[a,b]=flipped,same=a.dataset.key===b.dataset.key;
-      if(same){a.classList.add("matched");b.classList.add("matched");found++;pf.textContent=found;updateBar();sndCorrect.play();flipped=[];
-        if(found>=totalPairs){
-          const sec=Math.floor((Date.now()-t0)/1000);
-          eng.submitMatch({pairsFound:found,mistakes,seconds:sec});
-          bar.classList.add("glow");
-          setTimeout(()=>alert("🎉 All pairs matched!"),600);
-          const {asked,total}=eng._debug();
-          nextBtn.style.display=asked<total?"":"none";finishBtn.style.display=asked>=total?"":"none";
-        }
-      }else{
-        mistakes++;sndWrong.play();
-        setTimeout(()=>{a.classList.remove("flipped");b.classList.remove("flipped");flipped=[];},650);
-      }
-    }
-  });
-}
-
 function renderSummary(r){
-  viewport.innerHTML=`
-    <div style="text-align:center; padding:1.25rem 0">
-      <h2 class="h4">Great work! 🎉</h2>
-      <p class="muted">You answered <b>${r.correct}/${r.total}</b> correctly in
-      <b>${Math.round(r.durationMs/1000)}s</b>.<br>XP earned: <b>${r.xpEarned}</b></p>
-      <div style="margin-top:.75rem;display:flex;gap:.5rem;justify-content:center">
+  viewport.innerHTML = `
+    <div style="text-align:center; padding: 1.25rem 0">
+      <h2 class="h4" style="margin:0 0 .5rem">Great work! 🎉</h2>
+      <p class="muted">You answered <strong>${r.correct}/${r.total}</strong> correctly in <strong>${Math.round(r.durationMs/1000)}s</strong>.</p>
+      <p class="muted">XP earned (client est.): <strong>${r.xpEarned}</strong></p>
+      <div style="margin-top: .75rem; display:flex; gap:.5rem; justify-content:center">
         <a class="btn btn--ghost" href="/leaderboard.html">Leaderboard</a>
         <a class="btn btn--brand" href="/game.html">Play Again</a>
-      </div></div>`;
-  document.querySelector(".controls").style.display="none";
+      </div>
+    </div>
+  `;
+  document.querySelector(".controls").style.display = "none";
 }
 
-startBtn.onclick=async()=>{
-  if(!auth.currentUser){alert("Please sign in to play.");location.href="/signin.html";return;}
-  eng=await initQuestionEngine({mode:"daily",count:10});
-  const dbg=eng._debug();qTotalEl.textContent=dbg.total;startTimer();
-  renderQuestion(eng.next(),0,dbg.total);
-  startBtn.style.display="none";nextBtn.style.display="";finishBtn.style.display="none";
-};
-nextBtn.onclick=()=>{const d=eng._debug();if(d.asked<d.total)renderQuestion(eng.next(),d.asked-1,d.total);};
-finishBtn.onclick=async()=>{
-  stopTimer();const r=eng.results({pro:false});renderSummary(r);
-  try{
-    const uid=auth.currentUser?.uid;if(!uid)return;
-    const ref=doc(db,"users",uid);const snap=await getDoc(ref);const user=snap.data()||{};
-    const newXp=(user.xp||0)+r.xpEarned,newStreak=(user.streak||0)+1;
-    await updateDoc(ref,{xp:newXp,streak:newStreak});
-    const evald=evaluateMilestones({...user,xp:newXp,streak:newStreak,pro:user.pro});
-    await persistMilestones(uid,user,evald);
-    await syncLeaderboard(uid,{name:user.displayName||"Player",xp:newXp,streak:newStreak,avatarId:user.avatarId||"fox-default",emoji:user.emoji||"🧠"});
-    hudScore.textContent=`XP: ${newXp.toLocaleString()}`;
-    if(evald.newly.length)alert(`🎉 Unlocked: ${evald.newly.map(m=>m.id).join(", ")}`);
-  }catch(e){console.error(e);}
-};
+// ----- Session lifecycle ------------------------------------------------------
+startBtn.addEventListener("click", async () => {
+  // Require sign-in
+  if (!auth.currentUser) {
+    alert("Please sign in to play.");
+    window.location.href = "/signin.html";
+    return;
+  }
+
+  // Build engine
+  eng = await initQuestionEngine({ mode: "daily", count: 10 });
+  const debug = eng._debug();
+  qTotalEl.textContent = debug.total;
+
+  // Reset UI counters
+  wrongCount   = 0;
+  correctInRow = 0;
+  pips.reset(debug.total);
+
+  // Timer for session
+  startTimer();
+
+  // First question
+  const q = eng.next();
+  renderQuestion(q, 0, debug.total);
+
+  // Buttons
+  startBtn.style.display = "none";
+  nextBtn.style.display  = "";
+  finishBtn.style.display = "none";
+});
+
+nextBtn.addEventListener("click", () => {
+  const dbg = eng._debug();
+  if (dbg.asked < dbg.total) {
+    const q = eng.next();
+    renderQuestion(q, dbg.asked - 1, dbg.total);
+  }
+});
+
+finishBtn.addEventListener("click", async () => {
+  stopTimer();
+
+  // Aggregate results (client view)
+  const r = eng.results({ pro: false });
+  renderSummary(r);
+
+  // ----- Award XP & streak, then run milestones ------------------------------
+  try {
+    const uid = auth.currentUser?.uid;
+    if (!uid) return;
+
+    const ref = doc(db, "users", uid);
+    const snap = await getDoc(ref);
+    const user = snap.data() || {};
+
+    const newXp     = Math.max(0, Math.round((user.xp || 0) + r.xpEarned));
+    const newStreak = (user.streak || 0) + 1;
+
+    await updateDoc(ref, { xp: newXp, streak: newStreak });
+
+    const evald = evaluateMilestones({ ...user, xp: newXp, streak: newStreak, pro: user.pro });
+    await persistMilestones(uid, user, evald);
+
+    document.getElementById("hudScore").textContent = `XP: ${newXp.toLocaleString()}`;
+
+    if (evald.newly.length) {
+      const names = evald.newly.map(m => m.id.replace(/^(skin|badge|boost):/, "").replace(/-/g," "));
+      alert(`🎉 Unlocked: ${names.join(", ")}`);
+    }
+  } catch (e) {
+    console.error(e);
+  }
+});
