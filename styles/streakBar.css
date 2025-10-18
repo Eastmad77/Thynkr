@@ -1,85 +1,36 @@
-/* ============================================================================
-   Whylee — Premium Streak + Pip System
-   Cinematic glowing streak bar with redemption pulse and Pro sheen.
-   ============================================================================ */
+/* Whylee Streak Bar (v9000) */
 
-:root {
-  --wl-streak-h: 10px;
-  --wl-streak-bg: rgba(255,255,255,.08);
-  --wl-streak-grad: linear-gradient(90deg, #00D0FF 0%, #23F5D3 55%, #FFD86B 100%);
-  --wl-streak-shadow: 0 0 14px rgba(0,208,255,.45), 0 0 28px rgba(255,216,107,.25);
-  --wl-streak-prev: 0%;
-  --wl-streak-next: 100%;
-}
-
-/* Core streak container */
 .streak {
   position: relative;
   width: 100%;
-  height: var(--wl-streak-h);
-  background: var(--wl-streak-bg);
-  border-radius: 999px;
+  height: 10px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 6px;
   overflow: hidden;
-  box-shadow: inset 0 0 0 1px rgba(255,255,255,.05);
+  margin: 10px 0 18px;
 }
-
-/* Animated fill */
 .streak-fill {
   position: absolute;
-  inset: 0 auto 0 0;
+  top: 0; left: 0;
+  height: 100%;
   width: 0%;
-  border-radius: inherit;
-  background: linear-gradient(90deg, #2483FF 0%, #44E2FF 100%);
-  transition: width .3s ease;
+  background: linear-gradient(90deg, var(--brand) 0%, var(--accent) 100%);
+  border-radius: 6px;
+  box-shadow: 0 0 10px var(--accent-glow);
+  transition: width 0.5s ease-in-out;
 }
-
-/* Pro mode — luminous gradient + sweep */
-.streak-fill.pro {
-  background: var(--wl-streak-grad);
-  box-shadow: var(--wl-streak-shadow);
+.pips {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 10px;
 }
-.streak-fill.pro::after {
-  content:"";
-  position:absolute; inset:0;
-  background:linear-gradient(120deg,rgba(255,255,255,0) 0%,rgba(255,255,255,.3) 40%,rgba(255,255,255,0) 80%);
-  animation: wl-sheen 6s ease-in-out infinite;
-  mix-blend-mode: screen;
-}
-@keyframes wl-sheen {
-  0%,100% { transform:translateX(-100%); opacity:.1; }
-  50% { transform:translateX(100%); opacity:.4; }
-}
-
-/* Redemption pulse */
-.streak-fill.redeem {
-  animation: wl-streak-redeem .5s ease-out;
-}
-@keyframes wl-streak-redeem {
-  0% { filter:brightness(1); transform:scaleX(1); }
-  40% { filter:brightness(1.5); transform:scaleX(1.05); }
-  100% { filter:brightness(1); transform:scaleX(1); }
-}
-
-/* ------------------ Pips ------------------ */
-.pips { display:grid; grid-auto-flow:column; gap:8px; align-items:center; margin-top:4px; }
 .pip {
-  width:12px; height:12px; border-radius:50%;
-  background:rgba(255,255,255,.12);
-  box-shadow:inset 0 0 0 1px rgba(0,0,0,.25);
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.12);
+  transition: background 0.3s ease, transform 0.2s ease;
 }
-.pip--ok { background:#00E8FF; box-shadow:0 0 0 2px rgba(0,232,255,.25); }
-.pip--bad { background:#D94D5C; box-shadow:0 0 0 2px rgba(217,77,92,.25); }
-.pip--redeem { animation: wl-pip-redeem .45s ease-out; }
-
-@keyframes wl-pip-redeem {
-  0% { transform:scale(1); filter:brightness(1); }
-  50% { transform:scale(1.35); filter:brightness(1.6); }
-  100% { transform:scale(1); filter:brightness(1); }
-}
-
-.pips.pips--lg .pip { width:14px; height:14px; }
-
-/* Motion accessibility */
-@media (prefers-reduced-motion: reduce) {
-  .streak-fill, .streak-fill::after, .pip--redeem { animation:none !important; transition:none !important; }
-}
+.pip.correct { background: var(--accent); box-shadow: 0 0 8px var(--accent-glow); }
+.pip.wrong { background: crimson; opacity: 0.7; }
+.pip.redeemed { background: gold; box-shadow: 0 0 6px gold; transform: scale(1.15); }
