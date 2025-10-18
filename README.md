@@ -8,3 +8,5 @@
    ```bash
    cd functions && npm ci && cd ..
    firebase deploy --only functions
+   > For smoke-test and rollback instructions, see [`/docs/ops/post-deploy-checks.md`](docs/ops/post-deploy-checks.md)
+
