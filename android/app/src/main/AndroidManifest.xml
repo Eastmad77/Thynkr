@@ -1,0 +1,45 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="app.whylee">
+
+    <!-- Network for TWA/PWA -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <application
+        android:usesCleartextTraffic="false"
+        android:allowBackup="false"
+        android:label="Whylee"
+        android:icon="@mipmap/ic_launcher">
+
+        <!-- Launcher Activity (Bubblewrap / ABH) -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:theme="@style/Theme.MaterialComponents.DayNight.NoActionBar">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity>
+
+        <!-- OPTIONAL WebView bridge for direct JS <-> native messaging -->
+        <activity
+            android:name=".WebBridgeActivity"
+            android:exported="false"
+            android:theme="@style/Theme.MaterialComponents.DayNight.NoActionBar" />
+
+        <!-- PostMessage service for TWA bridge -->
+        <service
+            android:name="com.google.androidbrowserhelper.trusted.PostMessageService"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.support.customtabs.action.CustomTabsService"/>
+            </intent-filter>
+        </service>
+
+        <!-- AdMob App ID (REQUIRED for Mobile Ads SDK) -->
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-XXXXXXXXXXXXXXXX~YYYYYYYYYY" /> <!-- TODO: replace -->
+
+    </application>
+</manifest>
