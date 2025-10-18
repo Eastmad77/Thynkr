@@ -5,26 +5,24 @@
 -dontwarn com.google.androidbrowserhelper.**
 
 # ========================
-# Google UMP (User Messaging Platform)
+# Google UMP (Consent)
 # ========================
 -keep class com.google.android.ump.** { *; }
 -dontwarn com.google.android.ump.**
 
 # ========================
-# Optional future integrations
+# Billing & AdMob (NEW)
 # ========================
+-keep class com.android.billingclient.** { *; }
+-dontwarn com.android.billingclient.**
+-keep class com.google.android.gms.ads.** { *; }
+-dontwarn com.google.android.gms.ads.**
 
-# Play Billing
-# -keep class com.android.billingclient.** { *; }
-# -dontwarn com.android.billingclient.**
-
-# Google Mobile Ads SDK
-# -keep class com.google.android.gms.ads.** { *; }
-# -dontwarn com.google.android.gms.ads.**
-
-# Firebase (if used)
-# -keep class com.google.firebase.** { *; }
-# -dontwarn com.google.firebase.**
+# ========================
+# Keep your glue classes (bridge/managers)
+# ========================
+-keep class app.whylee.** { *; }
+-dontwarn app.whylee.**
 
 # ========================
 # Kotlin / AndroidX safe defaults
