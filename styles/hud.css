@@ -1,0 +1,107 @@
+/* ============================================================================
+   Whylee Premium HUD Layout — avatar + XP + streak + timer
+   Matches cinematic style from approved render
+   ============================================================================ */
+
+.hud {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 16px;
+  background: linear-gradient(90deg, rgba(10,18,40,.85) 0%, rgba(6,12,25,.85) 100%);
+  border-radius: 16px;
+  padding: 12px 20px;
+  box-shadow: 0 4px 18px rgba(0,0,0,.35);
+  backdrop-filter: blur(8px);
+  margin-bottom: 20px;
+  position: relative;
+  z-index: 10;
+}
+
+.hud-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: rgba(255,255,255,.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hud-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.hud-score {
+  font-weight: 600;
+  color: var(--brand-light, #00E8FF);
+  text-shadow: 0 0 8px rgba(0,232,255,.45);
+  letter-spacing: 0.3px;
+}
+
+.hud-timer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  font-size: 0.9rem;
+  color: #fff;
+  text-shadow: 0 0 6px rgba(255,255,255,.25);
+}
+
+.timer-value {
+  font-weight: 700;
+  font-size: 1.25rem;
+}
+
+/* viewport alignment */
+.viewport {
+  text-align: center;
+  padding: 20px;
+  max-width: 640px;
+  margin: 0 auto;
+  color: #fff;
+}
+
+/* buttons & layout */
+.controls {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 1.25rem;
+}
+
+.btn {
+  background: rgba(255,255,255,0.08);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.15);
+  padding: 0.6rem 1.2rem;
+  border-radius: 10px;
+  font-weight: 600;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+.btn:hover {
+  background: rgba(255,255,255,0.15);
+  transform: translateY(-1px);
+}
+.btn--brand {
+  background: linear-gradient(90deg, var(--brand), var(--accent));
+  border: none;
+  color: #000;
+  text-shadow: none;
+}
+.btn--ghost {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.25);
+}
+
+/* progress count */
+.question-status {
+  font-size: 0.85rem;
+  color: rgba(255,255,255,0.65);
+  margin-top: 0.5rem;
+  text-align: center;
+}
