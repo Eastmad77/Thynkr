@@ -1,65 +1,19 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Whylee — Level 2 • Memory Match</title>
+<link rel="stylesheet" href="/styles/brand.css?v=9001">
+<link rel="stylesheet" href="/styles/style.css?v=9001">
+<link rel="stylesheet" href="/styles/animations.css?v=9001">
 
-  <link rel="stylesheet" href="/styles/brand.css?v=9001">
-  <link rel="stylesheet" href="/styles/style.css?v=9001">
-  <link rel="stylesheet" href="/styles/animations.css?v=9001">
+<link rel="stylesheet" href="/styles/hud.css?v=9001">
+<link rel="stylesheet" href="/styles/streakBar.css?v=9001">
+<link rel="stylesheet" href="/styles/level2.css?v=9001">
+<link rel="stylesheet" href="/styles/dark.css?v=9001">
 
-  <link rel="stylesheet" href="/styles/hud.css?v=9001">
-  <link rel="stylesheet" href="/styles/streakBar.css?v=9001">
-  <link rel="stylesheet" href="/styles/level2.css?v=9001">
-</head>
-<body class="bg-stars">
-
-  <!-- === Premium HUD (shared) === -->
-  <section id="hud" class="hud" aria-label="Heads-up display">
-    <div id="hudUser" class="hud-avatar"></div>
-
-    <div class="hud-info">
-      <div id="hudScore" class="hud-score">XP: 0</div>
-
-      <!-- Streak progress (shared glow) -->
-      <div class="streak">
-        <div id="streakFill" class="streak-fill"></div>
-      </div>
-
-      <!-- Main pips: 5 large nodes for 5 pairs -->
-      <div id="hudPips" class="pips pips--lg" aria-label="Pairs progress"></div>
-
-      <!-- Miss Rail: small red beads for wrong attempts (redemption removes) -->
-      <div id="hudMiss" class="pips pips--sm" aria-label="Wrong attempts"></div>
-    </div>
-
-    <div class="hud-timer">
-      <span class="timer-label">Time</span>
-      <span id="timer" class="timer-value">0</span>
-    </div>
-  </section>
-
-  <header class="scene-head">
-    <h1 class="title">
-      <span class="title-top">LEVEL 2</span>
-      <span class="title-ghost">• Memory Match</span>
-    </h1>
-    <p class="subtitle">Find all pairs. Misses add a red bead — get 3 correct in a row to redeem one.</p>
-  </header>
-
-  <main id="board" class="mm-board" aria-live="polite"></main>
-
-  <section class="controls">
-    <button id="restartBtn" class="btn btn--ghost">Restart</button>
-    <a class="btn btn--brand" href="/game.html">Back to Quiz</a>
-  </section>
-
-  <script type="module" src="/scripts/firebase-bridge.js?v=9001"></script>
-  <script type="module" src="/scripts/entitlements.js?v=9001"></script>
-  <script type="module" src="/scripts/components/avatarBadge.js?v=9001"></script>
-  <script type="module" src="/scripts/components/pips.js?v=9001"></script>
-  <script type="module" src="/scripts/ui/streakBar.js?v=9001"></script>
-  <script type="module" src="/scripts/modes/memoryMatch.js?v=9001"></script>
-</body>
-</html>
+<script>
+  // Auto-apply dark if user prefers or saved choice exists
+  try {
+    const saved = localStorage.getItem("theme"); // 'dark' | 'light' | null
+    const prefers = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    if (saved === 'dark' || (!saved && prefers)) {
+      document.documentElement.setAttribute('data-theme','dark');
+    }
+  } catch (e) {}
+</script>
