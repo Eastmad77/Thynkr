@@ -1,5 +1,5 @@
 // /scripts/components/pips.js
-// Premium pips with redemption pop. Coordinates with streakBar visually.
+// Premium pips with redemption pop; companion for streakBar
 
 export class Pips {
   constructor(rootSel, { total = 10, large = false } = {}) {
@@ -21,7 +21,6 @@ export class Pips {
     for (let i = 0; i < this.total; i++) {
       const el = document.createElement("span");
       el.className = "pip";
-      el.setAttribute("aria-hidden", "true");
       this.root.appendChild(el);
       this.pips.push({ el, state: "idle" });
     }
