@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>Whylee — Game</title>
 
+  <!-- Styles -->
   <link rel="stylesheet" href="/styles/brand.css?v=9002">
   <link rel="stylesheet" href="/styles/style.css?v=9002">
   <link rel="stylesheet" href="/styles/animations.css?v=9002">
@@ -16,17 +17,18 @@
     // Auto-apply dark if user prefers or saved choice exists
     try {
       const saved = localStorage.getItem("theme");
-      const prefers = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const prefers = window.matchMedia('(prefers-color-scheme: dark)').matches;
       if (saved === 'dark' || (!saved && prefers)) {
         document.documentElement.setAttribute('data-theme','dark');
       }
-    } catch (e) {}
+    } catch(e){}
   </script>
 </head>
 <body class="bg-stars">
-  <!-- HUD -->
+  <!-- === Premium Game HUD === -->
   <section id="hud" class="hud" aria-label="Heads-up display">
     <div id="hudUser" class="hud-avatar"></div>
+
     <div class="hud-info">
       <div id="hudScore" class="hud-score">XP: 0</div>
       <div class="streak"><div id="streakFill" class="streak-fill"></div></div>
@@ -35,13 +37,20 @@
         <button id="themeToggle" class="btn btn--ghost" title="Toggle theme">🌙</button>
       </div>
     </div>
-    <div class="hud-timer"><span class="timer-label">Time</span><span id="timer" class="timer-value">0</span></div>
+
+    <div class="hud-timer">
+      <span class="timer-label">Time</span>
+      <span id="timer" class="timer-value">0</span>
+    </div>
   </section>
 
-  <!-- Game viewport -->
+  <!-- === Level Intro === -->
   <main class="game">
     <header class="scene-head">
-      <h1 class="title"><span class="title-top">LEVEL 1</span><span class="title-ghost">• Quickfire Quiz</span></h1>
+      <h1 class="title">
+        <span class="title-top">LEVEL 1</span>
+        <span class="title-ghost">• Quickfire Quiz</span>
+      </h1>
       <p class="subtitle">Answer fast. Build streaks. Redemption removes a mistake after 3 in a row.</p>
     </header>
 
@@ -54,11 +63,10 @@
     </div>
   </main>
 
-  <!-- Scripts -->
+  <!-- === Scripts === -->
   <script type="module" src="/scripts/ui/streakBar.js?v=9002"></script>
   <script type="module" src="/scripts/components/pips.js?v=9002"></script>
   <script type="module" src="/scripts/components/avatarBadge.js?v=9002"></script>
-  <script type="module" src="/scripts/ai/questionEngine.js?v=9002"></script>
   <script type="module" src="/scripts/entitlements.js?v=9002"></script>
   <script type="module" src="/scripts/game.js?v=9002"></script>
 
