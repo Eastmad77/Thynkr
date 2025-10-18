@@ -2,24 +2,39 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    // Users – each user can read/write their own record
     match /users/{uid} {
-      allow read: if request.auth != null;
-      allow write: if request.auth != null && request.auth.uid == uid;
+      allow read, write: if request.auth != null && request.auth.uid == uid;
     }
 
-    // Entitlement flags (server writes)
+    // Entitlements – read-only for clients; writes only by privileged service accounts (Functions)
     match /entitlements/{uid} {
       allow read: if request.auth != null && request.auth.uid == uid;
-      allow write: if false; // Cloud Functions only
+      allow write: if request.auth != null
+                   && request.auth.token.admin == true; // set custom claims on Functions if needed
     }
 
-    // Receipt records (server only)
-    match /receipts/{token} { allow read, write: if false; }
+    // Receipts (server authoritative): never writable by clients
+    match /receipts/{id} {
+      allow read: if false;       // hide from client
+      allow write: if false;      // server only via Admin SDK
+    }
 
-    // token→uid links (created via HTTPS endpoint; optional to allow user write)
+    // Mapping tokens to users – never exposed to client
     match /purchaseLinks/{token} {
-      allow read: if false;
-      allow write: if request.auth != null;
+      allow read, write: if false; // only Admin SDK
+    }
+
+    // Leaderboard – public read; writes only by signed-in user to their own doc if you store per-user
+    match /leaderboard/{doc} {
+      allow read: if true;
+      allow write: if request.auth != null && request.resource.data.uid == request.auth.uid;
+    }
+
+    // Daily questions (public)
+    match /daily/{doc} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.token.admin == true;
     }
   }
 }
