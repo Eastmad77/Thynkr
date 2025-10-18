@@ -1,36 +1,119 @@
-/* Whylee Streak Bar (v9000) */
+/* ------------------------------------------------------------------
+   Whylee Premium Streak Bar (v9000)
+   - Pro-ready with glow effects, redemption animation, and smooth fill
+   - Works with createStreakBar() controller in /scripts/ui/streakBar.js
+   ------------------------------------------------------------------ */
 
 .streak {
   position: relative;
   width: 100%;
-  height: 10px;
-  background: rgba(255,255,255,0.08);
-  border-radius: 6px;
+  height: 12px;
+  border-radius: 8px;
   overflow: hidden;
-  margin: 10px 0 18px;
+  background: rgba(255,255,255,0.06);
+  box-shadow: inset 0 0 4px rgba(255,255,255,0.05);
+  margin: 10px 0 16px;
 }
+
 .streak-fill {
+  --wl-streak-prev: 0%;
+  --wl-streak-next: 0%;
   position: absolute;
-  top: 0; left: 0;
+  top: 0;
+  left: 0;
   height: 100%;
   width: 0%;
-  background: linear-gradient(90deg, var(--brand) 0%, var(--accent) 100%);
-  border-radius: 6px;
-  box-shadow: 0 0 10px var(--accent-glow);
-  transition: width 0.5s ease-in-out;
+  background: linear-gradient(90deg, var(--brand), var(--accent));
+  box-shadow: 0 0 14px var(--accent-glow);
+  border-radius: 8px;
+  transition: width 0.45s ease, background 0.6s ease;
+  will-change: width;
 }
+
+/* ----- PRO MODE ----- */
+.streak-fill.pro {
+  background: linear-gradient(
+    90deg,
+    rgba(47,124,255,1) 0%,
+    rgba(30,228,255,1) 30%,
+    rgba(47,124,255,1) 70%,
+    rgba(255,255,255,0.8) 100%
+  );
+  animation: proShimmer 2.5s linear infinite;
+  box-shadow: 0 0 20px var(--accent-glow);
+}
+
+@keyframes proShimmer {
+  0% { filter: brightness(1) saturate(1); }
+  50% { filter: brightness(1.25) saturate(1.3); }
+  100% { filter: brightness(1) saturate(1); }
+}
+
+/* ----- REDEMPTION FLASH ----- */
+.streak-fill.redeem {
+  animation: redeemFlash 0.6s ease-in-out;
+}
+
+@keyframes redeemFlash {
+  0% { background: gold; box-shadow: 0 0 15px gold; }
+  50% { background: linear-gradient(90deg, gold, var(--accent)); }
+  100% { background: var(--brand); box-shadow: 0 0 10px var(--accent-glow); }
+}
+
+/* ----- STREAK BAR GLOW TRANSITION ----- */
+.streak-fill {
+  background-size: 200% 100%;
+  transition: width 0.45s ease-out, background-position 1.5s ease;
+}
+.streak-fill.pro {
+  background-size: 400% 100%;
+}
+
+/* ----- PIPS DISPLAY ----- */
 .pips {
   display: flex;
   justify-content: center;
+  align-items: center;
   gap: 6px;
+  margin-top: 6px;
   margin-bottom: 10px;
 }
+
 .pip {
-  width: 10px; height: 10px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
   background: rgba(255,255,255,0.12);
-  transition: background 0.3s ease, transform 0.2s ease;
+  transition: background 0.3s ease, transform 0.25s ease, box-shadow 0.3s ease;
+  box-shadow: 0 0 4px rgba(0,0,0,0.4);
 }
-.pip.correct { background: var(--accent); box-shadow: 0 0 8px var(--accent-glow); }
-.pip.wrong { background: crimson; opacity: 0.7; }
-.pip.redeemed { background: gold; box-shadow: 0 0 6px gold; transform: scale(1.15); }
+
+.pip.correct {
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--accent-glow);
+  transform: scale(1.1);
+}
+
+.pip.wrong {
+  background: rgba(255, 60, 60, 0.8);
+  box-shadow: 0 0 6px rgba(255, 0, 0, 0.5);
+  opacity: 0.9;
+  transform: scale(0.95);
+}
+
+.pip.redeemed {
+  background: gold;
+  box-shadow: 0 0 10px gold;
+  transform: scale(1.2);
+}
+
+/* ----- RESPONSIVE / SMALL VIEWPORTS ----- */
+@media (max-width: 600px) {
+  .streak {
+    height: 8px;
+  }
+  .pip {
+    width: 8px;
+    height: 8px;
+  }
+}
