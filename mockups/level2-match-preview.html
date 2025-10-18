@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Whylee • Level 2 Preview (5 Pairs)</title>
+
+<style>
+  :root{
+    --bg:#0A0E17;
+    --bg-deep:#09101c;
+    --ink:#dbe7ff;
+    --muted:#8ea1c7;
+    --brand:#2F7CFF;
+    --gold:#F5D36B;
+    --panel:rgba(255,255,255,.06);
+    --border:rgba(255,255,255,.10);
+  }
+  html,body{height:100%}
+  body{
+    margin:0; color:var(--ink); font:600 16px/1.35 system-ui, -apple-system, Segoe UI, Roboto, Inter, sans-serif;
+    background:
+      radial-gradient(140% 120% at 10% -10%, #102040 0%, transparent 60%),
+      radial-gradient(120% 180% at 110% -20%, rgba(245,211,107,.12) 0%, transparent 60%),
+      linear-gradient(#0F1A33, var(--bg));
+    background-attachment: fixed;
+  }
+  header{
+    position:sticky; top:0; z-index:5;
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    padding:14px 16px;
+    backdrop-filter: blur(10px);
+    background: linear-gradient(180deg, rgba(10,14,23,.75), rgba(10,14,23,.35));
+    border-bottom:1px solid var(--border);
+  }
+  .title{display:flex; align-items:center; gap:12px}
+  .title .dot{width:10px;height:10px;border-radius:999px;background:var(--brand);box-shadow:0 0 16px var(--brand)}
+  .legend{color:var(--muted);font-weight:600}
+  main{max-width:1080px;margin:0 auto;padding:18px}
+  .meta{display:flex; align-items:center; justify-content:space-between; gap:12px; color:var(--muted); margin:8px 0 14px}
+  .pill{display:inline-flex; align-items:center; gap:.45rem; padding:.35rem .7rem; border:1px solid var(--border); background:var(--panel); border-radius:999px}
+  .progress{width:100%; height:10px; background:rgba(255,255,255,.08); border-radius:999px; overflow:hidden}
+  .bar{width:0;height:100%; background:linear-gradient(90deg, var(--brand), var(--gold)); transition:width .4s ease}
+  .bar.glow{box-shadow:0 0 22px 6px rgba(245,211,107,.45)}
+
+  /* 5-pair cinematic grid */
+  .match-grid{
+    display:grid; gap:12px;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+  @media (max-width: 980px){ .match-grid{ grid-template-columns: repeat(4, 1fr);} }
+  @media (max-width: 720px){ .match-grid{ grid-template-columns: repeat(3, 1fr);} }
+
+  .card{
+    position:relative; aspect-ratio: 2/3; border-radius:16px; overflow:hidden;
+    border:1px solid var(--border);
+    background:
+      radial-gradient(140% 120% at 120% 0%, rgba(245,211,107,.18), transparent 60%),
+      radial-gradient(130% 120% at -20% 0%, rgba(47,124,255,.22), transparent 55%),
+      linear-gradient(180deg, rgba(18,26,44,.95), rgba(7,11,20,.95));
+    color:#cfe0ff; text-shadow:0 2px 10px rgba(47,124,255,.28);
+    cursor:pointer; perspective: 1000px;
+    box-shadow: 0 10px 30px rgba(0,0,0,.35), inset 0 0 0 1px rgba(255,255,255,.02);
+    contain: content;
+  }
+  .face{position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    backface-visibility:hidden; -webkit-backface-visibility:hidden; transition: transform .5s ease, opacity .5s ease;
+    padding:10px; font-weight:800; letter-spacing:.2px;
+  }
+  .front{font-size:1.4rem; opacity:.95}
+  .back{transform: rotateY(180deg); font-size:1.05rem}
+  .card.flipped .front{ transform: rotateY(180deg); opacity:.1 }
+  .card.flipped .back{ transform: rotateY(0) }
+  .card.matched{
+    outline:2px solid rgba(245,211,107,.75);
+    box-shadow: inset 0 0 0 2px rgba(245,211,107,.22), 0 0 24px rgba(245,211,107,.28);
+  }
+
+  /* Subtle parallax on scroll */
+  @media (prefers-reduced-motion:no-preference){
+    .card{ will-change: transform }
+  }
+
+  /* CTA row */
+  .cta{display:flex; gap:.6rem; justify-content:center; margin:16px 0}
+  .btn{border:1px solid var(--border); background:var(--panel); color:var(--ink); border-radius:12px; padding:.75rem 1rem; font-weight:800; cursor:pointer}
+  .btn--brand{ background:linear-gradient(180deg, #3E85FF, #266BFF); border-color:rgba(255,255,255,.12); color:white }
+
+  /* Accessibility */
+  @media (prefers-reduced-motion:reduce){
+    .face{ transition:none }
+    .bar{ transition:none }
+  }
+</style>
+</head>
+<body>
+  <header>
+    <div class="title"><span class="dot"></span><div>Level 2 • Memory Match</div></div>
+    <div class="legend">Find <strong>5 pairs</strong> • Faster = bonus XP</div>
+  </header>
+
+  <main>
+    <div class="meta">
+      <span class="pill">Pairs Found: <b id="pairsFound">0</b> / <b id="pairsTotal">5</b></span>
+      <span class="pill">Time: <span id="time">00</span>s</span>
+    </div>
+
+    <div class="progress" aria-hidden="true"><div id="bar" class="bar"></div></div>
+
+    <section class="match-grid" id="grid" aria-label="Cinematic card grid">
+      <!-- Cards injected by script -->
+    </section>
+
+    <div class="cta">
+      <button id="reset" class="btn">Reset</button>
+      <button id="finish" class="btn btn--brand">Finish Demo</button>
+    </div>
+  </main>
+
+  <!-- Sound hooks (safe if files missing) -->
+  <audio id="sCorrect" preload="auto" src="/media/audio/correct.mp3"></audio>
+  <audio id="sWrong"   preload="auto" src="/media/audio/incorrect.mp3"></audio>
+  <audio id="sClick"   preload="auto" src="/media/audio/click.mp3"></audio>
+
+<script>
+(function(){
+  const WORDS = [
+    ["Aurora","Dawn"],
+    ["Valor","Courage"],
+    ["Cipher","Code"],
+    ["Ember","Spark"],
+    ["Zenith","Peak"],
+    ["Nimbus","Cloud"],
+    ["Vigor","Energy"],
+    ["Echo","Repeat"]
+  ];
+
+  // --------- helpers
+  const $ = (s, r=document)=>r.querySelector(s);
+  const grid = $("#grid"); const pf = $("#pairsFound"); const pt = $("#pairsTotal"); const bar=$("#bar");
+  const sCorrect=$("#sCorrect"), sWrong=$("#sWrong"), sClick=$("#sClick");
+  let t0=0, timer=null, found=0, mistakes=0, flipped=[], totalPairs=5;
+
+  function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=(Math.random()*(i+1))|0;[a[i],a[j]]=[a[j],a[i]]}return a}
+  function pad(n){return n<10?`0${n}`:`${n}`}
+
+  function build(){
+    grid.innerHTML="";
+    const pairs = shuffle(WORDS).slice(0,totalPairs);
+    const deck = [];
+    let id=1;
+    for(const [a,b] of pairs){
+      const key = `${a}-${b}`.toLowerCase();
+      deck.push({id:id++, key, face:a});
+      deck.push({id:id++, key, face:b});
+    }
+    for(const c of shuffle(deck)){
+      const el = document.createElement("button");
+      el.className="card";
+      el.setAttribute("data-id", c.id);
+      el.setAttribute("data-key", c.key);
+      el.innerHTML = `<span class="face front">?</span><span class="face back">${c.face}</span>`;
+      grid.appendChild(el);
+    }
+    found=0;mistakes=0;flipped=[];pf.textContent=found;pt.textContent=totalPairs;bar.style.width="0%";bar.classList.remove("glow");
+    startTimer();
+  }
+
+  function startTimer(){
+    t0=Date.now(); clearInterval(timer);
+    timer=setInterval(()=>{$("#time").textContent = pad(Math.floor((Date.now()-t0)/1000));},1000);
+  }
+
+  function endRound(){
+    clearInterval(timer);
+    bar.classList.add("glow");
+    try{sCorrect.currentTime=0;sCorrect.play();}catch(e){}
+    setTimeout(()=>alert("🎉 All pairs matched! (Demo)"), 500);
+  }
+
+  // Interaction
+  grid.addEventListener("click",(e)=>{
+    const card=e.target.closest(".card"); if(!card) return;
+    if(card.classList.contains("matched")||card.classList.contains("flipped")) return;
+    try{sClick.currentTime=0;sClick.play();}catch(e){}
+    card.classList.add("flipped"); flipped.push(card);
+    if(flipped.length===2){
+      const[a,b]=flipped; const same=a.dataset.key===b.dataset.key;
+      if(same){
+        a.classList.add("matched"); b.classList.add("matched");
+        found++; pf.textContent=found; bar.style.width = `${(found/totalPairs)*100}%`;
+        try{sCorrect.currentTime=0;sCorrect.play();}catch(e){}
+        flipped=[];
+        if(found>=totalPairs) endRound();
+      }else{
+        mistakes++;
+        try{sWrong.currentTime=0;sWrong.play();}catch(e){}
+        setTimeout(()=>{a.classList.remove("flipped"); b.classList.remove("flipped"); flipped=[];}, 650);
+      }
+    }
+  });
+
+  // Controls
+  $("#reset").addEventListener("click", ()=>build());
+  $("#finish").addEventListener("click", ()=>{found=totalPairs; pf.textContent=found; bar.style.width="100%"; endRound();});
+
+  // Subtle parallax (performance-safe)
+  let ticking=false;
+  function onScroll(){
+    if(ticking) return; ticking=true;
+    requestAnimationFrame(()=>{
+      const cards=[...document.querySelectorAll(".card")];
+      const vh=window.innerHeight;
+      cards.forEach(c=>{
+        const r=c.getBoundingClientRect();
+        const p=Math.max(0, Math.min(1, (vh - r.top) / (vh + r.height)));
+        c.style.transform = `translateY(${(p-0.5)*6}px)`;
+      });
+      ticking=false;
+    });
+  }
+  window.addEventListener("scroll", onScroll, {passive:true});
+
+  // Respect prefers-reduced-motion
+  if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    window.removeEventListener("scroll", onScroll);
+  }
+
+  // init
+  build();
+})();
+</script>
+</body>
+</html>
