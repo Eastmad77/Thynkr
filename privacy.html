@@ -1,19 +1,48 @@
-<!doctype html>
-<html lang="en" data-theme="dark">
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Privacy — Whylee</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Privacy Policy – Whylee</title>
 
-  <!-- Core Style Stack -->
   <link rel="stylesheet" href="/styles/brand.css?v=9002">
   <link rel="stylesheet" href="/styles/style.css?v=9002">
   <link rel="stylesheet" href="/styles/animations.css?v=9002">
+  <link rel="stylesheet" href="/styles/ads.css?v=9002">
+
+  <script type="module">
+    import { mountConsentBanner } from "/scripts/ads/consentManager.js";
+    import { initAdSense, createResponsiveAd, mountAdStyles } from "/scripts/ads/adsense.js";
+    mountConsentBanner();
+    initAdSense();
+    mountAdStyles();
+    window.addEventListener("DOMContentLoaded", () => {
+      createResponsiveAd("#ad-privacy-footer", "1234567893");
+    });
+  </script>
 </head>
-<body class="bg-stars">
-  <main class="container" style="padding:28px 0 40px">
+<body>
+  <header>
     <h1>Privacy Policy</h1>
-    <p class="text-muted">We respect your privacy. This app uses Firebase for authentication and storage.</p>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <h2>Your Privacy</h2>
+      <p>We respect your privacy and comply with applicable data protection laws. Whylee collects minimal information required to provide its core services.</p>
+
+      <h3>Advertising</h3>
+      <p>We display advertising on the website using Google AdSense and in the Android app using Google AdMob. Ads may be personalized based on your consent and device settings.</p>
+      <p>For users in the EEA, a consent dialog is presented before loading advertising tags. Ads are never displayed during gameplay.</p>
+    </section>
+
+    <div class="adwrap">
+      <div id="ad-privacy-footer"></div>
+    </div>
   </main>
+
+  <footer>
+    &copy; 2025 Whylee
+  </footer>
 </body>
 </html>
