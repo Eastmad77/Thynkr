@@ -1,10 +1,7 @@
 package app.whylee
 
 import android.os.Bundle
-import android.util.Log
 import com.google.androidbrowserhelper.trusted.LauncherActivity
-
-// UMP (Consent)
 import com.google.android.ump.ConsentRequestParameters
 import com.google.android.ump.UserMessagingPlatform
 
@@ -13,9 +10,8 @@ class MainActivity : LauncherActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // ---------- UMP Consent ----------
-        val params = ConsentRequestParameters
-            .Builder()
+        // --- Google Consent Form (for GDPR/EEA users) ---
+        val params = ConsentRequestParameters.Builder()
             .setTagForUnderAgeOfConsent(false)
             .build()
 
@@ -24,25 +20,33 @@ class MainActivity : LauncherActivity() {
             this,
             params,
             {
-                UserMessagingPlatform.loadAndShowConsentFormIfRequired(this) { formError ->
-                    if (formError != null) {
-                        Log.w("WhyleeUMP", "Consent form error: ${formError.errorCode} ${formError.message}")
-                    } else {
-                        Log.d("WhyleeUMP", "Consent handled (if required).")
-                    }
+                // Attempt to show consent form if required
+                UserMessagingPlatform.loadAndShowConsentFormIfRequired(this) { _ ->
+                    // If the form is shown, the callback fires when it’s dismissed
                 }
             },
-            { requestError ->
-                Log.w("WhyleeUMP", "Consent info update failed: ${requestError.errorCode} ${requestError.message}")
+            { _ ->
+                // Failed to load consent info, proceed silently
             }
         )
 
-        // ---------- Init native managers ----------
-        AdsManager.init(this)      // Mobile Ads SDK
-        BillingManager.init(this)  // Play Billing client
-
-        // ---------- PostMessage Bridge ----------
-        // The bridge registers a channel with the current TWA custom tab session
+        // --- Initialize Ads, Billing, and JS Bridge ---
+        AdsManager.init(this)
+        BillingManager.init(this)
         JsBridge.bindToTwa(this)
+    }
+
+    // --- Track activity lifecycle for billing & ads ---
+    override fun onStart() {
+        super.onStart()
+        ActivityHolder.activity = this
+        BillingManager.setActivity(this)
+    }
+
+    override fun onStop() {
+        super.onStop()
+        if (ActivityHolder.activity === this) {
+            ActivityHolder.activity = null
+        }
     }
 }
