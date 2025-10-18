@@ -1,0 +1,13 @@
+name: Post-Deploy Check
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 */6 * * *"
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check /health
+        run: |
+          code=$(curl -s -o health.json -w "%{http_code}" https://YOUR-SITE.netlify.app/health)
+          test "$code" -eq 200
