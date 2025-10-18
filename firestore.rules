@@ -2,20 +2,24 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // 🔹 Core user profiles
     match /users/{uid} {
-      allow read, write: if request.auth.uid == uid;
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == uid;
     }
 
-    // 🔹 Public leaderboard
-    match /leaderboard/{uid} {
-      allow read: if true; // anyone can see leaderboard
-      allow write: if request.auth.uid == uid;
+    // Entitlement flags (server writes)
+    match /entitlements/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow write: if false; // Cloud Functions only
     }
 
-    // 🔹 Milestone unlocks
-    match /milestones/{uid} {
-      allow read, write: if request.auth.uid == uid;
+    // Receipt records (server only)
+    match /receipts/{token} { allow read, write: if false; }
+
+    // token→uid links (created via HTTPS endpoint; optional to allow user write)
+    match /purchaseLinks/{token} {
+      allow read: if false;
+      allow write: if request.auth != null;
     }
   }
 }
