@@ -1,0 +1,46 @@
+name: Build TWA (Bubblewrap)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-twa:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Bubblewrap CLI
+        run: npm i -g @bubblewrap/cli
+
+      - name: Decode Android Keystore
+        run: |
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > android.keystore
+
+      - name: Init/Update TWA Project
+        run: |
+          npx bubblewrap update --manifest=bubblewrap.config.json || \
+          npx bubblewrap init --manifest=bubblewrap.config.json
+
+      - name: Build Signed AAB
+        env:
+          BUBBLEWRAP_KEYSTORE: ${{ github.workspace }}/android.keystore
+          BUBBLEWRAP_KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          BUBBLEWRAP_KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          BUBBLEWRAP_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          npx bubblewrap build \
+            --ks "${BUBBLEWRAP_KEYSTORE}" \
+            --ksPass "${BUBBLEWRAP_KEYSTORE_PASSWORD}" \
+            --alias "${BUBBLEWRAP_KEY_ALIAS}" \
+            --keyPass "${BUBBLEWRAP_KEY_PASSWORD}"
+
+      - name: Upload AAB artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: whylee-twa-aab
+          path: "**/*.aab"
