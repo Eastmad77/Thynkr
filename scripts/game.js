@@ -1,22 +1,23 @@
 /**
- * Whylee Gameplay (v8 + Pips)
+ * Whylee Gameplay (v8 premium streak)
  * - HUD AvatarBadge
- * - QuestionEngine session
+ * - QuestionEngine session (Level 1 demo; extend to L2/L3 as before)
  * - XP/streak + milestones
- * - NEW: Per-question pip progress with redemption pop-remove
+ * - Premium streak bar + pips with redemption pulse
  */
 
 import { auth, db, doc, getDoc, updateDoc } from "/scripts/firebase-bridge.js";
 import { mountAvatarBadge } from "/scripts/components/avatarBadge.js";
 import { initQuestionEngine } from "/scripts/ai/questionEngine.js";
 import { evaluateMilestones, persistMilestones } from "/scripts/milestones.js";
+import { createStreakBar } from "/scripts/ui/streakBar.js";
 import { Pips } from "/scripts/components/pips.js";
+import { isPro } from "/scripts/entitlements.js";
 
-// ----- HUD mount --------------------------------------------------------------
 const hudScore = document.getElementById("hudScore");
 await mountAvatarBadge("#hudUser", { size: 56, uid: auth.currentUser?.uid });
 
-// ----- UI refs ----------------------------------------------------------------
+// UI refs
 const startBtn  = document.getElementById("startBtn");
 const nextBtn   = document.getElementById("nextBtn");
 const finishBtn = document.getElementById("finishBtn");
@@ -25,17 +26,20 @@ const qIdxEl    = document.getElementById("qIdx");
 const qTotalEl  = document.getElementById("qTotal");
 const timerEl   = document.getElementById("timer");
 
-// NEW: pips row
-const pips = new Pips("#hudPips", { total: 10 });
+// Premium streak + pips
+const streak = createStreakBar({ root: "#streakFill", pro: await isPro(auth.currentUser?.uid), total: 10 });
+const pips   = new Pips("#hudPips", { total: 10 });
 
-// ----- State ------------------------------------------------------------------
+// Sounds (safe if missing)
+const sndCorrect = new Audio("/media/audio/correct.mp3");
+const sndWrong   = new Audio("/media/audio/wrong.mp3");
+const sndClick   = new Audio("/media/audio/soft-click.mp3");
+const sndLevelUp = new Audio("/media/audio/level-up.mp3");
+
 let eng = null;
-let t0 = 0;            // session start ms
-let tickHandle = null; // timer interval
-let wrongCount = 0;    // track ❌ to coordinate with redemption
-let correctInRow = 0;  // track redemption threshold (3)
+let t0 = 0, tickHandle = null;
+let correctInRow = 0, wrongCount = 0;
 
-// ----- Timer ------------------------------------------------------------------
 function startTimer(){
   t0 = Date.now();
   stopTimer();
@@ -45,7 +49,6 @@ function startTimer(){
 }
 function stopTimer(){ if (tickHandle) { clearInterval(tickHandle); tickHandle=null; } }
 
-// ----- Render helpers ---------------------------------------------------------
 function renderQuestion(q, index, total){
   qIdxEl.textContent = index+1;
   qTotalEl.textContent = total;
@@ -60,38 +63,41 @@ function renderQuestion(q, index, total){
 
   viewport.querySelectorAll("button[data-i]").forEach(btn=>{
     btn.addEventListener("click", () => {
+      try { sndClick.currentTime = 0; sndClick.play(); } catch {}
       const guess  = Number(btn.getAttribute("data-i"));
       const timeMs = Date.now() - t0;
 
-      // Engine submission (adapts difficulty)
       const correct = eng.submit(guess, timeMs);
 
-      // Visual lock
+      // Lock UI
       viewport.querySelectorAll("button[data-i]").forEach(b => b.disabled = true);
       btn.style.borderColor = correct ? "var(--brand)" : "crimson";
 
-      // --- Pips + Redemption bookkeeping ------------------------------------
+      // Mark streak & pips
       if (correct) {
         correctInRow += 1;
         pips.mark(true);
+        streak.mark(true);
+        try { sndCorrect.currentTime = 0; sndCorrect.play(); } catch {}
 
-        // Redemption: 3 in a row -> remove last ❌ if any
+        // Redemption: 3 in a row removes latest ❌, visually and from counter
         if (correctInRow >= 3 && wrongCount > 0) {
-          const redeemed = pips.redeemOne();
-          if (redeemed) {
+          const pipRedeemed = pips.redeemOne();
+          const barRedeemed = streak.redeemOne();
+          if (pipRedeemed || barRedeemed) {
             wrongCount = Math.max(0, wrongCount - 1);
-            // (Optional) toast
-            // alert("🔄 Redemption! One mistake forgiven.");
+            try { sndLevelUp.currentTime = 0; sndLevelUp.play(); } catch {}
           }
-          correctInRow = 0; // reset the streak after redemption fires
+          correctInRow = 0; // reset after redemption fires
         }
       } else {
         correctInRow = 0;
         wrongCount += 1;
         pips.mark(false);
+        streak.mark(false);
+        try { sndWrong.currentTime = 0; sndWrong.play(); } catch {}
       }
 
-      // show next/finish
       const { asked, total } = eng._debug();
       nextBtn.style.display   = asked < total ? "" : "none";
       finishBtn.style.display = asked >= total ? "" : "none";
@@ -114,33 +120,28 @@ function renderSummary(r){
   document.querySelector(".controls").style.display = "none";
 }
 
-// ----- Session lifecycle ------------------------------------------------------
 startBtn.addEventListener("click", async () => {
-  // Require sign-in
   if (!auth.currentUser) {
     alert("Please sign in to play.");
     window.location.href = "/signin.html";
     return;
   }
 
-  // Build engine
   eng = await initQuestionEngine({ mode: "daily", count: 10 });
   const debug = eng._debug();
   qTotalEl.textContent = debug.total;
 
-  // Reset UI counters
-  wrongCount   = 0;
-  correctInRow = 0;
+  // Reset streak visuals per session
+  correctInRow = 0; wrongCount = 0;
   pips.reset(debug.total);
+  streak.setTotal(debug.total);
+  streak.setIndex(0);
 
-  // Timer for session
   startTimer();
 
-  // First question
   const q = eng.next();
   renderQuestion(q, 0, debug.total);
 
-  // Buttons
   startBtn.style.display = "none";
   nextBtn.style.display  = "";
   finishBtn.style.display = "none";
@@ -157,11 +158,9 @@ nextBtn.addEventListener("click", () => {
 finishBtn.addEventListener("click", async () => {
   stopTimer();
 
-  // Aggregate results (client view)
-  const r = eng.results({ pro: false });
+  const r = eng.results({ pro: await isPro(auth.currentUser?.uid) });
   renderSummary(r);
 
-  // ----- Award XP & streak, then run milestones ------------------------------
   try {
     const uid = auth.currentUser?.uid;
     if (!uid) return;
