@@ -1,20 +1,18 @@
 /* ============================================================================
-   Whylee — Streak Bar (Premium, Redemption-Aware)
-   - Works with /scripts/ui/streakBar.js
-   - Cinematic style: deep navy → electric blue → gold glow
-   - Fully respects prefers-reduced-motion
+   Whylee — Premium Streak + Pip System
+   Cinematic glowing streak bar with redemption pulse and Pro sheen.
    ============================================================================ */
 
 :root {
   --wl-streak-h: 10px;
-  --wl-streak-bg: rgba(255,255,255,.10);
-  --wl-streak-grad: linear-gradient(90deg, #2F7CFF 0%, #4BD3FF 55%, #F5D36B 100%);
-  --wl-streak-shadow: 0 0 14px rgba(47,124,255,.35), 0 0 28px rgba(245,211,107,.22);
+  --wl-streak-bg: rgba(255,255,255,.08);
+  --wl-streak-grad: linear-gradient(90deg, #00D0FF 0%, #23F5D3 55%, #FFD86B 100%);
+  --wl-streak-shadow: 0 0 14px rgba(0,208,255,.45), 0 0 28px rgba(255,216,107,.25);
   --wl-streak-prev: 0%;
   --wl-streak-next: 100%;
 }
 
-/* Container (put inside HUD) */
+/* Core streak container */
 .streak {
   position: relative;
   width: 100%;
@@ -22,85 +20,66 @@
   background: var(--wl-streak-bg);
   border-radius: 999px;
   overflow: hidden;
-  box-shadow: inset 0 0 0 1px rgba(255,255,255,.06);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.05);
 }
 
-/* The animated fill bar */
+/* Animated fill */
 .streak-fill {
   position: absolute;
-  left: 0; top: 0; bottom: 0;
+  inset: 0 auto 0 0;
   width: 0%;
-  background: linear-gradient(90deg, #2A60E0 0%, #3D8BFF 50%, #7CC7FF 100%);
   border-radius: inherit;
-  transform-origin: left;
-  transition: width .28s ease;
+  background: linear-gradient(90deg, #2483FF 0%, #44E2FF 100%);
+  transition: width .3s ease;
 }
 
-/* Pro look: blue→gold gradient + glow */
+/* Pro mode — luminous gradient + sweep */
 .streak-fill.pro {
   background: var(--wl-streak-grad);
   box-shadow: var(--wl-streak-shadow);
 }
-
-/* Subtle spark “sweep” for Pro */
 .streak-fill.pro::after {
-  content: "";
-  position: absolute; inset: 0;
-  background: linear-gradient(120deg, rgba(255,255,255,.0) 0%, rgba(255,255,255,.16) 35%, rgba(255,255,255,0) 70%);
-  transform: translateX(-100%);
-  animation: wl-streak-sweep 5.8s ease-in-out infinite;
+  content:"";
+  position:absolute; inset:0;
+  background:linear-gradient(120deg,rgba(255,255,255,0) 0%,rgba(255,255,255,.3) 40%,rgba(255,255,255,0) 80%);
+  animation: wl-sheen 6s ease-in-out infinite;
   mix-blend-mode: screen;
-  pointer-events: none;
+}
+@keyframes wl-sheen {
+  0%,100% { transform:translateX(-100%); opacity:.1; }
+  50% { transform:translateX(100%); opacity:.4; }
 }
 
-/* Redemption pulse (applied briefly) */
+/* Redemption pulse */
 .streak-fill.redeem {
   animation: wl-streak-redeem .5s ease-out;
 }
-
-@keyframes wl-streak-sweep {
-  0%   { transform: translateX(-100%); opacity: 0; }
-  12%  { opacity: .75; }
-  50%  { transform: translateX(0%); opacity: .35; }
-  100% { transform: translateX(100%); opacity: 0; }
-}
-
 @keyframes wl-streak-redeem {
-  0%   { filter: brightness(1.0); transform: scaleX(1); }
-  45%  { filter: brightness(1.35); transform: scaleX(1.04); }
-  100% { filter: brightness(1.0); transform: scaleX(1); }
+  0% { filter:brightness(1); transform:scaleX(1); }
+  40% { filter:brightness(1.5); transform:scaleX(1.05); }
+  100% { filter:brightness(1); transform:scaleX(1); }
 }
 
-/* ---------------- Pips (companion row) ---------------- */
-.pips {
-  display: grid;
-  grid-auto-flow: column;
-  gap: 8px;
-  align-items: center;
-}
-
+/* ------------------ Pips ------------------ */
+.pips { display:grid; grid-auto-flow:column; gap:8px; align-items:center; margin-top:4px; }
 .pip {
-  width: 12px; height: 12px; border-radius: 999px;
-  background: rgba(255,255,255,.14);
-  box-shadow: inset 0 0 0 1px rgba(0,0,0,.25);
-  transform: translateZ(0);
+  width:12px; height:12px; border-radius:50%;
+  background:rgba(255,255,255,.12);
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,.25);
 }
-
-.pip--ok  { background: #3DD9FF; box-shadow: 0 0 0 2px rgba(61,217,255,.25); }
-.pip--bad { background: #DB2E4E; box-shadow: 0 0 0 2px rgba(219,46,78,.25); }
+.pip--ok { background:#00E8FF; box-shadow:0 0 0 2px rgba(0,232,255,.25); }
+.pip--bad { background:#D94D5C; box-shadow:0 0 0 2px rgba(217,77,92,.25); }
 .pip--redeem { animation: wl-pip-redeem .45s ease-out; }
 
 @keyframes wl-pip-redeem {
-  0%   { transform: scale(1);    filter: brightness(1); }
-  50%  { transform: scale(1.35); filter: brightness(1.6); }
-  100% { transform: scale(1);    filter: brightness(1); }
+  0% { transform:scale(1); filter:brightness(1); }
+  50% { transform:scale(1.35); filter:brightness(1.6); }
+  100% { transform:scale(1); filter:brightness(1); }
 }
 
-/* Larger variant (e.g., Level 2) */
-.pips.pips--lg .pip { width: 14px; height: 14px; }
+.pips.pips--lg .pip { width:14px; height:14px; }
 
-/* Accessibility */
+/* Motion accessibility */
 @media (prefers-reduced-motion: reduce) {
-  .streak-fill, .streak-fill::after { animation: none !important; transition: none !important; }
-  .pip--redeem { animation: none !important; }
+  .streak-fill, .streak-fill::after, .pip--redeem { animation:none !important; transition:none !important; }
 }
