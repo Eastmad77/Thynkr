@@ -1,12 +1,10 @@
 [
   {
-    "relation": ["delegate_permission/common.handle_all_urls"],
+    "relation": [ "delegate_permission/common.handle_all_urls" ],
     "target": {
       "namespace": "android_app",
-      "package_name": "com.dailybrainbolt.whylee",
-      "sha256_cert_fingerprints": [
-        "REPLACE_WITH_YOUR_APP_SIGNING_SHA256"
-      ]
+      "package_name": "app.whylee",
+      "sha256_cert_fingerprints": [ "AA:BB:CC:DD:...:FF" ]  // TODO: your release keystore SHA-256
     }
   }
 ]
