@@ -1,13 +1,84 @@
-name: Post-Deploy Check
+name: Post-Deploy Check (Netlify & Functions)
+
+/**
+ * Runs a lightweight smoke test against your production site.
+ * - Pings /health and asserts HTTP 200 and latency < 800ms
+ * - Optionally posts failure to Slack (set SLACK_WEBHOOK secret)
+ * 
+ * Required repo secret:
+ *   HEALTH_URL = https://YOUR-SITE.netlify.app/health
+ * Optional:
+ *   SLACK_WEBHOOK = https://hooks.slack.com/services/XXX/YYY/ZZZ
+ */
+
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 */6 * * *"
+    - cron: "0 */6 * * *"   # every 6 hours
+
 jobs:
   smoke:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
-      - name: Check /health
+      - name: Show target
         run: |
-          code=$(curl -s -o health.json -w "%{http_code}" https://YOUR-SITE.netlify.app/health)
-          test "$code" -eq 200
+          echo "Health URL: ${{ secrets.HEALTH_URL }}"
+
+      - name: Curl /health
+        id: curl
+        run: |
+          set -e
+          URL="${{ secrets.HEALTH_URL }}"
+          if [ -z "$URL" ]; then
+            echo "HEALTH_URL secret not set"; exit 1
+          fi
+
+          code=$(curl -s -o health.json -w "%{http_code}" "$URL")
+          echo "http_code=$code" >> $GITHUB_OUTPUT
+          echo "HTTP $code"
+          cat health.json || true
+
+          if [ "$code" -ne 200 ]; then
+            echo "status=failed" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+
+      - name: Validate latency
+        id: latency
+        run: |
+          set -e
+          # Try jq first; fallback to grep/sed if jq is absent
+          if command -v jq >/dev/null 2>&1; then
+            LAT=$(jq -r '.latencyMs // 9999' health.json)
+          else
+            LAT=$(grep -o '"latencyMs"[^0-9]*[0-9]\+' health.json | grep -o '[0-9]\+' | head -n1)
+            LAT=${LAT:-9999}
+          fi
+          echo "latency=$LAT" >> $GITHUB_OUTPUT
+          echo "Latency: ${LAT}ms"
+
+          # Threshold: 800ms soft cap (adjust if needed)
+          if [ "$LAT" -gt 800 ]; then
+            echo "Latency high: ${LAT}ms"; exit 1
+          fi
+
+      - name: Slack notify (on failure)
+        if: failure()
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+        run: |
+          if [ -z "$SLACK_WEBHOOK" ]; then
+            echo "No SLACK_WEBHOOK set; skipping notify."
+            exit 0
+          fi
+          STATUS="${{ steps.curl.outputs.http_code }}"
+          curl -X POST -H 'Content-type: application/json' \
+            --data "{\"text\":\"❌ Post-Deploy Check failed: HTTP $STATUS at ${{ secrets.HEALTH_URL }} (repo: $GITHUB_REPOSITORY, run: $GITHUB_RUN_NUMBER)\"}" \
+            "$SLACK_WEBHOOK"
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "HTTP: ${{ steps.curl.outputs.http_code }}"
+          echo "Latency: ${{ steps.latency.outputs.latency }} ms"
