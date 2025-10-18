@@ -1,0 +1,74 @@
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+}
+
+android {
+    namespace 'app.whylee'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "app.whylee"
+        minSdk 23
+        targetSdk 34
+        versionCode 1
+        versionName "1.0.0"
+
+        // Allow WebView + TWA
+        vectorDrawables.useSupportLibrary = true
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            minifyEnabled false
+        }
+    }
+
+    // For Bubblewrap builds
+    packagingOptions {
+        resources.excludes += [
+            "META-INF/LICENSE*",
+            "META-INF/DEPENDENCIES",
+            "META-INF/NOTICE*"
+        ]
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    kotlinOptions {
+        jvmTarget = "17"
+    }
+}
+
+dependencies {
+    // ---------- Core Bubblewrap / TWA ----------
+    implementation 'com.google.androidbrowserhelper:androidbrowserhelper:2.5.0' // Core TWA launcher + tabs
+
+    // ---------- Consent SDK ----------
+    implementation 'com.google.android.ump:user-messaging-platform:2.2.0'       // UMP consent dialog (GDPR/EEA)
+
+    // ---------- Optional future integrations ----------
+    // Play Billing (for Pro purchases)
+    // implementation 'com.android.billingclient:billing-ktx:6.2.1'
+
+    // AdMob (for in-app ads, only if you add native ads)
+    // implementation 'com.google.android.gms:play-services-ads:23.1.0'
+
+    // Firebase (optional for analytics or crash reporting)
+    // implementation platform('com.google.firebase:firebase-bom:33.2.0')
+    // implementation 'com.google.firebase:firebase-analytics-ktx'
+    // implementation 'com.google.firebase:firebase-messaging-ktx'
+
+    // Kotlin + AndroidX support
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'androidx.core:core-ktx:1.13.1'
+    implementation 'com.google.android.material:material:1.12.0'
+}
