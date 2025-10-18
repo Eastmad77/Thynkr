@@ -1,46 +1,46 @@
 <!doctype html>
-<html lang="en" data-theme="dark">
+<html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Whylee — Think Sharper, Play Smarter</title>
+  <title>Whylee – Train Your Mind Daily</title>
 
-  <!-- Core Style Stack -->
   <link rel="stylesheet" href="/styles/brand.css?v=9002">
   <link rel="stylesheet" href="/styles/style.css?v=9002">
   <link rel="stylesheet" href="/styles/animations.css?v=9002">
+  <link rel="stylesheet" href="/styles/ads.css?v=9002">
 
-  <meta name="theme-color" content="#0B1222" />
+  <script type="module">
+    import { mountConsentBanner } from "/scripts/ads/consentManager.js";
+    import { initAdSense, createResponsiveAd, mountAdStyles } from "/scripts/ads/adsense.js";
+    mountConsentBanner();
+    initAdSense();
+    mountAdStyles();
+    window.addEventListener("DOMContentLoaded", () => {
+      createResponsiveAd("#ad-home-footer", "1234567890");
+    });
+  </script>
 </head>
-<body class="bg-stars">
-  <header class="container" style="padding:18px 0;">
-    <nav style="display:flex;justify-content:space-between;align-items:center;gap:12px">
-      <a href="/index.html" class="brand" style="font-weight:800">WHYLEE</a>
-      <div style="display:flex;gap:12px">
-        <a class="btn btn--ghost" href="/menu.html">Menu</a>
-        <a class="btn btn--brand" href="/game.html">Play</a>
-      </div>
-    </nav>
+<body>
+  <header class="hero">
+    <h1>Boost your focus with Whylee</h1>
+    <p>Challenge your brain daily with quickfire quizzes and streak rewards.</p>
+    <a href="/game.html" class="btn btn--brand">Play Free</a>
   </header>
 
-  <main class="container" style="text-align:center;padding:32px 0 56px">
-    <h1 class="fade-in" style="margin:0 0 8px">Sharpen Your Mind. Daily.</h1>
-    <p class="text-muted" style="max-width:720px;margin:0 auto 18px">
-      Fast-paced brain challenges with streaks, redemptions, and a premium cinematic feel.
-    </p>
-    <div style="display:flex;justify-content:center;gap:12px;margin-top:8px">
-      <a class="btn btn--brand" href="/game.html">Start Today</a>
-      <a class="btn" href="/pro.html">Go Pro</a>
-    </div>
-
-    <section style="margin-top:36px">
-      <img src="/media/posters/poster-10-brand.jpg" alt="Whylee brand poster"
-           style="width:100%;max-width:960px;border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,.45)" />
+  <main class="container">
+    <section>
+      <h2>Why Whylee?</h2>
+      <p>Whylee helps you improve focus, recall and logic through adaptive gameplay.</p>
     </section>
+
+    <div class="adwrap">
+      <div id="ad-home-footer"></div>
+    </div>
   </main>
 
-  <footer style="text-align:center;opacity:.7;padding:22px 0 36px">
-    © 2025 Whylee
+  <footer>
+    &copy; 2025 Whylee. <a href="/privacy.html">Privacy</a> | <a href="/terms.html">Terms</a>
   </footer>
 </body>
 </html>
