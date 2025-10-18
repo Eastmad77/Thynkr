@@ -1,70 +1,40 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>Whylee — Leaderboard</title>
 
+  <!-- Core Style Stack -->
   <link rel="stylesheet" href="/styles/brand.css?v=9002">
   <link rel="stylesheet" href="/styles/style.css?v=9002">
   <link rel="stylesheet" href="/styles/animations.css?v=9002">
-  <link rel="stylesheet" href="/styles/dark.css?v=9002">
-
-  <style>
-    main{max-width:960px;margin:0 auto;padding:18px}
-    .lb { list-style:none; padding:0; margin:0; display:grid; gap:10px; }
-    .lb-row {
-      display:grid; grid-template-columns: 40px 1fr auto auto; align-items:center;
-      gap:12px; background: var(--bg-surface, rgba(255,255,255,.06));
-      border-radius: 12px; padding: 10px 12px; border:1px solid rgba(255,255,255,.10);
-    }
-    .lb-ava { width:40px; height:40px; border-radius: 10px; object-fit: cover; background: rgba(255,255,255,.06); }
-    .lb-name { font-weight:700; color: var(--text, #e8f2ff); }
-    .lb-emoji { opacity:.95; filter: drop-shadow(0 6px 18px rgba(0,232,255,.25)); }
-    .lb-xp { font-variant-numeric: tabular-nums; color: var(--text-muted, #9fb1d8); }
-    header.scene-head{ text-align:center;margin:12px 0 16px }
-  </style>
-
-  <script>
-    try {
-      const saved = localStorage.getItem("theme");
-      const prefers = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-      if (saved === 'dark' || (!saved && prefers)) {
-        document.documentElement.setAttribute('data-theme','dark');
-      }
-    } catch (e) {}
-  </script>
 </head>
 <body class="bg-stars">
-  <main>
-    <header class="scene-head">
-      <h1 class="title"><span class="title-top">LEADERBOARD</span><span class="title-ghost">• Weekly League</span></h1>
-      <p class="subtitle">See where you rank this week!</p>
-      <div style="display:flex;justify-content:center;margin-top:8px">
-        <button id="themeToggle" class="btn btn--ghost">🌙</button>
-      </div>
-    </header>
+  <header class="container" style="padding:18px 0;">
+    <nav style="display:flex;justify-content:space-between;align-items:center">
+      <a href="/index.html" class="brand">WHYLEE</a>
+      <a class="btn btn--brand" href="/game.html">Play</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <h1>Whylee League</h1>
+    <p class="text-muted">See where you rank this week.</p>
 
     <ul id="leaderboardList" class="lb"></ul>
+
+    <style>
+      .lb { list-style:none; padding:0; margin:18px 0; display:grid; gap:10px; }
+      .lb-row { display:grid; grid-template-columns: 32px 1fr auto auto; align-items:center;
+        gap:10px; background: var(--bg-surface); border-radius: 12px; padding: 10px 12px; }
+      .lb-ava { width:32px; height:32px; border-radius: 8px; object-fit: cover; }
+      .lb-name { font-weight:600; }
+      .lb-emoji { opacity:.9; }
+      .lb-xp { font-variant-numeric: tabular-nums; color: var(--text-muted); }
+    </style>
   </main>
 
   <script type="module" src="/scripts/leaderboard.js?v=9002"></script>
-
-  <script>
-    (function(){
-      const btn = document.getElementById('themeToggle');
-      if (!btn) return;
-      const html = document.documentElement;
-      const sync = () => btn.textContent = (html.getAttribute('data-theme') === 'dark') ? '🌙' : '☀️';
-      sync();
-      btn.addEventListener('click', () => {
-        const cur = html.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
-        const next = cur === 'dark' ? 'light' : 'dark';
-        html.setAttribute('data-theme', next);
-        try { localStorage.setItem('theme', next); } catch(e){}
-        sync();
-      });
-    })();
-  </script>
 </body>
 </html>
