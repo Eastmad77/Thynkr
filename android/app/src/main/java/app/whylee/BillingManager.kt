@@ -3,20 +3,39 @@ package app.whylee
 import android.app.Activity
 import android.util.Log
 import com.android.billingclient.api.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import java.lang.ref.WeakReference
 
 /**
- * BillingManager:
+ * Whylee BillingManager (Production-grade)
  * - Connects BillingClient
- * - Launches purchase for given SKU
- * - On success, calls JsBridge.sendPlayPurchaseResult(...)
+ * - Queries ProductDetails for subscriptions
+ * - Launches purchase flow
+ * - Acknowledges purchases
+ * - Sends results back to PWA via JsBridge.sendPlayPurchaseResult(...)
+ *
+ * Web contract (already in your PWA):
+ *   startPlayPurchase({ uid, sku: "whylee_pro_monthly" })
  */
 object BillingManager : PurchasesUpdatedListener {
 
+    private const val TAG = "WhyleeBilling"
+
     private var client: BillingClient? = null
+    private var activityRef = WeakReference<Activity>(null)
+
     private var lastPurchaseUid: String? = null
     private var lastSku: String = "whylee_pro_monthly"
 
+    // Cache of ProductDetails by productId
+    private val products = mutableMapOf<String, ProductDetails>()
+
     fun init(activity: Activity) {
+        activityRef = WeakReference(activity)
+        if (client != null) return
+
         client = BillingClient.newBuilder(activity)
             .setListener(this)
             .enablePendingPurchases()
@@ -24,61 +43,117 @@ object BillingManager : PurchasesUpdatedListener {
 
         client?.startConnection(object : BillingClientStateListener {
             override fun onBillingSetupFinished(result: BillingResult) {
-                Log.d("WhyleeBilling", "Setup: ${result.responseCode}")
+                Log.d(TAG, "Setup: ${result.responseCode} ${result.debugMessage}")
+                if (result.responseCode == BillingClient.BillingResponseCode.OK) {
+                    // Preload details for common SKUs
+                    preloadProductDetails(listOf("whylee_pro_monthly"))
+                }
             }
             override fun onBillingServiceDisconnected() {
-                Log.w("WhyleeBilling", "Service disconnected")
+                Log.w(TAG, "Service disconnected")
             }
         })
     }
 
+    fun setActivity(activity: Activity?) { activityRef = WeakReference(activity) }
+
     fun startPurchase(sku: String, uid: String) {
+        val act = activityRef.get() ?: return
         val c = client ?: return
         lastSku = sku
         lastPurchaseUid = uid
 
-        val params = BillingFlowParams.newBuilder()
-            .setProductDetailsParamsList(
-                listOf(
-                    BillingFlowParams.ProductDetailsParams.newBuilder()
-                        .setProductId(sku) // For legacy, use SkuDetails; for modern Play, use ProductDetails query.
-                        .setProductType(BillingClient.ProductType.SUBS)
-                        .build()
-                )
-            )
-            .build()
+        // Ensure ProductDetails is ready
+        CoroutineScope(Dispatchers.Main).launch {
+            val pd = products[sku] ?: querySingleProduct(sku)
+            if (pd == null) {
+                Log.w(TAG, "No ProductDetails for $sku")
+                return@launch
+            }
 
-        // NOTE: For production you must query ProductDetails via queryProductDetailsAsync
-        // and pass the returned ProductDetails, not raw sku. This simplified snippet is illustrative.
-        val res = c.launchBillingFlow(currentActivity(), params)
-        Log.d("WhyleeBilling", "Launch flow: ${res.responseCode}")
+            // Pick base plan / offer token (simple case: first subscription offer)
+            val subOffer = pd.subscriptionOfferDetails?.firstOrNull()
+            val offerToken = subOffer?.offerToken
+            val productParam = BillingFlowParams.ProductDetailsParams.newBuilder()
+                .setProductDetails(pd)
+                .apply {
+                    if (offerToken != null) setOfferToken(offerToken)
+                }
+                .build()
+
+            val params = BillingFlowParams.newBuilder()
+                .setProductDetailsParamsList(listOf(productParam))
+                .build()
+
+            val res = c.launchBillingFlow(act, params)
+            Log.d(TAG, "launchBillingFlow: ${res.responseCode} ${res.debugMessage}")
+        }
     }
 
-    private fun currentActivity(): Activity {
-        // In LauncherActivity context, we can use a static ref or pass activity around; for simplicity:
-        // If needed, refactor to store a weakRef from MainActivity.onCreate
-        return ActivityHolder.activity ?: throw IllegalStateException("No activity")
+    private fun preloadProductDetails(productIds: List<String>) {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val list = productIds.map {
+                    QueryProductDetailsParams.Product.newBuilder()
+                        .setProductId(it)
+                        .setProductType(BillingClient.ProductType.SUBS)
+                        .build()
+                }
+                val params = QueryProductDetailsParams.newBuilder()
+                    .setProductList(list)
+                    .build()
+                val c = client ?: return@launch
+                val res = c.queryProductDetails(params)
+                res.productDetailsList?.forEach { pd -> products[pd.productId] = pd }
+                Log.d(TAG, "Preloaded ProductDetails: ${products.keys}")
+            } catch (t: Throwable) {
+                Log.e(TAG, "preloadProductDetails error", t)
+            }
+        }
+    }
+
+    private suspend fun querySingleProduct(productId: String): ProductDetails? {
+        return try {
+            val p = QueryProductDetailsParams.newBuilder()
+                .setProductList(
+                    listOf(
+                        QueryProductDetailsParams.Product.newBuilder()
+                            .setProductId(productId)
+                            .setProductType(BillingClient.ProductType.SUBS)
+                            .build()
+                    )
+                ).build()
+            val c = client ?: return null
+            val res = c.queryProductDetails(p)
+            val pd = res.productDetailsList?.firstOrNull()
+            if (pd != null) products[pd.productId] = pd
+            pd
+        } catch (t: Throwable) {
+            Log.e(TAG, "querySingleProduct error", t)
+            null
+        }
     }
 
     override fun onPurchasesUpdated(result: BillingResult, purchases: MutableList<Purchase>?) {
         if (result.responseCode == BillingClient.BillingResponseCode.OK && purchases != null) {
-            for (p in purchases) {
-                val token = p.purchaseToken
-                val uid = lastPurchaseUid ?: ""
-                val sku = lastSku
-                // Acknowledge if needed
-                acknowledge(p)
-                // Notify PWA
-                ActivityHolder.activity?.let { JsBridge.sendPlayPurchaseResult(it, sku, uid, token) }
-            }
+            for (p in purchases) handlePurchase(p)
         } else if (result.responseCode == BillingClient.BillingResponseCode.USER_CANCELED) {
-            Log.d("WhyleeBilling", "User canceled purchase.")
+            Log.d(TAG, "User canceled purchase.")
         } else {
-            Log.w("WhyleeBilling", "Purchase failed: ${result.responseCode} ${result.debugMessage}")
+            Log.w(TAG, "onPurchasesUpdated: ${result.responseCode} ${result.debugMessage}")
         }
     }
 
-    private fun acknowledge(purchase: Purchase) {
+    private fun handlePurchase(purchase: Purchase) {
+        // Acknowledge + send to PWA
+        acknowledgeIfNeeded(purchase)
+        val token = purchase.purchaseToken
+        val uid = lastPurchaseUid ?: ""
+        val sku = lastSku
+        activityRef.get()?.let { JsBridge.sendPlayPurchaseResult(it, sku, uid, token) }
+    }
+
+    private fun acknowledgeIfNeeded(purchase: Purchase) {
         try {
             val c = client ?: return
             if (purchase.purchaseState == Purchase.PurchaseState.PURCHASED && !purchase.isAcknowledged) {
@@ -86,16 +161,11 @@ object BillingManager : PurchasesUpdatedListener {
                     .setPurchaseToken(purchase.purchaseToken)
                     .build()
                 c.acknowledgePurchase(params) { br ->
-                    Log.d("WhyleeBilling", "Acknowledge: ${br.responseCode}")
+                    Log.d(TAG, "Acknowledge: ${br.responseCode} ${br.debugMessage}")
                 }
             }
         } catch (t: Throwable) {
-            Log.e("WhyleeBilling", "Ack error", t)
+            Log.e(TAG, "acknowledgeIfNeeded error", t)
         }
     }
-}
-
-/** Holds a ref to the foreground activity for convenience */
-object ActivityHolder {
-    var activity: Activity? = null
 }
