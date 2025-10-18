@@ -1,9 +1,7 @@
 /**
- * Whylee Gameplay (v8 premium streak)
- * - HUD AvatarBadge
- * - QuestionEngine session (Level 1 demo; extend to L2/L3 as before)
- * - XP/streak + milestones
- * - Premium streak bar + pips with redemption pulse
+ * Whylee Gameplay (Premium Edition)
+ * - Cinematic Pro streak system
+ * - XP/streak + milestones with redemption visuals
  */
 
 import { auth, db, doc, getDoc, updateDoc } from "/scripts/firebase-bridge.js";
@@ -17,7 +15,7 @@ import { isPro } from "/scripts/entitlements.js";
 const hudScore = document.getElementById("hudScore");
 await mountAvatarBadge("#hudUser", { size: 56, uid: auth.currentUser?.uid });
 
-// UI refs
+// UI references
 const startBtn  = document.getElementById("startBtn");
 const nextBtn   = document.getElementById("nextBtn");
 const finishBtn = document.getElementById("finishBtn");
@@ -26,33 +24,31 @@ const qIdxEl    = document.getElementById("qIdx");
 const qTotalEl  = document.getElementById("qTotal");
 const timerEl   = document.getElementById("timer");
 
-// Premium streak + pips
+// Streak visuals
 const streak = createStreakBar({ root: "#streakFill", pro: await isPro(auth.currentUser?.uid), total: 10 });
-const pips   = new Pips("#hudPips", { total: 10 });
+const pips = new Pips("#hudPips", { total: 10 });
 
-// Sounds (safe if missing)
-const sndCorrect = new Audio("/media/audio/correct.mp3");
-const sndWrong   = new Audio("/media/audio/wrong.mp3");
-const sndClick   = new Audio("/media/audio/soft-click.mp3");
-const sndLevelUp = new Audio("/media/audio/level-up.mp3");
+// Sound effects
+const sfx = {
+  correct: new Audio("/media/audio/correct.mp3"),
+  wrong: new Audio("/media/audio/wrong.mp3"),
+  click: new Audio("/media/audio/soft-click.mp3"),
+  levelUp: new Audio("/media/audio/level-up.mp3"),
+};
 
-let eng = null;
-let t0 = 0, tickHandle = null;
+let eng = null, t0 = 0, tickHandle = null;
 let correctInRow = 0, wrongCount = 0;
 
 function startTimer(){
   t0 = Date.now();
   stopTimer();
-  tickHandle = setInterval(()=> {
-    timerEl.textContent = Math.floor((Date.now()-t0)/1000);
-  }, 1000);
+  tickHandle = setInterval(()=>timerEl.textContent=Math.floor((Date.now()-t0)/1000),1000);
 }
-function stopTimer(){ if (tickHandle) { clearInterval(tickHandle); tickHandle=null; } }
+function stopTimer(){ if(tickHandle){ clearInterval(tickHandle); tickHandle=null; } }
 
 function renderQuestion(q, index, total){
   qIdxEl.textContent = index+1;
   qTotalEl.textContent = total;
-
   viewport.innerHTML = `
     <h2 class="q-title">${q.q}</h2>
     <div class="answers">
@@ -63,127 +59,87 @@ function renderQuestion(q, index, total){
 
   viewport.querySelectorAll("button[data-i]").forEach(btn=>{
     btn.addEventListener("click", () => {
-      try { sndClick.currentTime = 0; sndClick.play(); } catch {}
-      const guess  = Number(btn.getAttribute("data-i"));
+      sfx.click.play().catch(()=>{});
+      const guess = Number(btn.getAttribute("data-i"));
       const timeMs = Date.now() - t0;
-
       const correct = eng.submit(guess, timeMs);
 
-      // Lock UI
-      viewport.querySelectorAll("button[data-i]").forEach(b => b.disabled = true);
+      viewport.querySelectorAll("button[data-i]").forEach(b=>b.disabled=true);
       btn.style.borderColor = correct ? "var(--brand)" : "crimson";
 
-      // Mark streak & pips
-      if (correct) {
-        correctInRow += 1;
-        pips.mark(true);
-        streak.mark(true);
-        try { sndCorrect.currentTime = 0; sndCorrect.play(); } catch {}
-
-        // Redemption: 3 in a row removes latest ❌, visually and from counter
-        if (correctInRow >= 3 && wrongCount > 0) {
-          const pipRedeemed = pips.redeemOne();
-          const barRedeemed = streak.redeemOne();
-          if (pipRedeemed || barRedeemed) {
-            wrongCount = Math.max(0, wrongCount - 1);
-            try { sndLevelUp.currentTime = 0; sndLevelUp.play(); } catch {}
+      if(correct){
+        correctInRow++; pips.mark(true); streak.mark(true);
+        sfx.correct.play().catch(()=>{});
+        if(correctInRow>=3 && wrongCount>0){
+          if(pips.redeemOne()||streak.redeemOne()){
+            wrongCount=Math.max(0,wrongCount-1);
+            sfx.levelUp.play().catch(()=>{});
           }
-          correctInRow = 0; // reset after redemption fires
+          correctInRow=0;
         }
-      } else {
-        correctInRow = 0;
-        wrongCount += 1;
-        pips.mark(false);
-        streak.mark(false);
-        try { sndWrong.currentTime = 0; sndWrong.play(); } catch {}
+      }else{
+        correctInRow=0; wrongCount++; pips.mark(false); streak.mark(false);
+        sfx.wrong.play().catch(()=>{});
       }
 
       const { asked, total } = eng._debug();
-      nextBtn.style.display   = asked < total ? "" : "none";
-      finishBtn.style.display = asked >= total ? "" : "none";
+      nextBtn.style.display = asked<total ? "" : "none";
+      finishBtn.style.display = asked>=total ? "" : "none";
     });
   });
 }
 
 function renderSummary(r){
   viewport.innerHTML = `
-    <div style="text-align:center; padding: 1.25rem 0">
+    <div style="text-align:center; padding:1.25rem 0">
       <h2 class="h4" style="margin:0 0 .5rem">Great work! 🎉</h2>
       <p class="muted">You answered <strong>${r.correct}/${r.total}</strong> correctly in <strong>${Math.round(r.durationMs/1000)}s</strong>.</p>
-      <p class="muted">XP earned (client est.): <strong>${r.xpEarned}</strong></p>
-      <div style="margin-top: .75rem; display:flex; gap:.5rem; justify-content:center">
+      <p class="muted">XP earned (est.): <strong>${r.xpEarned}</strong></p>
+      <div style="margin-top:.75rem; display:flex; gap:.5rem; justify-content:center">
         <a class="btn btn--ghost" href="/leaderboard.html">Leaderboard</a>
         <a class="btn btn--brand" href="/game.html">Play Again</a>
       </div>
-    </div>
-  `;
-  document.querySelector(".controls").style.display = "none";
+    </div>`;
+  document.querySelector(".controls").style.display="none";
 }
 
-startBtn.addEventListener("click", async () => {
-  if (!auth.currentUser) {
-    alert("Please sign in to play.");
-    window.location.href = "/signin.html";
-    return;
-  }
+startBtn.addEventListener("click", async ()=>{
+  if(!auth.currentUser){ alert("Please sign in to play."); window.location.href="/signin.html"; return; }
 
-  eng = await initQuestionEngine({ mode: "daily", count: 10 });
-  const debug = eng._debug();
-  qTotalEl.textContent = debug.total;
-
-  // Reset streak visuals per session
-  correctInRow = 0; wrongCount = 0;
-  pips.reset(debug.total);
-  streak.setTotal(debug.total);
-  streak.setIndex(0);
-
+  eng=await initQuestionEngine({ mode:"daily", count:10 });
+  const dbg=eng._debug();
+  qTotalEl.textContent=dbg.total;
+  correctInRow=0; wrongCount=0; pips.reset(dbg.total); streak.setTotal(dbg.total); streak.setIndex(0);
   startTimer();
 
-  const q = eng.next();
-  renderQuestion(q, 0, debug.total);
-
-  startBtn.style.display = "none";
-  nextBtn.style.display  = "";
-  finishBtn.style.display = "none";
+  renderQuestion(eng.next(),0,dbg.total);
+  startBtn.style.display="none"; nextBtn.style.display=""; finishBtn.style.display="none";
 });
 
-nextBtn.addEventListener("click", () => {
-  const dbg = eng._debug();
-  if (dbg.asked < dbg.total) {
-    const q = eng.next();
-    renderQuestion(q, dbg.asked - 1, dbg.total);
-  }
+nextBtn.addEventListener("click",()=>{
+  const dbg=eng._debug();
+  if(dbg.asked<dbg.total) renderQuestion(eng.next(),dbg.asked-1,dbg.total);
 });
 
-finishBtn.addEventListener("click", async () => {
+finishBtn.addEventListener("click", async ()=>{
   stopTimer();
-
-  const r = eng.results({ pro: await isPro(auth.currentUser?.uid) });
+  const r=eng.results({ pro: await isPro(auth.currentUser?.uid) });
   renderSummary(r);
 
-  try {
-    const uid = auth.currentUser?.uid;
-    if (!uid) return;
-
-    const ref = doc(db, "users", uid);
-    const snap = await getDoc(ref);
-    const user = snap.data() || {};
-
-    const newXp     = Math.max(0, Math.round((user.xp || 0) + r.xpEarned));
-    const newStreak = (user.streak || 0) + 1;
-
-    await updateDoc(ref, { xp: newXp, streak: newStreak });
-
-    const evald = evaluateMilestones({ ...user, xp: newXp, streak: newStreak, pro: user.pro });
-    await persistMilestones(uid, user, evald);
-
-    document.getElementById("hudScore").textContent = `XP: ${newXp.toLocaleString()}`;
-
-    if (evald.newly.length) {
-      const names = evald.newly.map(m => m.id.replace(/^(skin|badge|boost):/, "").replace(/-/g," "));
+  try{
+    const uid=auth.currentUser?.uid; if(!uid)return;
+    const ref=doc(db,"users",uid);
+    const snap=await getDoc(ref);
+    const user=snap.data()||{};
+    const newXp=Math.round((user.xp||0)+r.xpEarned);
+    const newStreak=(user.streak||0)+1;
+    await updateDoc(ref,{ xp:newXp, streak:newStreak });
+    const evald=evaluateMilestones({ ...user, xp:newXp, streak:newStreak, pro:user.pro });
+    await persistMilestones(uid,user,evald);
+    hudScore.textContent=`XP: ${newXp.toLocaleString()}`;
+    if(evald.newly.length){
+      const names=evald.newly.map(m=>m.id.replace(/^(skin|badge|boost):/,"").replace(/-/g," "));
       alert(`🎉 Unlocked: ${names.join(", ")}`);
     }
-  } catch (e) {
-    console.error(e);
-  }
+  }catch(e){ console.error(e); }
 });
