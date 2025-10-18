@@ -1,108 +1,181 @@
-/* Whylee Dark Mode (Premium OLED) */
-/* Applies when: html[data-theme="dark"] OR prefers-color-scheme: dark */
+/* ------------------------------------------------------------------
+   Whylee Dark Mode Styles (v9004)
+   Applied when <html data-theme="dark">
+   ------------------------------------------------------------------ */
 
+:root[data-theme="dark"],
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg:            #060a14;
-    --bg-surface:    #0a1224;
-    --text:          #eef5ff;
-    --text-muted:    #9fb1d8;
-    --brand:         #20d4ff;
-    --brand-100:     #c6e9ff;
-    --brand-300:     #5ad8ff;
-    --accent:        #34f5c6;
+    --brand: #2F7CFF;
+    --brand-glow: #66A0FF;
+    --accent: #1EE4FF;
+    --accent-glow: rgba(30, 228, 255, 0.6);
+    --bg: #02050B;
+    --bg-surface: #0A0E17;
+    --text: #EAF2FF;
+    --text-muted: #9FB1D8;
+    --card-border: rgba(255,255,255,0.06);
+    --shadow: 0 6px 22px rgba(0,0,0,0.6);
+    --radius: 12px;
   }
 }
 
-:root[data-theme="dark"] {
-  --bg:            #060a14;
-  --bg-surface:    #0a1224;
-  --text:          #eef5ff;
-  --text-muted:    #9fb1d8;
-  --brand:         #20d4ff;
-  --brand-100:     #c6e9ff;
-  --brand-300:     #5ad8ff;
-  --accent:        #34f5c6;
-}
-
-/* Global backdrop */
-:root[data-theme="dark"] body,
-@media (prefers-color-scheme: dark) {
-  .bg-stars {
-    background:
-      radial-gradient(120% 100% at 50% -10%, rgba(0,232,255,.10) 0%, rgba(0,0,0,0) 55%),
-      linear-gradient(180deg, #070c17 0%, #04070d 100%);
-    color: var(--text);
-  }
-}
-
-/* HUD */
-:root[data-theme="dark"] .hud { color: var(--text); }
-:root[data-theme="dark"] .hud-score { color: var(--text); text-shadow: 0 6px 24px rgba(0,0,0,.5); }
-
-/* Streak */
-:root[data-theme="dark"] .streak {
-  background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.04));
-  box-shadow: inset 0 0 0 1px rgba(255,255,255,.06), 0 10px 28px rgba(0,0,0,.45);
-}
-:root[data-theme="dark"] .streak-fill {
-  background: linear-gradient(90deg, var(--accent), var(--brand));
-  box-shadow: 0 0 28px rgba(0,232,255,.35);
-}
-
-/* Pips */
-:root[data-theme="dark"] .pips .pip[data-state="good"] {
-  background: linear-gradient(180deg,#43ffc7,#11d1ff);
-  box-shadow: 0 0 18px rgba(0,232,255,.55);
-}
-:root[data-theme="dark"] .pips .pip[data-state="bad"] {
-  background: linear-gradient(180deg,#ff6a6a,#c0152b);
-  box-shadow: 0 0 16px rgba(255,64,64,.55);
-}
-:root[data-theme="dark"] .pips .pip[data-state="pending"] {
-  background: linear-gradient(180deg,#e7fbff,#98e8ff);
-  box-shadow: 0 0 14px rgba(0,232,255,.35);
-}
-:root[data-theme="dark"] .pips .pip[data-state="empty"] {
-  background: transparent;
-  box-shadow: 0 0 0 1px rgba(255,255,255,.14);
-}
-
-/* Cards / Level 2 faces */
-:root[data-theme="dark"] .mm-front {
-  background:
-    radial-gradient(120% 120% at 50% -10%, rgba(0,232,255,.20) 0%, rgba(0,0,0,0) 55%),
-    linear-gradient(180deg,#08142e 0%, #070e22 100%);
-}
-:root[data-theme="dark"] .mm-back {
-  background: linear-gradient(180deg,#0f2145 0%, #081121 100%);
-}
-:root[data-theme="dark"] .mm-emoji {
-  filter: drop-shadow(0 9px 26px rgba(0,232,255,.45));
-}
-:root[data-theme="dark"] .mm-card.matched .mm-emoji{
-  filter: drop-shadow(0 12px 30px rgba(255,220,20,.48));
-}
-
-/* Buttons */
-:root[data-theme="dark"] .btn--brand {
-  background: linear-gradient(180deg, #18c8ff, #0aa2ff);
-  color: #00101a;
-  box-shadow: 0 10px 24px rgba(0,160,255,.32);
-}
-:root[data-theme="dark"] .btn--ghost {
-  background: rgba(255,255,255,.06);
+/* ====== Global ====== */
+body[data-theme="dark"], :root[data-theme="dark"] body {
+  background: radial-gradient(circle at 50% 20%, rgba(47,124,255,0.08) 0%, transparent 70%),
+              radial-gradient(circle at 80% 80%, rgba(30,228,255,0.08) 0%, transparent 70%),
+              linear-gradient(180deg, #03060E 0%, #050912 100%);
   color: var(--text);
-  border: 1px solid rgba(255,255,255,.10);
 }
 
-/* Scene headers */
-:root[data-theme="dark"] .scene-head .title { color: #fff; }
-:root[data-theme="dark"] .scene-head .title-ghost { color: var(--brand-100); }
-:root[data-theme="dark"] .scene-head .subtitle { color: var(--text-muted); }
+/* ====== Text ====== */
+[data-theme="dark"] h1,
+[data-theme="dark"] h2,
+[data-theme="dark"] h3,
+[data-theme="dark"] h4,
+[data-theme="dark"] h5 {
+  color: var(--text);
+}
+[data-theme="dark"] .muted { color: var(--text-muted); }
 
-/* Section surface */
-:root[data-theme="dark"] .controls {
-  background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
-  box-shadow: inset 0 0 0 1px rgba(255,255,255,.05);
+/* ====== Cards ====== */
+[data-theme="dark"] .card {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow: 0 10px 28px rgba(0,0,0,0.65);
+}
+[data-theme="dark"] .card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.7);
+}
+
+/* ====== Buttons ====== */
+[data-theme="dark"] .btn--brand {
+  background: linear-gradient(90deg, #1EE4FF 0%, #2F7CFF 100%);
+  color: #fff;
+  box-shadow: 0 0 20px rgba(30,228,255,0.35);
+}
+[data-theme="dark"] .btn--brand:hover {
+  box-shadow: 0 0 25px rgba(30,228,255,0.55);
+  filter: brightness(1.05);
+}
+[data-theme="dark"] .btn--ghost {
+  color: var(--text);
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.1);
+}
+[data-theme="dark"] .btn--ghost:hover {
+  background: rgba(255,255,255,0.06);
+}
+
+/* ====== Inputs / Fields ====== */
+[data-theme="dark"] input,
+[data-theme="dark"] select,
+[data-theme="dark"] textarea {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.08);
+  color: var(--text);
+}
+[data-theme="dark"] input:focus,
+[data-theme="dark"] select:focus,
+[data-theme="dark"] textarea:focus {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+/* ====== HUD ====== */
+[data-theme="dark"] .hud {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow: 0 10px 28px rgba(0,0,0,0.7);
+}
+[data-theme="dark"] #hudScore {
+  color: var(--accent);
+}
+
+/* ====== Streak Bar ====== */
+[data-theme="dark"] .streak-pip {
+  background: rgba(255,255,255,0.1);
+}
+[data-theme="dark"] .streak-pip.active {
+  background: var(--accent);
+  box-shadow: 0 0 12px var(--accent-glow);
+}
+[data-theme="dark"] .streak-pip.missed {
+  background: #FF4D4D;
+}
+
+/* ====== Game Answers ====== */
+[data-theme="dark"] .answers button {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  color: var(--text);
+}
+[data-theme="dark"] .answers button:hover {
+  border-color: var(--accent);
+  background: rgba(47,124,255,0.15);
+}
+
+/* ====== Leaderboard ====== */
+[data-theme="dark"] .lb-row {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow: 0 10px 28px rgba(0,0,0,0.6);
+}
+[data-theme="dark"] .lb-xp {
+  color: var(--text-muted);
+}
+
+/* ====== Toasts ====== */
+[data-theme="dark"] .toast {
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: var(--text);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.7);
+}
+
+/* ====== Scrollbar (dark) ====== */
+[data-theme="dark"] ::-webkit-scrollbar-track {
+  background: rgba(255,255,255,0.04);
+}
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+  background: var(--brand);
+  border-radius: 6px;
+}
+
+/* ====== Animations (Glow) ====== */
+@keyframes glowPulse {
+  0%,100% { box-shadow: 0 0 12px var(--accent-glow); }
+  50%     { box-shadow: 0 0 20px var(--accent-glow); }
+}
+[data-theme="dark"] .btn--brand.glow {
+  animation: glowPulse 2.8s ease-in-out infinite;
+}
+
+/* ====== Posters / Cinematic BGs ====== */
+[data-theme="dark"] .poster {
+  background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02));
+  border: 1px solid rgba(255,255,255,0.08);
+}
+[data-theme="dark"] .poster img {
+  filter: brightness(0.9) contrast(1.05) saturate(1.1);
+}
+
+/* ====== Hero / Headers ====== */
+[data-theme="dark"] .hero-title {
+  color: #EAF2FF;
+  text-shadow: 0 0 30px rgba(47,124,255,0.35);
+}
+[data-theme="dark"] .hero-sub {
+  color: var(--text-muted);
+}
+
+/* ====== Footer ====== */
+[data-theme="dark"] footer {
+  color: var(--text-muted);
+}
+
+/* ====== Smooth Theme Transition ====== */
+html[data-theme="dark"] {
+  transition: background 0.3s ease, color 0.3s ease;
 }
