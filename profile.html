@@ -1,90 +1,40 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>Whylee — Profile</title>
 
-  <link rel="stylesheet" href="/styles/brand.css?v=9003">
-  <link rel="stylesheet" href="/styles/style.css?v=9003">
-  <link rel="stylesheet" href="/styles/animations.css?v=9003">
-  <link rel="stylesheet" href="/styles/dark.css?v=9003">
-
-  <style>
-    main { max-width: 960px; margin: 0 auto; padding: 16px; }
-    .grid { display:grid; grid-template-columns: repeat(auto-fit,minmax(72px,1fr)); gap:10px; }
-    .grid .cell {
-      background: var(--bg-surface, rgba(255,255,255,.06)); border:1px solid rgba(255,255,255,.10);
-      border-radius:12px; height:72px; display:flex; align-items:center; justify-content:center;
-      cursor:pointer; transition:transform .15s ease, box-shadow .2s ease;
-    }
-    .grid .cell:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(0,0,0,.35); }
-    .grid .cell[aria-checked="true"] { outline:2px solid var(--brand,#20d4ff); box-shadow: 0 0 0 4px rgba(32,212,255,.2); }
-    .muted { color: var(--text-muted,#9fb1d8); }
-    .card { background: var(--bg-surface, rgba(255,255,255,.06)); border:1px solid rgba(255,255,255,.10);
-      border-radius:16px; padding:16px; box-shadow: 0 10px 28px rgba(0,0,0,.35);}
-  </style>
-
-  <script>
-    try {
-      const saved = localStorage.getItem("theme");
-      const prefers = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-      if (saved === 'dark' || (!saved && prefers)) {
-        document.documentElement.setAttribute('data-theme','dark');
-      }
-    } catch (e) {}
-  </script>
+  <!-- Core Style Stack -->
+  <link rel="stylesheet" href="/styles/brand.css?v=9002">
+  <link rel="stylesheet" href="/styles/style.css?v=9002">
+  <link rel="stylesheet" href="/styles/animations.css?v=9002">
 </head>
 <body class="bg-stars">
-  <main>
-    <header class="scene-head" style="text-align:center">
-      <h1 class="title"><span class="title-top">PROFILE</span><span class="title-ghost">• Identity</span></h1>
-      <p class="subtitle">Set your display name, avatar, and mini-emoji.</p>
-      <div style="display:flex;justify-content:center;margin-top:8px">
-        <button id="themeToggle" class="btn btn--ghost">🌙</button>
-      </div>
-    </header>
+  <header class="container" style="padding:18px 0;">
+    <nav style="display:flex;justify-content:space-between;align-items:center">
+      <a href="/index.html" class="brand">WHYLEE</a>
+      <a class="btn btn--brand" href="/game.html">Play</a>
+    </nav>
+  </header>
 
-    <section class="card" aria-labelledby="profile-appearance">
+  <main class="container">
+    <h1>Profile</h1>
+    <p class="text-muted">Customize your identity.</p>
+
+    <section aria-labelledby="profile-appearance" class="card" style="margin-top:12px">
       <h2 id="profile-appearance" class="h4">Appearance</h2>
       <p class="muted">Change your avatar and mini emoji.</p>
-      <div id="profileAvatarGrid" class="grid" style="margin-top:8px"></div>
+      <div id="profileAvatarGrid" class="grid" style="margin-top:8px; grid-template-columns:repeat(auto-fit,minmax(96px,1fr));"></div>
       <h3 class="h5" style="margin-top:18px">Emoji</h3>
-      <div id="profileEmojiGrid" class="grid"></div>
+      <div id="profileEmojiGrid" class="grid" style="grid-template-columns:repeat(auto-fit,minmax(44px,1fr));"></div>
       <div style="display:flex;gap:12px;align-items:center;margin-top:14px">
         <button id="profileSaveBtn" class="btn btn--brand">Save</button>
         <span id="profileSaveStatus" class="muted"></span>
       </div>
     </section>
-
-    <section class="card" style="margin-top:16px">
-      <h2 class="h4">Account</h2>
-      <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center">
-        <a class="btn btn--ghost" href="/leaderboard.html">View Leaderboard</a>
-        <a class="btn btn--ghost" href="/pro.html">Manage Pro</a>
-        <button id="signOutBtn" class="btn btn--ghost">Sign out</button>
-      </div>
-    </section>
   </main>
 
-  <script type="module" src="/scripts/firebase-bridge.js?v=9003"></script>
-  <script type="module" src="/scripts/profile.js?v=9003"></script>
-
-  <script>
-    (function(){
-      const btn = document.getElementById('themeToggle');
-      if (!btn) return;
-      const html = document.documentElement;
-      const sync = () => btn.textContent = (html.getAttribute('data-theme') === 'dark') ? '🌙' : '☀️';
-      sync();
-      btn.addEventListener('click', () => {
-        const cur = html.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
-        const next = cur === 'dark' ? 'light' : 'dark';
-        html.setAttribute('data-theme', next);
-        try { localStorage.setItem('theme', next); } catch(e){}
-        sync();
-      });
-    })();
-  </script>
+  <script type="module" src="/scripts/profile.js?v=9002"></script>
 </body>
 </html>
