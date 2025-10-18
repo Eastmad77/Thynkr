@@ -1,46 +1,60 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
   <title>Terms of Use – Whylee</title>
 
-  <link rel="stylesheet" href="/styles/brand.css?v=8000">
-  <link rel="stylesheet" href="/styles/style.css?v=8000">
-  <link rel="stylesheet" href="/styles/animations.css?v=8000">
+  <!-- Core Style Stack -->
+  <link rel="stylesheet" href="/styles/brand.css?v=9002">
+  <link rel="stylesheet" href="/styles/style.css?v=9002">
+  <link rel="stylesheet" href="/styles/animations.css?v=9002">
 </head>
-<body>
-  <header>
-    <h1>Terms of Use</h1>
-    <nav>
-      <a href="index.html">Home</a>
-      <a href="menu.html">Menu</a>
-      <a href="pro.html">Pro</a>
-      <a href="profile.html">Profile</a>
+
+<body class="bg-stars">
+  <header class="container" style="padding:18px 0;">
+    <nav style="display:flex;justify-content:space-between;align-items:center;gap:12px">
+      <a href="/index.html" class="brand">WHYLEE</a>
+      <div style="display:flex;gap:12px">
+        <a class="btn btn--ghost" href="/menu.html">Menu</a>
+        <a class="btn btn--ghost" href="/pro.html">Pro</a>
+        <a class="btn btn--ghost" href="/profile.html">Profile</a>
+      </div>
     </nav>
   </header>
 
-  <main class="container">
-    <div class="card">
+  <main class="container fade-in" style="padding:28px 0 40px;max-width:800px">
+    <div class="card" style="background:var(--bg-surface);padding:24px 28px;border-radius:16px;">
+      <h1 style="margin-top:0;">Terms of Use</h1>
+      <p class="text-muted">Effective Date: January 2025</p>
+
       <h2>Agreement Overview</h2>
-      <p>By using Whylee, you agree to our terms outlined below. These ensure a fair, secure, and positive experience for all users.</p>
+      <p>By using Whylee, you agree to the terms outlined below. These ensure a fair, secure, and positive experience for all players and contributors.</p>
 
       <h3>Usage</h3>
-      <p>Whylee is intended for personal and non-commercial use. You may not modify, redistribute, or repurpose app content without permission.</p>
+      <p>Whylee is intended for personal and non-commercial use. You may not modify, redistribute, or repurpose app content without permission. All visual assets, characters, and sounds remain intellectual property of Whylee.</p>
 
       <h3>Pro Membership</h3>
-      <p>Pro features and subscriptions are managed securely through our payment partners. By upgrading, you agree to the applicable billing and renewal terms displayed during purchase.</p>
+      <p>Pro features and subscriptions are securely managed through our payment partners (Stripe, Google Play, and Apple). By upgrading, you agree to the applicable billing and renewal terms displayed during purchase.</p>
+
+      <h3>Game Data</h3>
+      <p>Player progress, XP, and streaks are stored using Firebase. Whylee does not sell or share gameplay data with third parties.</p>
 
       <h3>Disclaimer</h3>
       <p>Whylee is designed for cognitive engagement and self-improvement. It is not a medical or diagnostic tool. Use it for entertainment and personal development purposes only.</p>
 
+      <h3>Termination of Use</h3>
+      <p>Whylee reserves the right to suspend or terminate accounts found in violation of these terms, including abuse of Pro features or system exploitation.</p>
+
       <h3>Contact</h3>
-      <p>For any questions about these terms, please contact <a href="mailto:support@whylee.app">support@whylee.app</a>.</p>
+      <p>For questions regarding these terms, please contact
+        <a href="mailto:support@whylee.app">support@whylee.app</a>.
+      </p>
     </div>
   </main>
 
-  <footer>
-    &copy; 2025 Whylee | Terms & Conditions | All Rights Reserved
+  <footer style="text-align:center;opacity:.7;padding:22px 0 36px">
+    © 2025 Whylee | All Rights Reserved
   </footer>
 </body>
 </html>
