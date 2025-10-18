@@ -25,7 +25,7 @@
   --accent:        #34f5c6;
 }
 
-/* Global body / stars backdrop */
+/* Global backdrop */
 :root[data-theme="dark"] body,
 @media (prefers-color-scheme: dark) {
   .bg-stars {
@@ -36,29 +36,11 @@
   }
 }
 
-/* Cards — richer contrast on dark */
-:root[data-theme="dark"] .mm-front {
-  background:
-    radial-gradient(120% 120% at 50% -10%, rgba(0,232,255,.20) 0%, rgba(0,0,0,0) 55%),
-    linear-gradient(180deg,#08142e 0%, #070e22 100%);
-}
-:root[data-theme="dark"] .mm-back {
-  background: linear-gradient(180deg,#0f2145 0%, #081121 100%);
-}
-
-/* Emoji glow a touch brighter on dark */
-:root[data-theme="dark"] .mm-emoji {
-  filter: drop-shadow(0 9px 26px rgba(0,232,255,.45));
-}
-:root[data-theme="dark"] .mm-card.matched .mm-emoji{
-  filter: drop-shadow(0 12px 30px rgba(255,220,20,.48));
-}
-
-/* HUD surfaces & labels */
+/* HUD */
 :root[data-theme="dark"] .hud { color: var(--text); }
 :root[data-theme="dark"] .hud-score { color: var(--text); text-shadow: 0 6px 24px rgba(0,0,0,.5); }
 
-/* Streak bar glow */
+/* Streak */
 :root[data-theme="dark"] .streak {
   background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.04));
   box-shadow: inset 0 0 0 1px rgba(255,255,255,.06), 0 10px 28px rgba(0,0,0,.45);
@@ -68,7 +50,7 @@
   box-shadow: 0 0 28px rgba(0,232,255,.35);
 }
 
-/* Pips — brighter good, crisp bad */
+/* Pips */
 :root[data-theme="dark"] .pips .pip[data-state="good"] {
   background: linear-gradient(180deg,#43ffc7,#11d1ff);
   box-shadow: 0 0 18px rgba(0,232,255,.55);
@@ -86,6 +68,22 @@
   box-shadow: 0 0 0 1px rgba(255,255,255,.14);
 }
 
+/* Cards / Level 2 faces */
+:root[data-theme="dark"] .mm-front {
+  background:
+    radial-gradient(120% 120% at 50% -10%, rgba(0,232,255,.20) 0%, rgba(0,0,0,0) 55%),
+    linear-gradient(180deg,#08142e 0%, #070e22 100%);
+}
+:root[data-theme="dark"] .mm-back {
+  background: linear-gradient(180deg,#0f2145 0%, #081121 100%);
+}
+:root[data-theme="dark"] .mm-emoji {
+  filter: drop-shadow(0 9px 26px rgba(0,232,255,.45));
+}
+:root[data-theme="dark"] .mm-card.matched .mm-emoji{
+  filter: drop-shadow(0 12px 30px rgba(255,220,20,.48));
+}
+
 /* Buttons */
 :root[data-theme="dark"] .btn--brand {
   background: linear-gradient(180deg, #18c8ff, #0aa2ff);
@@ -98,12 +96,12 @@
   border: 1px solid rgba(255,255,255,.10);
 }
 
-/* Headlines */
+/* Scene headers */
 :root[data-theme="dark"] .scene-head .title { color: #fff; }
 :root[data-theme="dark"] .scene-head .title-ghost { color: var(--brand-100); }
 :root[data-theme="dark"] .scene-head .subtitle { color: var(--text-muted); }
 
-/* Controls section surface */
+/* Section surface */
 :root[data-theme="dark"] .controls {
   background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
   box-shadow: inset 0 0 0 1px rgba(255,255,255,.05);
