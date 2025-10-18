@@ -10,53 +10,27 @@
     ],
     "cleanUrls": true,
     "rewrites": [
-      {
-        "source": "/createCheckoutSession",
-        "function": "createCheckoutSession"
-      },
-      {
-        "source": "/linkPurchaseToken",
-        "function": "linkPurchaseToken"
-      },
-      {
-        "source": "/stripeWebhook",
-        "function": "stripeWebhook"
-      },
-      {
-        "source": "**",
-        "destination": "/index.html"
-      }
+      { "source": "/createCheckoutSession", "function": "createCheckoutSession" },
+      { "source": "/linkPurchaseToken", "function": "linkPurchaseToken" },
+      { "source": "/stripeWebhook", "function": "stripeWebhook" },
+      { "source": "**", "destination": "/index.html" }
     ],
     "headers": [
       {
         "source": "**/*.@(js|css|html)",
         "headers": [
-          {
-            "key": "Cache-Control",
-            "value": "public, max-age=3600, must-revalidate"
-          }
+          { "key": "Cache-Control", "value": "public, max-age=3600, must-revalidate" }
         ]
       },
       {
         "source": "**/*.@(png|jpg|jpeg|svg|webp)",
         "headers": [
-          {
-            "key": "Cache-Control",
-            "value": "public, max-age=86400"
-          }
+          { "key": "Cache-Control", "value": "public, max-age=86400" }
         ]
       }
     ]
   },
-  "firestore": {
-    "rules": "firestore.rules",
-    "indexes": "firestore.indexes.json"
-  },
-  "functions": {
-    "source": "functions",
-    "runtime": "nodejs20"
-  },
-  "storage": {
-    "rules": "storage.rules"
-  }
+  "firestore": { "rules": "firestore.rules", "indexes": "firestore.indexes.json" },
+  "functions": { "source": "functions", "runtime": "nodejs20" },
+  "storage": { "rules": "storage.rules" }
 }
