@@ -1,148 +1,46 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
-  <title>Whylee — Train Your Mind</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Whylee — Think Sharper, Play Smarter</title>
 
-  <!-- PWA / TWA essentials -->
-  <meta name="theme-color" content="#0A0E17" media="(prefers-color-scheme: light)">
-  <meta name="theme-color" content="#02050B" media="(prefers-color-scheme: dark)">
-  <meta name="application-name" content="Whylee">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Whylee">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="color-scheme" content="light dark">
-  <link rel="manifest" href="/site.webmanifest">
-  <!-- Icons (you uploaded these) -->
-  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png">
-  <link rel="icon" type="image/png" sizes="48x48" href="/icons/favicon-48.png">
-  <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96.png">
-  <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
-  <link rel="icon" sizes="192x192" href="/icons/whylee-icon-192.png">
-  <link rel="icon" sizes="512x512" href="/icons/whylee-icon-512.png">
-  <!-- (Optional) mask icon for Safari pinned tabs -->
-  <link rel="mask-icon" href="/icons/favicon.svg" color="#2F7CFF">
+  <!-- Core Style Stack -->
+  <link rel="stylesheet" href="/styles/brand.css?v=9002">
+  <link rel="stylesheet" href="/styles/style.css?v=9002">
+  <link rel="stylesheet" href="/styles/animations.css?v=9002">
 
-  <!-- Core styles -->
-  <link rel="stylesheet" href="/styles/brand.css?v=9004">
-  <link rel="stylesheet" href="/styles/style.css?v=9004">
-  <link rel="stylesheet" href="/styles/animations.css?v=9004">
-  <link rel="stylesheet" href="/styles/dark.css?v=9004">
-
-  <style>
-    /* Landing hero tweaks to match cinematic tone */
-    header.hero {
-      max-width: 1100px; margin: 0 auto; padding: 28px 16px 10px;
-      text-align: center;
-    }
-    .hero-title {
-      font-weight: 900; letter-spacing:.4px; color:#fff; margin: 6px 0;
-      text-shadow: 0 10px 30px rgba(0,0,0,.45);
-    }
-    .hero-sub { color: var(--text-muted,#9fb1d8); margin: 6px 0 16px; }
-    .cta-row { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin: 10px 0 22px; }
-    .poster-strip {
-      max-width: 1200px; margin: 0 auto; padding: 6px 16px 30px;
-      display: grid; grid-template-columns: repeat(auto-fit,minmax(240px,1fr)); gap: 12px;
-    }
-    .poster {
-      position:relative; border-radius: 16px; overflow: hidden;
-      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
-      border: 1px solid rgba(255,255,255,.08);
-      box-shadow: 0 10px 28px rgba(0,0,0,.35);
-      aspect-ratio: 16/9;
-    }
-    .poster img { width:100%; height:100%; object-fit: cover; display:block; }
-    nav.top {
-      display:flex; align-items:center; justify-content:space-between;
-      max-width:1100px; margin:0 auto; padding: 10px 16px 0;
-    }
-    .brand { display:flex; align-items:center; gap:10px; color:#fff; font-weight:800; }
-    .brand img { width:28px; height:28px; }
-  </style>
-
-  <script>
-    // Auto-apply dark if user prefers or saved choice exists
-    try {
-      const saved = localStorage.getItem("theme");
-      const prefers = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-      if (saved === 'dark' || (!saved && prefers)) {
-        document.documentElement.setAttribute('data-theme','dark');
-      }
-    } catch (e) {}
-  </script>
+  <meta name="theme-color" content="#0B1222" />
 </head>
 <body class="bg-stars">
-  <nav class="top" aria-label="Primary">
-    <div class="brand">
-      <img src="/icons/favicon-48.png" alt="Whylee icon">
-      <span>Whylee</span>
-    </div>
-    <div style="display:flex; gap:8px; align-items:center">
-      <a class="btn btn--ghost" href="/sign-in.html">Sign in</a>
-      <a class="btn btn--brand" href="/game.html">Play</a>
-      <button id="themeToggle" class="btn btn--ghost" title="Toggle theme">🌙</button>
-    </div>
-  </nav>
-
-  <header class="hero">
-    <h1 class="hero-title h1">Train Daily. Level Up Faster.</h1>
-    <p class="hero-sub">Cinematic brain training with streaks, redemption, and a thriving league.</p>
-    <div class="cta-row">
-      <a class="btn btn--brand" href="/game.html">Start Daily Challenge</a>
-      <a class="btn btn--ghost" href="/pro.html">Upgrade to Pro</a>
-      <a class="btn btn--ghost" href="/leaderboard.html">View Leaderboard</a>
-    </div>
+  <header class="container" style="padding:18px 0;">
+    <nav style="display:flex;justify-content:space-between;align-items:center;gap:12px">
+      <a href="/index.html" class="brand" style="font-weight:800">WHYLEE</a>
+      <div style="display:flex;gap:12px">
+        <a class="btn btn--ghost" href="/menu.html">Menu</a>
+        <a class="btn btn--brand" href="/game.html">Play</a>
+      </div>
+    </nav>
   </header>
 
-  <section class="poster-strip" aria-label="Cinematic Storyboard">
-    <div class="poster"><img src="/media/posters/poster-01-start.jpg" alt="Start"></div>
-    <div class="poster"><img src="/media/posters/poster-02-mode.jpg" alt="Mode Select"></div>
-    <div class="poster"><img src="/media/posters/poster-03-reward.jpg" alt="Reward"></div>
-    <div class="poster"><img src="/media/posters/poster-04-reflection.jpg" alt="Reflection"></div>
-  </section>
+  <main class="container" style="text-align:center;padding:32px 0 56px">
+    <h1 class="fade-in" style="margin:0 0 8px">Sharpen Your Mind. Daily.</h1>
+    <p class="text-muted" style="max-width:720px;margin:0 auto 18px">
+      Fast-paced brain challenges with streaks, redemptions, and a premium cinematic feel.
+    </p>
+    <div style="display:flex;justify-content:center;gap:12px;margin-top:8px">
+      <a class="btn btn--brand" href="/game.html">Start Today</a>
+      <a class="btn" href="/pro.html">Go Pro</a>
+    </div>
 
-  <main style="max-width:1100px;margin:0 auto;padding:0 16px 30px;">
-    <section class="card">
-      <h2 class="h3">How it works</h2>
-      <ul>
-        <li>Level 1: Quickfire quiz — build streaks and use Redemption to forgive mistakes.</li>
-        <li>Level 2: Memory Match — find pairs; miss beads are removed by 3-in-a-row.</li>
-        <li>Level 3: Mixed Reasoning — adaptive difficulty for your growing skill.</li>
-      </ul>
+    <section style="margin-top:36px">
+      <img src="/media/posters/poster-10-brand.jpg" alt="Whylee brand poster"
+           style="width:100%;max-width:960px;border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,.45)" />
     </section>
   </main>
 
-  <!-- Scripts -->
-  <script type="module">
-    // Register service worker for PWA/TWA
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/service-worker.js')
-          .catch(()=>{ /* silent */ });
-      });
-    }
-  </script>
-  <script type="module" src="/scripts/firebase-bridge.js?v=9004"></script>
-  <script type="module" src="/scripts/app.js?v=9004"></script>
-
-  <script>
-    (function(){
-      const btn = document.getElementById('themeToggle');
-      if (!btn) return;
-      const html = document.documentElement;
-      const sync = () => btn.textContent = (html.getAttribute('data-theme') === 'dark') ? '🌙' : '☀️';
-      sync();
-      btn.addEventListener('click', () => {
-        const cur = html.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
-        const next = cur === 'dark' ? 'light' : 'dark';
-        html.setAttribute('data-theme', next);
-        try { localStorage.setItem('theme', next); } catch(e){}
-        sync();
-      });
-    })();
-  </script>
+  <footer style="text-align:center;opacity:.7;padding:22px 0 36px">
+    © 2025 Whylee
+  </footer>
 </body>
 </html>
