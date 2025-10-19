@@ -1,149 +1,118 @@
 #!/usr/bin/env node
 /**
  * render-posters.js
- * Build lightweight preview pages for poster flows.
- *
- * Usage:
- *   node promo/tools/render-posters.js
- *
- * Output:
- *   /promo/storyboard/storyboard-grid.html   (library grid)
- *   /promo/storyboard/sequence-preview.html  (Free + Pro flows + contexts)
+ * Generates visual previews for poster flows.
+ * Respects package.json -> config.media.posters (defaults to media/posters).
  */
 
-const fs = require("fs");
-const path = require("path");
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 
 const ROOT = process.cwd();
-const POSTERS_JSON = path.join(ROOT, "media", "posters", "poster-sequence.json");
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+// --- Resolve poster root from package.json config ----------------------------
+function getPosterRoot() {
+  const pkgPath = path.join(ROOT, "package.json");
+  const pkg = JSON.parse(fs.readFileSync(pkgPath, "utf8"));
+  const configured = pkg?.config?.media?.posters;
+  return path.join(ROOT, configured || "media/posters");
+}
+
+const POSTER_ROOT = getPosterRoot();
+const SEQ_JSON = path.join(POSTER_ROOT, "poster-sequence.json");
 const OUT_DIR = path.join(ROOT, "promo", "storyboard");
 
-function readJSON(p) {
-  try { return JSON.parse(fs.readFileSync(p, "utf8")); }
-  catch (e) { console.error("[render-posters] Failed to read JSON:", p, e.message); process.exit(1); }
-}
-
-function ensureDir(p) { fs.mkdirSync(p, { recursive: true }); }
-
-function exists(rel) { return fs.existsSync(path.join(ROOT, "media", "posters", rel)); }
-
-function tag(strings, ...vals) {
-  return strings.reduce((acc, s, i) => acc + s + (vals[i] ?? ""), "");
-}
+// --- Helpers -----------------------------------------------------------------
+const readJSON = p => JSON.parse(fs.readFileSync(p, "utf8"));
+const ensureDir = p => fs.mkdirSync(p, { recursive: true });
+const exists = rel => fs.existsSync(path.join(POSTER_ROOT, rel));
+const relFromRoot = abs => path.relative(ROOT, abs).replaceAll(path.sep, "/");
 
 function styleBlock() {
-  return /* css */`
+  return `
     :root { color-scheme: dark; --bg:#0a1228; --card:#0f1a38; --ink:#fefefe; --muted:#9fb3d2; --brand:#00e8ff; }
-    *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 ui-sans-serif,system-ui,Segoe UI,Roboto,Helvetica,Arial}
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui}
     header{padding:20px 16px;border-bottom:1px solid #182446;background:linear-gradient(180deg,rgba(255,255,255,.03),transparent)}
-    h1{margin:0;font-size:20px}
-    .pill{display:inline-block;padding:2px 10px;border-radius:999px;background:#14224a;color:var(--muted);font-size:12px;margin-left:8px}
-    .wrap{padding:16px;max-width:1200px;margin:0 auto}
+    .wrap{padding:16px;max-width:1200px;margin:auto}
     .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
-    .card{background:var(--card);border:1px solid #19264b;border-radius:14px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,.25)}
-    .card img{display:block;width:100%;height:300px;object-fit:cover;background:#0b152f}
-    .meta{padding:10px 12px;font-size:12px;color:var(--muted);display:flex;justify-content:space-between;align-items:center}
+    .card{background:var(--card);border:1px solid #19264b;border-radius:14px;overflow:hidden}
+    .card img{width:100%;height:300px;object-fit:cover}
+    .meta{padding:10px 12px;font-size:12px;color:var(--muted);display:flex;justify-content:space-between}
     .ok{color:#43d17e}.miss{color:#ff6b6b}
-    .row{display:grid;grid-template-columns:160px 1fr;gap:14px;margin-bottom:18px}
-    .thumb{width:160px;height:100px;border-radius:10px;object-fit:cover;border:1px solid #1a284e;background:#0b152f}
-    .flow{background:var(--card);border:1px solid #19264b;border-radius:14px;padding:12px}
-    .flow h3{margin:6px 0 10px;font-size:14px;color:var(--brand)}
+    .flow{background:var(--card);border:1px solid #19264b;border-radius:14px;padding:12px;margin-bottom:20px}
+    .flow h3{margin:0 0 10px;color:var(--brand)}
     .seq{display:flex;gap:10px;flex-wrap:wrap}
     .step{width:160px}
-    .step .cap{font-size:11px;color:var(--muted);margin-top:6px}
-    footer{padding:16px;color:var(--muted);text-align:center}
-    a{color:var(--brand);text-decoration:none}
+    .thumb{width:160px;height:100px;border-radius:10px;object-fit:cover;border:1px solid #1a284e}
+    footer{padding:16px;text-align:center;color:var(--muted)}
+    .path{color:var(--muted);font-size:12px}
   `;
 }
 
-function htmlDoc(title, body) {
-  return tag`<!doctype html>
-  <html lang="en"><head>
-    <meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
-    <title>${title}</title>
-    <style>${styleBlock()}</style>
-  </head><body>
-    ${body}
-  </body></html>`;
-}
+const htmlDoc = (title, body) => `<!doctype html><html lang="en"><head>
+  <meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>${title}</title><style>${styleBlock()}</style>
+</head><body>${body}</body></html>`;
 
-function buildGrid(json) {
+function gridPage(json) {
   const cards = json.library.map(fname => {
     const ok = exists(fname);
-    const badge = ok ? `<span class="ok">OK</span>` : `<span class="miss">Missing</span>`;
-    return tag`<div class="card">
-      <img loading="lazy" src="/media/posters/${fname}" alt="${fname}"/>
-      <div class="meta"><span>${fname}</span>${badge}</div>
-    </div>`;
+    return `
+      <div class="card">
+        <img src="/${relFromRoot(path.join(POSTER_ROOT, fname))}" alt="${fname}"/>
+        <div class="meta"><span>${fname}</span><span class="${ok ? "ok" : "miss"}">${ok ? "OK" : "Missing"}</span></div>
+      </div>`;
   }).join("");
 
-  const body = tag`
-  <header class="wrap"><h1>Poster Library <span class="pill">/media/posters</span></h1></header>
-  <main class="wrap">
-    <section class="grid">${cards}</section>
-  </main>
-  <footer>Generated by <code>promo/tools/render-posters.js</code></footer>`;
-
-  return htmlDoc("Poster Library", body);
+  return htmlDoc("Poster Library", `
+    <header class="wrap"><h1>Poster Library</h1>
+      <div class="path">Poster root: /${relFromRoot(POSTER_ROOT)}</div>
+    </header>
+    <main class="wrap"><section class="grid">${cards}</section></main>
+    <footer>Generated by render-posters.js</footer>`);
 }
 
-function flowBlock(title, arr) {
-  const steps = arr.map(s => {
-    const src = `/media/posters/${s.file}`;
-    const ok = exists(s.file);
-    return tag`<div class="step">
-      <img class="thumb" src="${src}" alt="${s.file}"/>
-      <div class="cap">${ok ? "✔" : "✖"} ${s.file}${s.caption ? `<br>${s.caption}` : ""}</div>
-    </div>`;
-  }).join("");
-  return tag`<div class="flow"><h3>${title}</h3><div class="seq">${steps}</div></div>`;
-}
-
-function buildSequence(json) {
-  const free = flowBlock("Free Flow", json.flows.free);
-  const pro  = flowBlock("Pro Flow",  json.flows.pro);
-  const success = flowBlock("Context: onSuccess", json.contexts.onSuccess);
-  const fail    = flowBlock("Context: onFail",    json.contexts.onFail);
-  const night   = flowBlock("Context: nightExit", json.contexts.nightExit);
-
-  const body = tag`
-  <header class="wrap"><h1>Poster Sequence Preview <span class="pill">flows + contexts</span></h1></header>
-  <main class="wrap">
-    <div class="row">
-      <div><strong>JSON</strong></div>
-      <div><code>/media/posters/poster-sequence.json</code></div>
+const flowBlock = (title, arr) => `
+  <div class="flow">
+    <h3>${title}</h3>
+    <div class="seq">
+      ${arr.map(s => `
+        <div class="step">
+          <img class="thumb" src="/${relFromRoot(path.join(POSTER_ROOT, s.file))}" alt="${s.file}"/>
+          <div class="meta">${s.caption || ""}</div>
+        </div>
+      `).join("")}
     </div>
-    ${free}
-    ${pro}
-    ${success}
-    ${fail}
-    ${night}
-  </main>
-  <footer>Files reference <code>/media/posters/*</code></footer>`;
+  </div>`;
 
-  return htmlDoc("Poster Sequences", body);
+function sequencePage(json) {
+  return htmlDoc("Poster Sequence Preview", `
+    <header class="wrap"><h1>Poster Sequence Preview</h1>
+      <div class="path">Sequence JSON: /${relFromRoot(SEQ_JSON)}</div>
+    </header>
+    <main class="wrap">
+      ${flowBlock("Free Flow", json.flows.free)}
+      ${flowBlock("Pro Flow", json.flows.pro)}
+      ${flowBlock("onSuccess", json.contexts.onSuccess)}
+      ${flowBlock("onFail", json.contexts.onFail)}
+      ${flowBlock("nightExit", json.contexts.nightExit)}
+    </main>
+    <footer>Generated by render-posters.js</footer>`);
 }
 
 function main() {
-  const json = readJSON(POSTERS_JSON);
-  ensureDir(OUT_DIR);
-
-  // Validate missing files
-  const missing = [];
-  [...(json.library || [])].forEach(f => { if (!exists(f)) missing.push(f); });
-
-  // Write pages
-  fs.writeFileSync(path.join(OUT_DIR, "storyboard-grid.html"), buildGrid(json));
-  fs.writeFileSync(path.join(OUT_DIR, "sequence-preview.html"), buildSequence(json));
-
-  console.log("[render-posters] Wrote:");
-  console.log("  - /promo/storyboard/storyboard-grid.html");
-  console.log("  - /promo/storyboard/sequence-preview.html");
-  if (missing.length) {
-    console.warn("\n[render-posters] Missing assets in /media/posters:");
-    missing.forEach(m => console.warn("  •", m));
-    process.exitCode = 2;
+  if (!fs.existsSync(SEQ_JSON)) {
+    console.error(`❌ poster-sequence.json not found at: ${relFromRoot(SEQ_JSON)}`);
+    process.exit(1);
   }
+  const spec = readJSON(SEQ_JSON);
+  ensureDir(OUT_DIR);
+  fs.writeFileSync(path.join(OUT_DIR, "storyboard-grid.html"), gridPage(spec));
+  fs.writeFileSync(path.join(OUT_DIR, "sequence-preview.html"), sequencePage(spec));
+  console.log("✅ Poster previews written to /promo/storyboard/");
 }
 
 main();
