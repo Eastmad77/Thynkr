@@ -1,0 +1,109 @@
+/* ============================================================================
+   Whylee – Promo / House Ads (v9)
+   Used on: /menu.html, /pro.html (and anywhere you want a hero or tile)
+   ============================================================================ */
+
+:root {
+  --promo-radius: 18px;
+  --promo-overlay: linear-gradient(180deg, rgba(0,0,0,.0) 20%, rgba(0,0,0,.55) 100%);
+}
+
+.promo-hero {
+  position: relative;
+  display: grid;
+  align-items: end;
+  min-height: clamp(320px, 48vh, 560px);
+  border-radius: var(--promo-radius);
+  overflow: hidden;
+  background: #081325 center/cover no-repeat;
+  box-shadow: 0 16px 42px rgba(0,0,0,.35);
+  isolation: isolate;
+}
+.promo-hero::after {
+  content:"";
+  position:absolute; inset:0;
+  background: var(--promo-overlay);
+  pointer-events:none;
+}
+.promo-hero__inner {
+  position: relative;
+  z-index: 1;
+  padding: clamp(16px, 3.2vw, 28px);
+  color: #fff;
+  text-shadow: 0 2px 18px rgba(0,0,0,.35);
+}
+.promo-hero h1 {
+  font-size: clamp(1.6rem, 3.6vw, 3rem);
+  margin: 0 0 .25rem;
+}
+.promo-hero p {
+  margin: 0 0 1rem;
+  opacity: .92;
+}
+
+/* Buttons (reuse brand buttons but keep a nice glow) */
+.promo-cta {
+  display: inline-flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.promo-cta .btn--primary {
+  background: linear-gradient(180deg, #00B8FF 0%, #007BFF 100%);
+  color: #fff;
+  border-radius: 12px;
+  padding: 10px 18px;
+  font-weight: 700;
+  border: 0;
+  box-shadow: 0 10px 22px rgba(0, 123, 255, .35), inset 0 0 0 1px rgba(255,255,255,.12);
+}
+.promo-cta .btn--ghost {
+  background: rgba(255,255,255,.08);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,.18);
+  border-radius: 12px;
+  padding: 10px 16px;
+  font-weight: 600;
+}
+
+/* Promo tiles row */
+.promo-tiles {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 14px;
+}
+.promo-tile {
+  position: relative;
+  grid-column: span 6;
+  min-height: 220px;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #0a1730 center/cover no-repeat;
+  box-shadow: 0 10px 28px rgba(0,0,0,.28);
+}
+@media (min-width: 900px) {
+  .promo-tile { grid-column: span 4; min-height: 260px; }
+}
+.promo-tile::after {
+  content:"";
+  position:absolute; inset:0;
+  background: linear-gradient(180deg, rgba(0,0,0,.0) 10%, rgba(0,0,0,.6) 100%);
+}
+.promo-tile__inner {
+  position: relative;
+  z-index: 1;
+  color: #fff;
+  padding: 14px;
+  display: grid;
+  align-content: end;
+  gap: 8px;
+}
+.promo-tile h3 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+.promo-tile p {
+  margin: 0 0 6px;
+  opacity: .9;
+  font-size: .95rem;
+}
+.promo-hide { display: none !important; } /* toggled by houseAds.js for Pro */
