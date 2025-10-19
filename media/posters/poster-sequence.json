@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json.schemastore.org/json-schema",
+  "_comment": "Defines poster flows for Free vs Pro, plus contextual screens (success, fail, night, upgrade). File names must exist in /media/posters/.",
+  "version": 1,
+  "defaults": {
+    "durationMs": 2200,
+    "easing": "ease-out",
+    "overlay": "none"
+  },
+  "flows": {
+    "free": [
+      { "file": "poster-01-start.jpg",   "caption": "Tap to Begin",             "durationMs": 1600 },
+      { "file": "poster-02-mode.jpg",    "caption": "Play Free or Go Pro" },
+      { "file": "poster-06-challenge.jpg","caption": "Challenge Mode" }
+    ],
+    "pro": [
+      { "file": "poster-05-upgrade.jpg", "caption": "Go Pro • 3-Day Free Trial", "durationMs": 2600 },
+      { "file": "poster-07-pro.jpg",     "caption": "Pro Rewards" },
+      { "file": "poster-08-levelup.jpg", "caption": "Level Up • Unlock Brilliance" }
+    ]
+  },
+  "contexts": {
+    "onSuccess": [
+      { "file": "poster-03-reward.jpg",  "caption": "XP Earned! Badge Unlocked", "durationMs": 2200 }
+    ],
+    "onFail": [
+      { "file": "poster-gameover.jpg",   "caption": "Game Over • Try Again",     "durationMs": 1800 }
+    ],
+    "nightExit": [
+      { "file": "poster-10-brand.jpg",   "caption": "Your Smart Companion",      "durationMs": 1600 },
+      { "file": "poster-night.jpg",      "caption": "See You Tomorrow",          "durationMs": 1800 }
+    ]
+  },
+  "library": [
+    "poster-01-start.jpg",
+    "poster-02-mode.jpg",
+    "poster-03-reward.jpg",
+    "poster-04-reflection.jpg",
+    "poster-05-upgrade.jpg",
+    "poster-06-challenge.jpg",
+    "poster-07-pro.jpg",
+    "poster-08-levelup.jpg",
+    "poster-09-community.jpg",
+    "poster-10-brand.jpg",
+    "poster-success.jpg",
+    "poster-gameover.jpg",
+    "poster-night.jpg",
+    "poster-pro-success.jpg",
+    "poster-pro-retry.jpg",
+    "poster-pro-next-challenge.jpg"
+  ]
+}
