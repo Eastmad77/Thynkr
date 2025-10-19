@@ -1,0 +1,3 @@
+# Keeps /media/motion/ folder tracked in Git.
+# Required since .mp4 and .webm files are in .gitignore.
+# Do not delete this file.
