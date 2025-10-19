@@ -1,50 +1,82 @@
 <!doctype html>
-<html lang="en" data-theme="dark">
+<html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>Whylee — Menu</title>
 
-  <!-- Core Style Stack -->
   <link rel="stylesheet" href="/styles/brand.css?v=9002">
   <link rel="stylesheet" href="/styles/style.css?v=9002">
   <link rel="stylesheet" href="/styles/animations.css?v=9002">
+  <link rel="stylesheet" href="/styles/promos.css?v=9002">
 </head>
 <body class="bg-stars">
-  <header class="container" style="padding:18px 0;">
-    <nav style="display:flex;justify-content:space-between;align-items:center">
-      <a href="/index.html" class="brand">WHYLEE</a>
-      <a class="btn btn--brand" href="/game.html">Play</a>
-    </nav>
+  <header class="container">
+    <h1 class="h3" style="margin:16px 0">Welcome back 👋</h1>
   </header>
 
-  <main class="container">
-    <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px">
-      <a class="card fade-in" href="/game.html">
-        <h3>Play</h3>
-        <p class="text-muted">Quickfire quiz. Build streaks. Redeem mistakes.</p>
-      </a>
-      <a class="card fade-in" href="/leaderboard.html">
-        <h3>Leaderboard</h3>
-        <p class="text-muted">See where you rank this week.</p>
-      </a>
-      <a class="card fade-in" href="/profile.html">
-        <h3>Profile</h3>
-        <p class="text-muted">Choose avatar, emoji, and theme.</p>
-      </a>
-      <a class="card fade-in" href="/pro.html">
-        <h3>Go Pro</h3>
-        <p class="text-muted">Unlock avatars, boosts, and Pro challenges.</p>
-      </a>
-      <a class="card fade-in" href="/promo/storyboard/storyboard-grid.html" target="_blank" rel="noopener">
-        <h3>Storyboard</h3>
-        <p class="text-muted">Cinematic posters and UI frames.</p>
-      </a>
-    </div>
+  <main class="container" style="display:grid; gap:18px">
+
+    <!-- Hero promo (visible for Free users; hidden for Pro by houseAds.js) -->
+    <section
+      class="promo-hero promo-if-free"
+      style="background-image:url('/media/promos/promo-pro-trial.jpg')"
+      aria-label="Unlock Whylee Pro"
+    >
+      <div class="promo-hero__inner">
+        <h1>Unlock Whylee Pro</h1>
+        <p>Try 3 days free. Boost XP, daily challenges, streak saver & more.</p>
+        <div class="promo-cta">
+          <a class="btn--primary" href="/pro.html">Start Free Trial</a>
+          <a class="btn--ghost" href="/pro.html#features">See What’s Inside</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Main actions -->
+    <section class="card">
+      <h2 class="h4" style="margin-top:0">Play</h2>
+      <div style="display:flex; gap:10px; flex-wrap:wrap">
+        <a class="btn btn--brand" href="/game.html">Daily Quiz</a>
+        <a class="btn btn--ghost" href="/level2.html">Memory Match (Level 2)</a>
+        <a class="btn btn--ghost" href="/leaderboard.html">Leaderboard</a>
+        <a class="btn btn--ghost" href="/achievements.html">Achievements</a>
+      </div>
+    </section>
+
+    <!-- Promo tiles (house ads) -->
+    <section class="promo-tiles">
+      <article class="promo-tile" style="background-image:url('/media/promos/promo-milestones.jpg')">
+        <div class="promo-tile__inner">
+          <h3>Milestones Unlocked</h3>
+          <p>Collect badges as you master new challenges.</p>
+          <a class="btn btn--brand" href="/achievements.html">View Badges</a>
+        </div>
+      </article>
+
+      <article class="promo-tile" style="background-image:url('/media/promos/promo-league.jpg')">
+        <div class="promo-tile__inner">
+          <h3>Whylee League</h3>
+          <p>See where you rank this week.</p>
+          <a class="btn btn--brand" href="/leaderboard.html">Open Leaderboard</a>
+        </div>
+      </article>
+
+      <article class="promo-tile promo-if-free" style="background-image:url('/media/promos/promo-pro-trial.jpg')">
+        <div class="promo-tile__inner">
+          <h3>Go Pro</h3>
+          <p>Unlock premium avatars, themes & XP boosters.</p>
+          <a class="btn btn--brand" href="/pro.html">Start Free Trial</a>
+        </div>
+      </article>
+    </section>
+
   </main>
 
-  <footer style="text-align:center;opacity:.7;padding:22px 0 36px">
-    © 2025 Whylee
+  <footer class="container" style="margin:24px 0; opacity:.8">
+    <a href="/profile.html">Profile</a> • <a href="/pro.html">Pro</a> • <a href="/promo/storyboard/storyboard-grid.html">Storyboard</a>
   </footer>
+
+  <script type="module" src="/scripts/houseAds.js?v=9002"></script>
 </body>
 </html>
