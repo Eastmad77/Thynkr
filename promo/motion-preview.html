@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Whylee — Motion Preview</title>
+  <style>
+    :root { color-scheme: dark; --bg:#0a1228; --card:#0f1a38; --ink:#fefefe; --muted:#9fb3d2; --brand:#00e8ff; }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui}
+    header{padding:18px 16px;border-bottom:1px solid #182446;background:linear-gradient(180deg,rgba(255,255,255,.03),transparent)}
+    .wrap{padding:16px;max-width:1260px;margin:auto}
+    h1{margin:0;font-size:20px}
+    .path{color:var(--muted);font-size:12px;margin-top:4px}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-top:16px}
+    .card{background:var(--card);border:1px solid #19264b;border-radius:14px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+    .card video,.card img{display:block;width:100%;height:158px;object-fit:cover;background:#0b152f}
+    .meta{padding:10px 12px;font-size:12px;color:var(--muted);display:flex;justify-content:space-between;gap:10px;align-items:center}
+    .btns{display:flex;gap:8px}
+    button{background:#14224a;color:#cfe2ff;border:1px solid #1d2e5e;border-radius:8px;padding:6px 10px;font-size:12px;cursor:pointer}
+    button:hover{border-color:#2a3f7b}
+    footer{padding:16px;text-align:center;color:var(--muted)}
+    .pill{display:inline-block;padding:2px 10px;border-radius:999px;background:#14224a;color:var(--muted);font-size:12px;margin-left:8px}
+  </style>
+</head>
+<body>
+  <header class="wrap">
+    <h1>Motion Preview <span class="pill">/media/motion</span></h1>
+    <div class="path">Source sequence: <code>/media/posters/v1/poster-sequence.json</code></div>
+  </header>
+
+  <main class="wrap">
+    <div id="grid" class="grid" role="list"></div>
+  </main>
+
+  <footer>Tip: Use <code>npm run motion</code> to (re)render clips. Missing videos will fall back to still posters.</footer>
+
+  <script type="module">
+    const SEQ_URL = "/media/posters/v1/poster-sequence.json";
+    const POSTER_ROOT = "/media/posters/v1";
+    const MOTION_ROOT = "/media/motion";
+
+    const grid = document.getElementById("grid");
+
+    function makeCard(fname) {
+      const base = fname.replace(/\.(jpe?g|png|webp)$/i, "");
+      const poster = `${POSTER_ROOT}/${fname}`;
+      const webm = `${MOTION_ROOT}/${base}.webm`;
+      const mp4  = `${MOTION_ROOT}/${base}.mp4`;
+
+      const card = document.createElement("article");
+      card.className = "card";
+      card.innerHTML = `
+        <video autoplay muted loop playsinline poster="${poster}">
+          <source src="${webm}" type="video/webm">
+          <source src="${mp4}" type="video/mp4">
+          <img src="${poster}" alt="${fname}">
+        </video>
+        <div class="meta">
+          <span>${fname}</span>
+          <div class="btns">
+            <button data-action="play">Play</button>
+            <button data-action="pause">Pause</button>
+          </div>
+        </div>
+      `;
+      card.querySelector('[data-action="play"]').addEventListener("click", ()=> card.querySelector("video")?.play());
+      card.querySelector('[data-action="pause"]').addEventListener("click", ()=> card.querySelector("video")?.pause());
+      return card;
+    }
+
+    async function load() {
+      try {
+        const res = await fetch(SEQ_URL, { cache: "no-cache" });
+        const spec = await res.json();
+
+        // Build from library (all posters)
+        const names = Array.isArray(spec.library) ? spec.library : [];
+        names.forEach(name => grid.appendChild(makeCard(name)));
+      } catch (e) {
+        console.error("Failed to load sequence JSON", e);
+        grid.innerHTML = `<p style="color:#ff9b9b">Could not load poster-sequence.json</p>`;
+      }
+    }
+
+    load();
+  </script>
+</body>
+</html>
