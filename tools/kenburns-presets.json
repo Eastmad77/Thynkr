@@ -1,0 +1,82 @@
+{
+  "poster-01-start": {
+    "zoomStart": 1.03,
+    "zoomEnd": 1.08,
+    "xStart": 0.50,
+    "yStart": 0.48,
+    "xEnd": 0.52,
+    "yEnd": 0.50
+  },
+  "poster-02-mode": {
+    "zoomStart": 1.05,
+    "zoomEnd": 1.12,
+    "xStart": 0.48,
+    "yStart": 0.52,
+    "xEnd": 0.50,
+    "yEnd": 0.50
+  },
+  "poster-03-reward": {
+    "zoomStart": 1.02,
+    "zoomEnd": 1.07,
+    "xStart": 0.50,
+    "yStart": 0.48,
+    "xEnd": 0.49,
+    "yEnd": 0.53
+  },
+  "poster-04-reflection": {
+    "zoomStart": 1.04,
+    "zoomEnd": 1.10,
+    "xStart": 0.48,
+    "yStart": 0.48,
+    "xEnd": 0.52,
+    "yEnd": 0.50
+  },
+  "poster-05-upgrade": {
+    "zoomStart": 1.06,
+    "zoomEnd": 1.14,
+    "xStart": 0.50,
+    "yStart": 0.50,
+    "xEnd": 0.48,
+    "yEnd": 0.52
+  },
+  "poster-06-challenge": {
+    "zoomStart": 1.03,
+    "zoomEnd": 1.09,
+    "xStart": 0.50,
+    "yStart": 0.48,
+    "xEnd": 0.52,
+    "yEnd": 0.50
+  },
+  "poster-07-pro": {
+    "zoomStart": 1.10,
+    "zoomEnd": 1.18,
+    "xStart": 0.49,
+    "yStart": 0.48,
+    "xEnd": 0.50,
+    "yEnd": 0.52
+  },
+  "poster-08-levelup": {
+    "zoomStart": 1.05,
+    "zoomEnd": 1.11,
+    "xStart": 0.50,
+    "yStart": 0.48,
+    "xEnd": 0.50,
+    "yEnd": 0.53
+  },
+  "poster-09-community": {
+    "zoomStart": 1.03,
+    "zoomEnd": 1.09,
+    "xStart": 0.48,
+    "yStart": 0.50,
+    "xEnd": 0.52,
+    "yEnd": 0.50
+  },
+  "poster-10-brand": {
+    "zoomStart": 1.08,
+    "zoomEnd": 1.16,
+    "xStart": 0.50,
+    "yStart": 0.50,
+    "xEnd": 0.50,
+    "yEnd": 0.52
+  }
+}
