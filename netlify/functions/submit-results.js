@@ -1,44 +1,27 @@
-// POST → store a run summary in Firestore (if configured). Otherwise 501.
-// Body: { uid?, dayKey, totalCorrect, totalAsked, streak, levelReached, durationMs }
+// netlify/functions/submit-results.js
+// Accepts a gameplay summary and returns success. (Backend of record can be added later.)
+const json = (statusCode, data, headers = {}) => ({
+  statusCode,
+  headers: { "content-type": "application/json", ...headers },
+  body: JSON.stringify(data),
+});
+const allowOrigin = (event) => event.headers.origin || "*";
+const cors = (event, extra = {}) => ({
+  "Access-Control-Allow-Origin": allowOrigin(event),
+  "Access-Control-Allow-Headers": "authorization,content-type",
+  "Access-Control-Allow-Methods": "POST,OPTIONS",
+  ...extra,
+});
 
-import { db, using as usingFirebase } from "./_shared/firebase.js";
-
-export default async (req) => {
-  if (req.method !== "POST")
-    return new Response("Method Not Allowed", { status: 405 });
-
+export async function handler(event) {
+  if (event.httpMethod === "OPTIONS") return { statusCode: 204, headers: cors(event) };
+  if (event.httpMethod !== "POST") return json(405, { error: "Method Not Allowed" }, cors(event));
   try {
-    const body = await req.json();
-
-    if (!(usingFirebase && db)) {
-      return Response.json(
-        { ok: false, message: "Storage not configured (Firebase disabled)." },
-        { status: 501 }
-      );
-    }
-
-    const now = Date.now();
-    const doc = {
-      ...body,
-      ts: now,
-      ua: req.headers.get("user-agent") || "",
-      ip: req.headers.get("x-forwarded-for") || "",
-      app: "whylee",
-    };
-
-    const uid = body.uid || "anon";
-    await db.collection("users").doc(uid).collection("runs").add(doc);
-
-    // Aggregate shorthand (daily)
-    const dayKey = body.dayKey || new Date(now).toISOString().slice(0, 10);
-    await db.collection("daily_stats").doc(dayKey).set(
-      { lastRunAt: now, runs: (db.fieldValue?.increment?.(1) ?? 1) },
-      { merge: true }
-    ).catch(()=>{ /* ignore if fieldValue not available in this runtime */ });
-
-    return Response.json({ ok: true });
-  } catch (err) {
-    console.error(err);
-    return Response.json({ ok: false, error: String(err) }, { status: 500 });
+    const payload = JSON.parse(event.body || "{}");
+    // TODO: verify auth token if you post ID tokens from client
+    // TODO: persist to Firestore
+    return json(200, { ok: true, received: payload }, cors(event));
+  } catch (e) {
+    return json(400, { error: "Invalid JSON" }, cors(event));
   }
-};
+}
