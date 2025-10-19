@@ -1,6 +1,6 @@
 {
   "name": "whylee",
-  "version": "7008.0.0",
+  "version": "7008.0.2",
   "description": "Whylee — interactive daily brain-training PWA (Free + Pro versions, cinematic promo tools)",
   "type": "module",
   "scripts": {
@@ -10,8 +10,9 @@
     "generate": "netlify functions:invoke generateDailyQuestions",
     "build": "npm run thumbs && npm run brand",
     "motion": "node tools/make-motion-from-posters.mjs",
-    "motion:mp4": "node tools/make-motion-from-posters.mjs",
-    "motion:clean": "rimraf media/motion/*.mp4 media/motion/*.webm || true"
+    "motion:clean": "rimraf media/motion/*.mp4 media/motion/*.webm || true",
+    "posters:build": "node promo/tools/render-posters.js",
+    "preview:motion": "npx serve . -l 5050"
   },
   "dependencies": {
     "firebase-admin": "^12.5.0",
