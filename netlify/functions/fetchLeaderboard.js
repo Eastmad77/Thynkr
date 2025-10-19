@@ -1,4 +1,5 @@
-// Netlify Function: fetchLeaderboard (Firestore, Admin SDK)
+// netlify/functions/fetch-leaderboard.js
+// Netlify Function: fetchLeaderboard (Firestore, Admin SDK, ESM)
 // Requires env: FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, FIREBASE_PRIVATE_KEY (with \n escaped)
 // Optional env: LEADERBOARD_COLLECTION (defaults to 'leaderboard'), LEADERBOARD_LIMIT (defaults to 100)
 
@@ -34,12 +35,17 @@ function ensureAdmin() {
 }
 
 export async function handler(event) {
-  // Preflight
+  // Handle preflight CORS
   if (event.httpMethod === 'OPTIONS') {
     return { statusCode: 200, headers: CORS_HEADERS, body: '' };
   }
+
   if (event.httpMethod !== 'GET') {
-    return { statusCode: 405, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Method not allowed' }) };
+    return {
+      statusCode: 405,
+      headers: CORS_HEADERS,
+      body: JSON.stringify({ error: 'Method not allowed' }),
+    };
   }
 
   try {
@@ -50,7 +56,6 @@ export async function handler(event) {
     const LIMIT = Math.min(Number(process.env.LEADERBOARD_LIMIT || 100), 500); // hard cap
 
     // Expected doc fields: { name, tier, xp, streak, avatarSrc, badge }
-    // Order by xp desc, tiebreak by streak desc
     const snap = await db.collection(COL)
       .orderBy('xp', 'desc')
       .orderBy('streak', 'desc')
@@ -71,7 +76,7 @@ export async function handler(event) {
       });
     });
 
-    // Compute rank client-side here to avoid storing a rank field
+    // Add ranking client-side (in memory)
     const ranked = rows.map((r, i) => ({ ...r, rank: i + 1 }));
 
     return {
@@ -80,7 +85,7 @@ export async function handler(event) {
       body: JSON.stringify(ranked),
     };
   } catch (err) {
-    console.error('fetchLeaderboard error:', err);
+    console.error('[fetch-leaderboard] error:', err);
     return {
       statusCode: 500,
       headers: CORS_HEADERS,
