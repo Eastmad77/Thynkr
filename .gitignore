@@ -1,0 +1,3 @@
+# Ignore generated motion clips
+media/motion/*.mp4
+media/motion/*.webm
