@@ -1,79 +1,78 @@
-// netlify/functions/stripe-webhook.js (ESM)
-// Node 18+, Netlify Functions. Works with "type": "module" in package.json.
+// netlify/functions/stripe-webhook.js
+// ESM version for "type": "module" packages
 
 import Stripe from "stripe";
 
-// If deploying on Netlify, set these env vars in your site settings:
-// - STRIPE_SECRET_KEY
-// - STRIPE_WEBHOOK_SECRET
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
   apiVersion: "2023-10-16",
 });
 
-/**
- * Netlify sometimes base64-encodes the event body.
- */
-function getRawBody(event) {
-  if (!event || !event.body) return Buffer.from("");
-  return event.isBase64Encoded
-    ? Buffer.from(event.body, "base64")
-    : Buffer.from(event.body);
-}
+const json = (statusCode, data, headers = {}) => ({
+  statusCode,
+  headers: { "content-type": "application/json", ...headers },
+  body: JSON.stringify(data),
+});
+const allowOrigin = (event) => event.headers.origin || "*";
+const cors = (event, extra = {}) => ({
+  "Access-Control-Allow-Origin": allowOrigin(event),
+  "Access-Control-Allow-Headers": "authorization,content-type",
+  "Access-Control-Allow-Methods": "POST,OPTIONS",
+  ...extra,
+});
+
+const rawBuffer = (event) =>
+  event.isBase64Encoded ? Buffer.from(event.body || "", "base64") : Buffer.from(event.body || "");
 
 export async function handler(event) {
+  if (event.httpMethod === "OPTIONS") {
+    return { statusCode: 204, headers: cors(event) };
+  }
   if (event.httpMethod !== "POST") {
-    return { statusCode: 405, body: "Method Not Allowed" };
+    return json(405, { error: "Method Not Allowed" }, cors(event));
   }
 
-  const sig = event.headers["stripe-signature"] || event.headers["Stripe-Signature"];
-  const whSecret = process.env.STRIPE_WEBHOOK_SECRET;
+  const signature = event.headers["stripe-signature"] || event.headers["Stripe-Signature"];
+  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
-  if (!whSecret) {
+  if (!webhookSecret) {
     console.error("[stripe-webhook] Missing STRIPE_WEBHOOK_SECRET");
-    return { statusCode: 500, body: "Server misconfigured" };
+    return json(500, { error: "Server misconfigured" }, cors(event));
   }
 
   let stripeEvent;
   try {
-    const raw = getRawBody(event);
-    stripeEvent = stripe.webhooks.constructEvent(raw, sig, whSecret);
+    stripeEvent = stripe.webhooks.constructEvent(rawBuffer(event), signature, webhookSecret);
   } catch (err) {
-    console.error("[stripe-webhook] Signature verification failed:", err?.message);
-    return { statusCode: 400, body: `Webhook Error: ${err.message}` };
+    console.error("[stripe-webhook] Signature error:", err.message);
+    return json(400, { error: `Webhook Error: ${err.message}` }, cors(event));
   }
 
-  // Handle Stripe events you care about
   try {
     switch (stripeEvent.type) {
       case "checkout.session.completed": {
-        // Example: mark user as pro using metadata.uid (configure in Checkout)
         const session = stripeEvent.data.object;
+        // Example: read uid/sku from Checkout metadata
         const uid = session?.metadata?.uid;
         const sku = session?.metadata?.sku || "pro";
-
-        // TODO: persist entitlement in your DB (Firestore, etc.)
-        console.log("[stripe-webhook] checkout.session.completed", { uid, sku });
-
+        console.log("[stripe-webhook] checkout.session.completed", { uid, sku, id: session.id });
+        // TODO: mark user as Pro in Firestore (users/{uid}.pro = true)
         break;
       }
       case "customer.subscription.updated":
       case "customer.subscription.created":
       case "customer.subscription.deleted": {
         const sub = stripeEvent.data.object;
-        // TODO: sync subscription status → entitlements
-        console.log("[stripe-webhook] subscription event", {
-          id: sub.id, status: sub.status,
-        });
+        console.log("[stripe-webhook] subscription", { id: sub.id, status: sub.status });
+        // TODO: sync entitlement by customer id
         break;
       }
       default:
-        // Log and ignore other events
         console.log("[stripe-webhook] unhandled event:", stripeEvent.type);
     }
   } catch (err) {
     console.error("[stripe-webhook] handler error:", err);
-    return { statusCode: 500, body: "Webhook handler error" };
+    return json(500, { error: "Webhook handler error" }, cors(event));
   }
 
-  return { statusCode: 200, body: JSON.stringify({ received: true }) };
+  return json(200, { received: true }, cors(event));
 }
