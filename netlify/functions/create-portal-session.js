@@ -1,41 +1,36 @@
-// Creates a Stripe Billing Portal session so users can manage/cancel
-// Env: STRIPE_SECRET_KEY, SITE_URL, FIREBASE_SERVICE_ACCOUNT
+// netlify/functions/create-portal-session.js
+import Stripe from "stripe";
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: "2023-10-16" });
 
-import Stripe from 'stripe';
-import { getAdmin } from './_firebase-admin.js';
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: '2024-06-20',
+const json = (statusCode, data, headers = {}) => ({
+  statusCode,
+  headers: { "content-type": "application/json", ...headers },
+  body: JSON.stringify(data),
+});
+const allowOrigin = (event) => event.headers.origin || "*";
+const cors = (event, extra = {}) => ({
+  "Access-Control-Allow-Origin": allowOrigin(event),
+  "Access-Control-Allow-Headers": "authorization,content-type",
+  "Access-Control-Allow-Methods": "POST,OPTIONS",
+  ...extra,
 });
 
-export const handler = async (event) => {
+export async function handler(event) {
+  if (event.httpMethod === "OPTIONS") return { statusCode: 204, headers: cors(event) };
+  if (event.httpMethod !== "POST") return json(405, { error: "Method Not Allowed" }, cors(event));
+
   try {
-    if (event.httpMethod !== 'POST') {
-      return { statusCode: 405, body: 'Method Not Allowed' };
-    }
+    const { customerId, return_url } = JSON.parse(event.body || "{}");
+    if (!customerId) return json(400, { error: "Missing customerId" }, cors(event));
 
-    const { uid } = JSON.parse(event.body || '{}');
-    if (!uid) return { statusCode: 400, body: 'Missing uid' };
-
-    const { db } = getAdmin();
-    const snap = await db.collection('users').doc(uid).get();
-    const data = snap.exists ? snap.data() : null;
-    const customerId = data?.stripeCustomerId;
-    if (!customerId) return { statusCode: 400, body: 'No Stripe customer on file' };
-
-    const siteUrl = process.env.SITE_URL || `https://${event.headers.host}`;
     const session = await stripe.billingPortal.sessions.create({
       customer: customerId,
-      return_url: siteUrl,
+      return_url: return_url || `${event.headers.origin}/profile.html`,
     });
 
-    return {
-      statusCode: 200,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ url: session.url }),
-    };
-  } catch (err) {
-    console.error('create-portal-session error:', err);
-    return { statusCode: 500, body: 'Portal error' };
+    return json(200, { url: session.url }, cors(event));
+  } catch (e) {
+    console.error("[create-portal-session] error:", e);
+    return json(500, { error: e.message }, cors(event));
   }
-};
+}
