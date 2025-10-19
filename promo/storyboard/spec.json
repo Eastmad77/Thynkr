@@ -1,0 +1,20 @@
+{
+  "_comment": "Storyboard render spec for internal previews",
+  "grid": {
+    "thumbWidth": 220,
+    "thumbHeight": 300,
+    "columnsMin": 3,
+    "gap": 14,
+    "showCaptions": true
+  },
+  "sequence": {
+    "thumbWidth": 160,
+    "thumbHeight": 100,
+    "showCaptions": true,
+    "sections": ["free", "pro", "onSuccess", "onFail", "nightExit"]
+  },
+  "paths": {
+    "input": "/media/posters/poster-sequence.json",
+    "outputDir": "/promo/storyboard"
+  }
+}
