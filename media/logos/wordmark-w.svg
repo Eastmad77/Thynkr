@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 200" role="img" aria-label="Whylee wordmark">
+  <defs>
+    <linearGradient id="whyleeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#007AFF"/>
+      <stop offset="100%" stop-color="#00E8FF"/>
+    </linearGradient>
+  </defs>
+  <!-- Stylized "W" emblem -->
+  <path d="M100 40 L130 140 L150 90 L170 140 L200 40 L180 40 L150 110 L120 40 Z"
+        fill="url(#whyleeGradient)" />
+
+  <!-- Wordmark text -->
+  <text x="230" y="120"
+        font-family="Poppins, Avenir Next, Helvetica, Arial, sans-serif"
+        font-weight="600"
+        font-size="72"
+        fill="url(#whyleeGradient)">
+    Whylee
+  </text>
+</svg>
