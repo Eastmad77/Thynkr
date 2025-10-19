@@ -1,69 +1,84 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Whylee Pro – Unlock More</title>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Whylee — Pro</title>
 
-  <link rel="stylesheet" href="/styles/brand.css?v=9003">
-  <link rel="stylesheet" href="/styles/style.css?v=9003">
-  <link rel="stylesheet" href="/styles/animations.css?v=9003">
-  <link rel="stylesheet" href="/styles/ads.css?v=9003">
+  <link rel="stylesheet" href="/styles/brand.css?v=9002">
+  <link rel="stylesheet" href="/styles/style.css?v=9002">
+  <link rel="stylesheet" href="/styles/animations.css?v=9002">
+  <link rel="stylesheet" href="/styles/promos.css?v=9002">
 </head>
-<body>
-  <header>
-    <h1>Whylee Pro</h1>
-    <p>Unlock premium avatars, bonus XP, and daily challenge tiers.</p>
-  </header>
+<body class="bg-stars">
 
-  <main class="container">
-    <section class="card">
-      <h2>Benefits</h2>
-      <ul>
-        <li>🧠 Unlimited challenges & faster XP growth</li>
-        <li>🐉 Exclusive Pro Avatars (Dragon, Tiger, Wolf, Bear)</li>
-        <li>🌙 Dark Mode + Custom Themes</li>
-        <li>🏆 Priority leaderboard placement</li>
-      </ul>
-      <div style="display:flex; gap:10px; flex-wrap:wrap;">
-        <button id="btnPlaySub" class="btn btn--brand">Buy on Android (Play)</button>
-        <button id="btnStripe" class="btn">Subscribe on Web</button>
+  <!-- Hero -->
+  <section
+    class="promo-hero"
+    style="background-image:url('/media/promos/promo-pro-trial.jpg')"
+    aria-label="Start Whylee Pro free trial"
+  >
+    <div class="promo-hero__inner container">
+      <h1>Unlock Your Full Potential</h1>
+      <p>3-day free trial · No charge if cancelled · Premium avatars, themes, daily challenges & XP boosts</p>
+      <div class="promo-cta">
+        <a class="btn--primary" href="#purchase">Start Free Trial</a>
+        <a class="btn--ghost" href="#features">See all features</a>
       </div>
-      <p id="proMsg" class="muted" style="margin-top:8px;"></p>
+    </div>
+  </section>
+
+  <main class="container" style="display:grid; gap:18px; margin-top:18px">
+    <section id="features" class="card">
+      <h2 class="h4" style="margin-top:0">What’s in Pro</h2>
+      <ul>
+        <li>Premium avatars (Dragon, Tiger, Wolf, Bear) + themes</li>
+        <li>Daily Challenge mode & Streak Saver (redemption)</li>
+        <li>+15% XP boost on correct answers</li>
+        <li>Cloud save & cross-device sync</li>
+        <li>Ad-free experience</li>
+      </ul>
     </section>
 
-    <div class="adwrap"><div id="ad-pro-footer"></div></div>
+    <section id="purchase" class="card">
+      <h2 class="h4" style="margin-top:0">Start Your Free Trial</h2>
+      <p class="muted">Cancel anytime before the trial ends to avoid charges.</p>
+      <div style="display:flex; gap:10px; flex-wrap:wrap">
+        <a class="btn btn--brand" href="/checkout.html">Buy on Web (Stripe)</a>
+        <a class="btn btn--ghost" href="/twa-intent.html">Buy on Android (Play)</a>
+      </div>
+    </section>
+
+    <!-- House ad tiles for social proof / features -->
+    <section class="promo-tiles">
+      <article class="promo-tile" style="background-image:url('/media/promos/promo-milestones.jpg')">
+        <div class="promo-tile__inner">
+          <h3>Milestones & Badges</h3>
+          <p>Feel the progress with every win.</p>
+          <a class="btn btn--brand" href="/achievements.html">See badges</a>
+        </div>
+      </article>
+
+      <article class="promo-tile" style="background-image:url('/media/promos/promo-league.jpg')">
+        <div class="promo-tile__inner">
+          <h3>Compete with Friends</h3>
+          <p>Rise through Whylee League tiers.</p>
+          <a class="btn btn--brand" href="/leaderboard.html">Open leaderboard</a>
+        </div>
+      </article>
+
+      <article class="promo-tile" style="background-image:url('/media/posters/v1/poster-08-levelup.jpg')">
+        <div class="promo-tile__inner">
+          <h3>Level Up Faster</h3>
+          <p>Pro gets you more XP, quicker.</p>
+          <a class="btn btn--brand" href="#purchase">Start trial</a>
+        </div>
+      </article>
+    </section>
   </main>
 
-  <footer>&copy; 2025 Whylee | <a href="/privacy.html">Privacy</a></footer>
-
-  <script type="module">
-    import { auth } from "/scripts/firebase-bridge.js";
-    import { startPlayPurchase } from "/scripts/payments/play.js";
-    import { createCheckout } from "/scripts/payments/stripe.js"; // assume you have stripe glue
-
-    const msg = document.getElementById("proMsg");
-    document.getElementById("btnPlaySub")?.addEventListener("click", () => {
-      if (!auth.currentUser) { msg.textContent = "Sign in first."; return; }
-      startPlayPurchase({ sku: "whylee_pro_monthly" });
-      msg.textContent = "Opening Google Play…";
-    });
-
-    document.getElementById("btnStripe")?.addEventListener("click", async () => {
-      if (!auth.currentUser) { msg.textContent = "Sign in first."; return; }
-      msg.textContent = "Creating checkout…";
-      try {
-        await createCheckout({ priceId: "price_PRO_MONTHLY" }); // TODO: your Stripe price
-      } catch (e) {
-        msg.textContent = e.message || "Checkout failed.";
-      }
-    });
-
-    // Ads (web-only marketing)
-    import { mountConsentBanner } from "/scripts/ads/consentManager.js";
-    import { initAdSense, createResponsiveAd, mountAdStyles } from "/scripts/ads/adsense.js";
-    mountConsentBanner(); initAdSense(); mountAdStyles();
-    window.addEventListener("DOMContentLoaded", () => createResponsiveAd("#ad-pro-footer", "1234567892"));
-  </script>
+  <footer class="container" style="margin:24px 0; opacity:.8">
+    <a href="/menu.html">Back to Menu</a> • <a href="/privacy.html">Privacy</a> • <a href="/terms.html">Terms</a>
+  </footer>
 </body>
 </html>
