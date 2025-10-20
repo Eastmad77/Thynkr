@@ -1,30 +1,40 @@
-// Shared Firebase Admin initializer (ESM, singleton)
-// Expects FIREBASE_SERVICE_ACCOUNT to be a BASE64-encoded JSON service account.
-// Never log the key. If the var isn't set, callers can detect and skip DB work.
+// netlify/functions/_shared/firebase-admin.mjs
+// Unified Firebase Admin singleton for all Netlify Functions.
+// Expects FIREBASE_SERVICE_ACCOUNT env var as base64-encoded JSON (or raw JSON).
 
-import admin from "firebase-admin";
+import admin from 'firebase-admin';
 
 let _app = null;
-let _db = null;
+let _db  = null;
+let _using = false;
 
 export function getAdmin() {
-  if (_app) return { admin, db: _db, using: true };
+  if (_app) return { admin, db: _db, using: _using };
 
-  const b64 = process.env.FIREBASE_SERVICE_ACCOUNT || "";
-  if (!b64) {
-    // No admin in this environment (local dev or preview)
+  const raw = process.env.FIREBASE_SERVICE_ACCOUNT || '';
+  if (!raw) {
+    console.warn('[firebase-admin] FIREBASE_SERVICE_ACCOUNT not set; Firebase disabled.');
     return { admin, db: null, using: false };
   }
 
-  const jsonStr = b64.trim().startsWith("{")
-    ? b64
-    : Buffer.from(b64, "base64").toString("utf8");
-  const creds = JSON.parse(jsonStr);
+  let creds;
+  try {
+    const json =
+      raw.trim().startsWith('{')
+        ? raw
+        : Buffer.from(raw, 'base64').toString('utf8');
+    creds = JSON.parse(json);
+  } catch (e) {
+    console.error('[firebase-admin] Could not parse FIREBASE_SERVICE_ACCOUNT:', e?.message || e);
+    return { admin, db: null, using: false };
+  }
 
-  _app = admin.apps?.length
-    ? admin.apps[0]
-    : admin.initializeApp({ credential: admin.credential.cert(creds) });
+  _app = admin.apps?.length ? admin.app() : admin.initializeApp({
+    credential: admin.credential.cert(creds),
+    projectId: process.env.FIREBASE_PROJECT_ID || creds.project_id,
+  });
 
   _db = admin.firestore();
-  return { admin, db: _db, using: true };
+  _using = true;
+  return { admin, db: _db, using: _using };
 }
