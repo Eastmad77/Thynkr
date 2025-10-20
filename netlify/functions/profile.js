@@ -1,17 +1,6 @@
-// netlify/functions/profile.js
-// GET/POST a lightweight profile structure. Replace with Firestore logic later.
-const json = (statusCode, data, headers = {}) => ({
-  statusCode,
-  headers: { "content-type": "application/json", ...headers },
-  body: JSON.stringify(data),
-});
-const allowOrigin = (event) => event.headers.origin || "*";
-const cors = (event, extra = {}) => ({
-  "Access-Control-Allow-Origin": allowOrigin(event),
-  "Access-Control-Allow-Headers": "authorization,content-type",
-  "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
-  ...extra,
-});
+const json = (s, d, h = {}) => ({ statusCode: s, headers: { "content-type": "application/json", ...h }, body: JSON.stringify(d) });
+const allowOrigin = (e) => e.headers.origin || "*";
+const cors = (e) => ({ "Access-Control-Allow-Origin": allowOrigin(e), "Access-Control-Allow-Headers": "authorization,content-type", "Access-Control-Allow-Methods": "GET,POST,OPTIONS" });
 
 export async function handler(event) {
   if (event.httpMethod === "OPTIONS") return { statusCode: 204, headers: cors(event) };
