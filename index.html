@@ -1,46 +1,50 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Whylee – Train Your Mind Daily</title>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Whylee — Home</title>
 
-  <link rel="stylesheet" href="/styles/brand.css?v=9002">
-  <link rel="stylesheet" href="/styles/style.css?v=9002">
-  <link rel="stylesheet" href="/styles/animations.css?v=9002">
-  <link rel="stylesheet" href="/styles/ads.css?v=9002">
+  <link rel="stylesheet" href="/styles/brand.css?v=9003">
+  <link rel="stylesheet" href="/styles/style.css?v=9003">
+  <link rel="stylesheet" href="/styles/animations.css?v=9003">
 
-  <script type="module">
-    import { mountConsentBanner } from "/scripts/ads/consentManager.js";
-    import { initAdSense, createResponsiveAd, mountAdStyles } from "/scripts/ads/adsense.js";
-    mountConsentBanner();
-    initAdSense();
-    mountAdStyles();
-    window.addEventListener("DOMContentLoaded", () => {
-      createResponsiveAd("#ad-home-footer", "1234567890");
-    });
-  </script>
+  <!-- Early theme apply (external, CSP-safe) -->
+  <script type="module" src="/scripts/boot/themeInit.js?v=9003"></script>
 </head>
-<body>
-  <header class="hero">
-    <h1>Boost your focus with Whylee</h1>
-    <p>Challenge your brain daily with quickfire quizzes and streak rewards.</p>
-    <a href="/game.html" class="btn btn--brand">Play Free</a>
+<body class="bg-stars">
+  <header class="site-head">
+    <nav class="nav">
+      <a href="/index.html" class="brand">Whylee</a>
+      <div class="spacer"></div>
+      <a href="/menu.html">Menu</a>
+      <a href="/pro.html">Pro</a>
+      <a href="/profile.html">Profile</a>
+      <button id="themeToggle" class="btn btn--ghost" title="Toggle theme">🌙</button>
+    </nav>
   </header>
 
   <main class="container">
-    <section>
-      <h2>Why Whylee?</h2>
-      <p>Whylee helps you improve focus, recall and logic through adaptive gameplay.</p>
+    <section class="hero">
+      <h1 class="display">Daily Brain Sprints</h1>
+      <p class="lead">Quickfire challenges, streaks, and cinematic rewards. Try Level 1 now.</p>
+      <div class="actions">
+        <a class="btn btn--brand" href="/game.html">Play</a>
+        <a class="btn btn--ghost" href="/pro.html">Go Pro</a>
+      </div>
     </section>
-
-    <div class="adwrap">
-      <div id="ad-home-footer"></div>
-    </div>
   </main>
 
-  <footer>
-    &copy; 2025 Whylee. <a href="/privacy.html">Privacy</a> | <a href="/terms.html">Terms</a>
+  <footer class="site-foot">
+    <nav>
+      <a href="/privacy.html">Privacy</a> ·
+      <a href="/terms.html">Terms</a> ·
+      <a href="/admin.html">Admin</a> ·
+      <a href="/promo/storyboard/storyboard-grid.html">Storyboard</a>
+    </nav>
   </footer>
+
+  <!-- No inline JS; CSP-safe -->
+  <script type="module" src="/scripts/boot/themeToggle.js?v=9003"></script>
 </body>
 </html>
