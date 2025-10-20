@@ -1,40 +1,44 @@
 <!doctype html>
-<html lang="en" data-theme="dark">
+<html lang="en">
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>Whylee — Leaderboard</title>
 
-  <!-- Core Style Stack -->
-  <link rel="stylesheet" href="/styles/brand.css?v=9002">
-  <link rel="stylesheet" href="/styles/style.css?v=9002">
-  <link rel="stylesheet" href="/styles/animations.css?v=9002">
+  <link rel="stylesheet" href="/styles/brand.css?v=9003">
+  <link rel="stylesheet" href="/styles/style.css?v=9003">
+  <link rel="stylesheet" href="/styles/animations.css?v=9003">
+  <link rel="stylesheet" href="/styles/charts.css?v=9003">
+
+  <script type="module" src="/scripts/boot/themeInit.js?v=9003"></script>
 </head>
-<body class="bg-stars">
-  <header class="container" style="padding:18px 0;">
-    <nav style="display:flex;justify-content:space-between;align-items:center">
-      <a href="/index.html" class="brand">WHYLEE</a>
-      <a class="btn btn--brand" href="/game.html">Play</a>
+<body>
+  <header class="site-head">
+    <nav class="nav">
+      <a href="/index.html" class="brand">Whylee</a>
+      <div class="spacer"></div>
+      <a href="/menu.html">Menu</a>
+      <a href="/pro.html">Pro</a>
+      <button id="themeToggle" class="btn btn--ghost">🌙</button>
     </nav>
   </header>
 
   <main class="container">
-    <h1>Whylee League</h1>
-    <p class="text-muted">See where you rank this week.</p>
-
+    <h1 class="h3">Leaderboard</h1>
     <ul id="leaderboardList" class="lb"></ul>
-
-    <style>
-      .lb { list-style:none; padding:0; margin:18px 0; display:grid; gap:10px; }
-      .lb-row { display:grid; grid-template-columns: 32px 1fr auto auto; align-items:center;
-        gap:10px; background: var(--bg-surface); border-radius: 12px; padding: 10px 12px; }
-      .lb-ava { width:32px; height:32px; border-radius: 8px; object-fit: cover; }
-      .lb-name { font-weight:600; }
-      .lb-emoji { opacity:.9; }
-      .lb-xp { font-variant-numeric: tabular-nums; color: var(--text-muted); }
-    </style>
   </main>
 
-  <script type="module" src="/scripts/leaderboard.js?v=9002"></script>
+  <style>
+    .lb { list-style:none; padding:0; margin:0; display:grid; gap:8px; }
+    .lb-row { display:grid; grid-template-columns: 32px 1fr auto auto; align-items:center;
+      gap:10px; background: var(--bg-surface); border-radius: 12px; padding: 8px 10px; }
+    .lb-ava { width:32px; height:32px; border-radius: 8px; object-fit: cover; }
+    .lb-name { font-weight:600; }
+    .lb-emoji { opacity:.9; }
+    .lb-xp { font-variant-numeric: tabular-nums; color: var(--text-muted); }
+  </style>
+
+  <script type="module" src="/scripts/leaderboard.js?v=9003"></script>
+  <script type="module" src="/scripts/boot/themeToggle.js?v=9003"></script>
 </body>
 </html>
