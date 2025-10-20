@@ -5,80 +5,35 @@
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>Whylee — Pro</title>
 
-  <link rel="stylesheet" href="/styles/brand.css?v=9002">
-  <link rel="stylesheet" href="/styles/style.css?v=9002">
-  <link rel="stylesheet" href="/styles/animations.css?v=9002">
-  <link rel="stylesheet" href="/styles/promos.css?v=9002">
+  <link rel="stylesheet" href="/styles/brand.css?v=9003">
+  <link rel="stylesheet" href="/styles/style.css?v=9003">
+  <link rel="stylesheet" href="/styles/animations.css?v=9003">
+
+  <script type="module" src="/scripts/boot/themeInit.js?v=9003"></script>
 </head>
 <body class="bg-stars">
+  <header class="site-head">
+    <nav class="nav">
+      <a href="/index.html" class="brand">Whylee</a>
+      <div class="spacer"></div>
+      <a href="/menu.html">Menu</a>
+      <a href="/profile.html">Profile</a>
+      <button id="themeToggle" class="btn btn--ghost">🌙</button>
+    </nav>
+  </header>
 
-  <!-- Hero -->
-  <section
-    class="promo-hero"
-    style="background-image:url('/media/promos/promo-pro-trial.jpg')"
-    aria-label="Start Whylee Pro free trial"
-  >
-    <div class="promo-hero__inner container">
-      <h1>Unlock Your Full Potential</h1>
-      <p>3-day free trial · No charge if cancelled · Premium avatars, themes, daily challenges & XP boosts</p>
-      <div class="promo-cta">
-        <a class="btn--primary" href="#purchase">Start Free Trial</a>
-        <a class="btn--ghost" href="#features">See all features</a>
+  <main class="container">
+    <section class="card">
+      <h1 class="h3">Go Pro</h1>
+      <p>Unlock premium avatars, XP boosters, bonus rounds & more.</p>
+      <div class="actions">
+        <button id="buyMonthly" class="btn btn--brand">Buy Monthly</button>
+        <button id="buyYearly" class="btn btn--ghost">Buy Yearly</button>
       </div>
-    </div>
-  </section>
-
-  <main class="container" style="display:grid; gap:18px; margin-top:18px">
-    <section id="features" class="card">
-      <h2 class="h4" style="margin-top:0">What’s in Pro</h2>
-      <ul>
-        <li>Premium avatars (Dragon, Tiger, Wolf, Bear) + themes</li>
-        <li>Daily Challenge mode & Streak Saver (redemption)</li>
-        <li>+15% XP boost on correct answers</li>
-        <li>Cloud save & cross-device sync</li>
-        <li>Ad-free experience</li>
-      </ul>
-    </section>
-
-    <section id="purchase" class="card">
-      <h2 class="h4" style="margin-top:0">Start Your Free Trial</h2>
-      <p class="muted">Cancel anytime before the trial ends to avoid charges.</p>
-      <div style="display:flex; gap:10px; flex-wrap:wrap">
-        <a class="btn btn--brand" href="/checkout.html">Buy on Web (Stripe)</a>
-        <a class="btn btn--ghost" href="/twa-intent.html">Buy on Android (Play)</a>
-      </div>
-    </section>
-
-    <!-- House ad tiles for social proof / features -->
-    <section class="promo-tiles">
-      <article class="promo-tile" style="background-image:url('/media/promos/promo-milestones.jpg')">
-        <div class="promo-tile__inner">
-          <h3>Milestones & Badges</h3>
-          <p>Feel the progress with every win.</p>
-          <a class="btn btn--brand" href="/achievements.html">See badges</a>
-        </div>
-      </article>
-
-      <article class="promo-tile" style="background-image:url('/media/promos/promo-league.jpg')">
-        <div class="promo-tile__inner">
-          <h3>Compete with Friends</h3>
-          <p>Rise through Whylee League tiers.</p>
-          <a class="btn btn--brand" href="/leaderboard.html">Open leaderboard</a>
-        </div>
-      </article>
-
-      <article class="promo-tile" style="background-image:url('/media/posters/v1/poster-08-levelup.jpg')">
-        <div class="promo-tile__inner">
-          <h3>Level Up Faster</h3>
-          <p>Pro gets you more XP, quicker.</p>
-          <a class="btn btn--brand" href="#purchase">Start trial</a>
-        </div>
-      </article>
     </section>
   </main>
 
-  <footer class="container" style="margin:24px 0; opacity:.8">
-    <a href="/menu.html">Back to Menu</a> • <a href="/privacy.html">Privacy</a> • <a href="/terms.html">Terms</a>
-  </footer>
+  <script type="module" src="/scripts/pro.js?v=9003"></script>
+  <script type="module" src="/scripts/boot/themeToggle.js?v=9003"></script>
 </body>
 </html>
