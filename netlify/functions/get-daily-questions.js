@@ -1,10 +1,4 @@
-// netlify/functions/get-daily-questions.js
-// Minimal example — return a small set (can be backed by Firestore later)
-const json = (statusCode, data, headers = {}) => ({
-  statusCode,
-  headers: { "content-type": "application/json", ...headers },
-  body: JSON.stringify(data),
-});
+const json = (s, d) => ({ statusCode: s, headers: { "content-type": "application/json" }, body: JSON.stringify(d) });
 
 export async function handler() {
   return json(200, {
