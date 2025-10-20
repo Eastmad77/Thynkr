@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Whylee — Check</title>
+
+  <link rel="stylesheet" href="/styles/brand.css?v=9003">
+  <link rel="stylesheet" href="/styles/style.css?v=9003">
+  <link rel="stylesheet" href="/styles/animations.css?v=9003">
+
+  <script type="module" src="/scripts/boot/themeInit.js?v=9003"></script>
+</head>
+<body>
+  <main class="container">
+    <h1 class="h3">System Check</h1>
+    <ul class="card">
+      <li>Firebase client: <span id="fbStatus" class="muted">…</span></li>
+      <li>Auth user: <span id="authUser" class="muted">…</span></li>
+      <li>Health endpoint: <span id="health" class="muted">…</span></li>
+    </ul>
+  </main>
+
+  <script type="module">
+    import { app, auth } from "/scripts/firebase.js";
+    document.getElementById("fbStatus").textContent = app ? "OK" : "Missing";
+    document.getElementById("authUser").textContent = auth.currentUser ? auth.currentUser.uid : "Signed out";
+
+    (async () => {
+      try {
+        const r = await fetch('/.netlify/functions/health');
+        document.getElementById("health").textContent = r.ok ? "OK" : `HTTP ${r.status}`;
+      } catch (e) {
+        document.getElementById("health").textContent = e.message || "error";
+      }
+    })();
+  </script>
+  <script type="module" src="/scripts/boot/themeToggle.js?v=9003"></script>
+</body>
+</html>
