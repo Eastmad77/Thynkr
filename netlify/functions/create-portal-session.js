@@ -1,35 +1,47 @@
-import Stripe from "stripe";
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: "2023-10-16" });
+// netlify/functions/create-portal-session.js
+// Creates a Stripe Billing Portal session so users can manage/cancel.
+// Env: STRIPE_SECRET_KEY, SITE_URL, FIREBASE_SERVICE_ACCOUNT
 
-const json = (status, data, headers = {}) => ({
-  statusCode: status,
-  headers: { "content-type": "application/json", ...headers },
-  body: JSON.stringify(data),
-});
-const allowOrigin = (evt) => evt.headers.origin || "*";
-const cors = (evt, extra = {}) => ({
-  "Access-Control-Allow-Origin": allowOrigin(evt),
-  "Access-Control-Allow-Headers": "authorization,content-type",
-  "Access-Control-Allow-Methods": "POST,OPTIONS",
-  ...extra,
-});
+import Stripe from 'stripe';
+import { getAdmin } from './_shared/firebase-admin.mjs';
+
+const CORS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  'Content-Type': 'application/json; charset=utf-8',
+};
 
 export async function handler(event) {
-  if (event.httpMethod === "OPTIONS") return { statusCode: 204, headers: cors(event) };
-  if (event.httpMethod !== "POST") return json(405, { error: "Method Not Allowed" }, cors(event));
+  if (event.httpMethod === 'OPTIONS') return { statusCode: 200, headers: CORS, body: '' };
+  if (event.httpMethod !== 'POST') return { statusCode: 405, headers: CORS, body: JSON.stringify({ error: 'Method not allowed' }) };
 
   try {
-    const { customerId, return_url } = JSON.parse(event.body || "{}");
-    if (!customerId) return json(400, { error: "Missing customerId" }, cors(event));
+    const { STRIPE_SECRET_KEY } = process.env;
+    if (!STRIPE_SECRET_KEY) throw new Error('STRIPE_SECRET_KEY missing');
 
+    const stripe = new Stripe(STRIPE_SECRET_KEY, { apiVersion: '2024-06-20' });
+
+    const { uid } = JSON.parse(event.body || '{}');
+    if (!uid) return { statusCode: 400, headers: CORS, body: JSON.stringify({ error: 'Missing uid' }) };
+
+    const { db } = getAdmin();
+    if (!db) return { statusCode: 501, headers: CORS, body: JSON.stringify({ error: 'Admin not configured' }) };
+
+    const snap = await db.collection('users').doc(uid).get();
+    const data = snap.exists ? (snap.data() || {}) : {};
+    const customerId = data?.stripeCustomerId;
+    if (!customerId) return { statusCode: 400, headers: CORS, body: JSON.stringify({ error: 'No Stripe customer on file' }) };
+
+    const siteUrl = process.env.SITE_URL || (event.headers.origin ? event.headers.origin : `https://${event.headers.host}`);
     const session = await stripe.billingPortal.sessions.create({
       customer: customerId,
-      return_url: return_url || `${event.headers.origin}/profile.html`,
+      return_url: siteUrl,
     });
 
-    return json(200, { url: session.url }, cors(event));
-  } catch (e) {
-    console.error("[create-portal-session] error:", e);
-    return json(500, { error: e.message }, cors(event));
+    return { statusCode: 200, headers: CORS, body: JSON.stringify({ url: session.url }) };
+  } catch (err) {
+    console.error('[create-portal-session] error:', err);
+    return { statusCode: 500, headers: CORS, body: JSON.stringify({ error: 'Portal error' }) };
   }
 }
