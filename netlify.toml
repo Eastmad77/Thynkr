@@ -1,87 +1,3 @@
-# ─────────────────────────────────────────────────────────
-# Netlify config for Whylee (PWA)
-# Fixes: CSP errors, MIME issues, Stripe bundling, SW caching,
-# and Netlify Secrets Scanning false positives.
-# ─────────────────────────────────────────────────────────
-
-[build]
-  publish = "."
-  command = ""   # static site (no build step)
-
-  # Environment configuration to disable or omit secrets scanning false positives
-  [build.environment]
-    # Option 1 — disable Netlify’s secret scanning completely:
-    SECRETS_SCAN_SMART_DETECTION_ENABLED = "false"
-
-    # Option 2 — alternatively, comment out the above line and use omit list instead:
-    # SECRETS_SCAN_SMART_DETECTION_OMIT_VALUES = "FIREBASE_SERVICE_ACCOUNT,STRIPE_PRICE_MONTHLY,STRIPE_PRICE_YEARLY,STRIPE_SECRET_KEY,STRIPE_WEBHOOK_SECRET"
-
-[functions]
-  node_bundler = "esbuild"
-  # Stripe is a server-only dep; don't bundle it into functions
-  external_node_modules = ["stripe"]
-
-# Redirect SPA routes to index.html
-[[redirects]]
-  from = "/*"
-  to   = "/index.html"
-  status = 200
-
-# Well-known (assetlinks, etc.)
-[[redirects]]
-  from = "/.well-known/*"
-  to   = "/.well-known/:splat"
-  status = 200
-
-# ── HTTP headers ─────────────────────────────────────────
-
-# Service worker: never cache aggressively
-[[headers]]
-  for = "/service-worker.js"
-  [headers.values]
-    Cache-Control = "no-cache, no-store, must-revalidate"
-
-# Immutable assets (cache-busted by querystrings or filenames)
-[[headers]]
-  for = "/css/*"
-  [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
-
-[[headers]]
-  for = "/js/*"
-  [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
-
-[[headers]]
-  for = "/scripts/*"
-  [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
-
-[[headers]]
-  for = "/media/*"
-  [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
-
-[[headers]]
-  for = "/site.webmanifest"
-  [headers.values]
-    Cache-Control = "public, max-age=3600"
-
-[[headers]]
-  for = "/media/icons/*"
-  [headers.values]
-    Cache-Control = "public, max-age=604800"
-
-# APIs (Netlify functions) – CORS for your frontend
-[[headers]]
-  for = "/.netlify/functions/*"
-  [headers.values]
-    Access-Control-Allow-Origin = "*"
-    Access-Control-Allow-Methods = "GET, POST, OPTIONS"
-    Access-Control-Allow-Headers = "Content-Type, Authorization"
-
-# ── Security headers + CSP ────────────────────────────────
-# Whitelists Firebase, Google APIs, Stripe JS, etc.
 [[headers]]
   for = "/*"
   [headers.values]
@@ -89,16 +5,34 @@
       default-src 'self';
       base-uri 'self';
       frame-ancestors 'self';
+
       img-src 'self' data: blob:;
       media-src 'self' data:;
-      style-src 'self' 'unsafe-inline';
-      script-src 'self' https://www.gstatic.com https://www.googletagmanager.com;
-      connect-src 'self' https://firestore.googleapis.com https://www.googleapis.com https://firebaseinstallations.googleapis.com;
       font-src 'self' data:;
       object-src 'none';
-      frame-src 'self' https://js.stripe.com;
       manifest-src 'self';
       worker-src 'self';
+
+      style-src 'self' 'unsafe-inline';
+
+      # Your JS must come from self + these (Firebase loader + GTM if used)
+      script-src 'self' https://www.gstatic.com https://www.googletagmanager.com;
+
+      # ALLOW network calls to Firebase/Google endpoints used by Auth/Firestore/Installs
+      connect-src
+        'self'
+        https://www.gstatic.com
+        https://firestore.googleapis.com
+        https://www.googleapis.com
+        https://firebaseinstallations.googleapis.com
+        https://identitytoolkit.googleapis.com
+        https://securetoken.googleapis.com
+        https://storage.googleapis.com
+        https://www.google-analytics.com
+        https://api.stripe.com;
+
+      # Allow Stripe frames for checkout (if you open it)
+      frame-src 'self' https://js.stripe.com;
     """
     Permissions-Policy = "geolocation=(), microphone=(), camera=(), interest-cohort=()"
     Referrer-Policy = "strict-origin-when-cross-origin"
