@@ -1,3 +1,38 @@
-# Ignore generated motion clips
+# Node & tooling
+node_modules/
+npm-debug.log*
+yarn-error.log*
+.pnp.*
+.cache/
+.temp/
+dist/
+build/
+.DS_Store
+
+# Local env
+.env
+.env.*
+*.local
+
+# Editor/OS
+.vscode/
+.idea/
+*.swp
+
+# Generated media
 media/motion/*.mp4
 media/motion/*.webm
+media/thumbnails/*
+!media/thumbnails/.gitkeep
+media/motion/*
+!media/motion/.gitkeep
+
+# Firebase/Service accounts (never commit secrets)
+*_admin*.json
+*_service*.json
+*_firebase-admin*.js
+serviceAccount*.json
+firebase-adminsdk*.json
+
+# Netlify build cache
+.netlify/
