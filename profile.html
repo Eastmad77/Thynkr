@@ -1,33 +1,38 @@
 <!doctype html>
-<html lang="en" data-theme="dark">
+<html lang="en">
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>Whylee — Profile</title>
 
-  <!-- Core Style Stack -->
-  <link rel="stylesheet" href="/styles/brand.css?v=9002">
-  <link rel="stylesheet" href="/styles/style.css?v=9002">
-  <link rel="stylesheet" href="/styles/animations.css?v=9002">
+  <link rel="stylesheet" href="/styles/brand.css?v=9003">
+  <link rel="stylesheet" href="/styles/style.css?v=9003">
+  <link rel="stylesheet" href="/styles/animations.css?v=9003">
+  <link rel="stylesheet" href="/styles/avatar.css?v=9003">
+  <link rel="stylesheet" href="/styles/avatar-badge.css?v=9003">
+
+  <script type="module" src="/scripts/boot/themeInit.js?v=9003"></script>
 </head>
-<body class="bg-stars">
-  <header class="container" style="padding:18px 0;">
-    <nav style="display:flex;justify-content:space-between;align-items:center">
-      <a href="/index.html" class="brand">WHYLEE</a>
-      <a class="btn btn--brand" href="/game.html">Play</a>
+<body>
+  <header class="site-head">
+    <nav class="nav">
+      <a href="/index.html" class="brand">Whylee</a>
+      <div class="spacer"></div>
+      <a href="/menu.html">Menu</a>
+      <a href="/pro.html">Pro</a>
+      <button id="themeToggle" class="btn btn--ghost">🌙</button>
     </nav>
   </header>
 
   <main class="container">
-    <h1>Profile</h1>
-    <p class="text-muted">Customize your identity.</p>
+    <h1 class="h3">Your Profile</h1>
 
-    <section aria-labelledby="profile-appearance" class="card" style="margin-top:12px">
+    <section aria-labelledby="profile-appearance">
       <h2 id="profile-appearance" class="h4">Appearance</h2>
       <p class="muted">Change your avatar and mini emoji.</p>
-      <div id="profileAvatarGrid" class="grid" style="margin-top:8px; grid-template-columns:repeat(auto-fit,minmax(96px,1fr));"></div>
+      <div id="profileAvatarGrid" class="grid" style="margin-top:8px"></div>
       <h3 class="h5" style="margin-top:18px">Emoji</h3>
-      <div id="profileEmojiGrid" class="grid" style="grid-template-columns:repeat(auto-fit,minmax(44px,1fr));"></div>
+      <div id="profileEmojiGrid" class="grid"></div>
       <div style="display:flex;gap:12px;align-items:center;margin-top:14px">
         <button id="profileSaveBtn" class="btn btn--brand">Save</button>
         <span id="profileSaveStatus" class="muted"></span>
@@ -35,6 +40,7 @@
     </section>
   </main>
 
-  <script type="module" src="/scripts/profile.js?v=9002"></script>
+  <script type="module" src="/scripts/profile.js?v=9003"></script>
+  <script type="module" src="/scripts/boot/themeToggle.js?v=9003"></script>
 </body>
 </html>
