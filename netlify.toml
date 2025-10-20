@@ -6,7 +6,13 @@
       base-uri 'self';
       frame-ancestors 'self';
 
-      img-src 'self' data: blob:;
+      img-src
+        'self'
+        data:
+        blob:
+        https://lh3.googleusercontent.com
+        https://firebasestorage.googleapis.com;
+
       media-src 'self' data:;
       font-src 'self' data:;
       object-src 'none';
@@ -15,10 +21,15 @@
 
       style-src 'self' 'unsafe-inline';
 
-      # Your JS must come from self + these (Firebase loader + GTM if used)
-      script-src 'self' https://www.gstatic.com https://www.googletagmanager.com;
+      # JS may only load from self + Firebase loader + GTM + Stripe
+      script-src
+        'self'
+        https://www.gstatic.com
+        https://www.googletagmanager.com
+        https://www.google-analytics.com
+        https://js.stripe.com;
 
-      # ALLOW network calls to Firebase/Google endpoints used by Auth/Firestore/Installs
+      # Network/XHR/WebSocket endpoints used by Firebase/GA/Stripe
       connect-src
         'self'
         https://www.gstatic.com
@@ -27,12 +38,16 @@
         https://firebaseinstallations.googleapis.com
         https://identitytoolkit.googleapis.com
         https://securetoken.googleapis.com
-        https://storage.googleapis.com
+        https://firebasestorage.googleapis.com
         https://www.google-analytics.com
+        https://js.stripe.com
         https://api.stripe.com;
 
-      # Allow Stripe frames for checkout (if you open it)
-      frame-src 'self' https://js.stripe.com;
+      # Allow Stripe checkout frames and (optionally) Google auth popups
+      frame-src
+        'self'
+        https://js.stripe.com
+        https://accounts.google.com;
     """
     Permissions-Policy = "geolocation=(), microphone=(), camera=(), interest-cohort=()"
     Referrer-Policy = "strict-origin-when-cross-origin"
