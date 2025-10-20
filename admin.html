@@ -1,204 +1,56 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Admin Panel – Whylee</title>
 
-  <!-- Styles (latest build) -->
-  <link rel="stylesheet" href="/styles/brand.css?v=9002">
-  <link rel="stylesheet" href="/styles/style.css?v=9002">
-  <link rel="stylesheet" href="/styles/animations.css?v=9002">
-  <link rel="stylesheet" href="/styles/dark.css?v=9002">
+  <link rel="stylesheet" href="/styles/brand.css?v=9003">
+  <link rel="stylesheet" href="/styles/style.css?v=9003">
+  <link rel="stylesheet" href="/styles/animations.css?v=9003">
 
-  <style>
-    header {
-      display:flex; align-items:center; justify-content:space-between; gap:12px;
-      padding: 16px 18px;
-      background: linear-gradient(90deg, rgba(12,18,32,.9), rgba(8,12,22,.9));
-      border-bottom: 1px solid rgba(255,255,255,0.08);
-      box-shadow: 0 4px 18px rgba(0,0,0,.35);
-      position: sticky; top: 0; z-index: 10;
-    }
-    header h1 { margin:0; font-size: 1.35rem; }
-    nav a { margin-right: 10px; color: var(--brand); text-decoration: none; }
-    nav a:hover { color: var(--accent); }
-
-    main.container { padding: 18px; max-width: 980px; }
-
-    .grid-2 { display:grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-    @media (max-width: 860px) { .grid-2 { grid-template-columns: 1fr; } }
-
-    .card {
-      background: rgba(14, 20, 38, 0.85);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 14px;
-      padding: 16px;
-      box-shadow: 0 8px 28px rgba(0,0,0,0.45);
-      backdrop-filter: blur(10px);
-    }
-    .card h2, .card h3 { margin: 0 0 10px; }
-    .card p { margin: 0 0 10px; }
-
-    .btn-row { display:flex; flex-wrap:wrap; gap:10px; }
-    .btn, .btn-pro {
-      appearance: none;
-      border-radius: 10px;
-      padding: 8px 12px;
-      cursor: pointer; font-weight: 600;
-      border: 1px solid rgba(255,255,255,0.16);
-      background: rgba(255,255,255,0.06);
-      color: #fff;
-      transition: transform .2s ease, background .2s ease, border-color .2s ease;
-    }
-    .btn:hover, .btn-pro:hover { transform: translateY(-1px); background: rgba(255,255,255,0.12); }
-    .btn-pro {
-      border: none;
-      background: linear-gradient(90deg, var(--brand), var(--accent));
-      color: #001622;
-      box-shadow: 0 0 18px rgba(0,210,255,0.25);
-    }
-
-    footer {
-      text-align:center; opacity:.7; font-size:.9rem; padding: 18px 0 24px;
-    }
-
-    .kvs { margin: 8px 0 0; padding-left: 18px; }
-    .kvs li { margin: 4px 0; }
-
-    .mini { font-size: .9rem; opacity: .8; }
-    .pill { display:inline-block; padding: 3px 8px; border-radius:999px; font-size:.75rem; font-weight:800; letter-spacing:.2px; }
-    .pill--pro { background: linear-gradient(180deg, #ffd166, #ffea9a); color:#231c00; }
-    .pill--ok  { background: linear-gradient(180deg, #16ffe6, #00e0ff); color:#001622; }
-    .pill--warn{ background: linear-gradient(180deg, #ff9f6e, #ff6a4a); color:#2b0d00; }
-
-    .right { display:flex; align-items:center; gap:10px; }
-    #themeToggle { border-radius: 10px; }
-  </style>
-
-  <script>
-    // Auto-apply dark if user prefers or saved choice exists
-    try {
-      const saved = localStorage.getItem("theme");
-      const prefers = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-      if (saved === 'dark' || (!saved && prefers)) {
-        document.documentElement.setAttribute('data-theme','dark');
-      }
-    } catch (e) {}
-  </script>
+  <script type="module" src="/scripts/boot/themeInit.js?v=9003"></script>
 </head>
-<body class="bg-stars">
-
-  <header>
-    <h1>Admin Panel</h1>
-    <div class="right">
-      <nav aria-label="Primary">
-        <a href="/index.html">Home</a>
-        <a href="/menu.html">Menu</a>
-        <a href="/pro.html">Pro</a>
-        <a href="/profile.html">Profile</a>
-      </nav>
-      <button id="themeToggle" class="btn" title="Toggle theme">🌙</button>
-    </div>
+<body>
+  <header class="site-head">
+    <nav class="nav">
+      <a href="/index.html" class="brand">Whylee</a>
+      <div class="spacer"></div>
+      <a href="/menu.html">Menu</a>
+      <a href="/pro.html">Pro</a>
+      <a href="/profile.html">Profile</a>
+      <a href="/promo/storyboard/storyboard-grid.html" class="btn btn--ghost">Storyboard</a>
+      <button id="themeToggle" class="btn btn--ghost">🌙</button>
+    </nav>
   </header>
 
   <main class="container">
+    <div class="card">
+      <h2>Admin Overview</h2>
+      <p>This panel is for internal monitoring and content updates.</p>
 
-    <div class="grid-2">
-      <!-- Overview -->
-      <section class="card">
-        <h2>Admin Overview</h2>
-        <p class="mini">Internal monitoring and content updates.</p>
+      <div class="card" style="background: var(--whylee-surface);">
+        <h3>System Status</h3>
+        <ul>
+          <li>Firebase: <strong>Connected</strong></li>
+          <li>Stripe Integration: <strong>Active</strong></li>
+          <li>Version: <strong>9.0.3</strong></li>
+          <li>Deployed via: <strong>Netlify</strong></li>
+        </ul>
+      </div>
 
-        <div class="card" style="margin-top:10px;">
-          <h3>System Status <span class="pill pill--ok">LIVE</span></h3>
-          <ul class="kvs">
-            <li>Firebase: <strong>Connected</strong></li>
-            <li>Stripe Integration: <strong>Active</strong></li>
-            <li>Version: <strong>9.0.2</strong></li>
-            <li>Deployed via: <strong>Netlify</strong></li>
-          </ul>
-        </div>
-
-        <div class="card" style="margin-top:10px;">
-          <h3>Quick Actions</h3>
-          <div class="btn-row">
-            <button class="btn" id="btnSync">Sync Firebase Data</button>
-            <button class="btn-pro" id="btnReport">Generate Report</button>
-            <button class="btn" id="btnLogs">Check Logs</button>
-          </div>
-        </div>
-
-        <div class="card" style="margin-top:10px;">
-          <h3>Latest Activity</h3>
-          <ul class="kvs">
-            <li>🧠 New challenge “Focus Sprint” added</li>
-            <li>🎨 Updated theme assets pushed</li>
-            <li>🛡️ Trial Manager patch applied</li>
-            <li>📦 Poster bundle synced to <code>/media/posters</code></li>
-          </ul>
-        </div>
-      </section>
-
-      <!-- Dev Shortcuts -->
-      <section class="card">
-        <h2>Dev Shortcuts</h2>
-        <p class="mini">Internal links for designers, QA, and PM.</p>
-        <div class="btn-row" style="margin-top:8px">
-          <a class="btn" href="/promo/storyboard/storyboard-grid.html" target="_blank" rel="noopener">🎬 Storyboard Gallery</a>
-          <a class="btn" href="/storyboard-grid-animated.html" target="_blank" rel="noopener">✨ Animated Storyboard</a>
-          <a class="btn" href="/leaderboard.html" target="_blank" rel="noopener">🏆 Leaderboard</a>
-          <a class="btn" href="/profile.html" target="_blank" rel="noopener">👤 Profile</a>
-        </div>
-
-        <div class="card" style="margin-top:12px;">
-          <h3>Media & Assets</h3>
-          <ul class="kvs">
-            <li>Posters: <code>/media/posters/</code></li>
-            <li>Avatars: <code>/media/avatars/</code></li>
-            <li>Badges: <code>/media/badges/</code></li>
-            <li>Icons: <code>/media/icons/</code></li>
-          </ul>
-        </div>
-
-        <div class="card" style="margin-top:12px;">
-          <h3>Feature Flags <span class="pill pill--pro">Pro</span></h3>
-          <ul class="kvs">
-            <li>Cloud Sync: <strong>Enabled</strong></li>
-            <li>Themes: <strong>Enabled</strong></li>
-            <li>Redemption Rule: <strong>On</strong></li>
-            <li>Level 2 Memory (5 pairs): <strong>On</strong></li>
-          </ul>
-        </div>
-      </section>
+      <div class="card" style="background: var(--whylee-surface);">
+        <h3>Quick Links</h3>
+        <p>
+          <a class="btn btn--brand" href="/promo/storyboard/storyboard-grid.html">Open Storyboard</a>
+          <a class="btn btn--ghost" href="/admin-monitor.html">Health & Logs</a>
+        </p>
+      </div>
     </div>
-
   </main>
 
-  <footer>
-    &copy; 2025 Whylee &mdash; Internal Admin Access Only
-  </footer>
+  <footer class="site-foot">&copy; 2025 Whylee | Internal Admin Access Only</footer>
 
-  <script>
-    // Theme toggle
-    (function(){
-      const btn = document.getElementById('themeToggle');
-      const html = document.documentElement;
-      const sync = () => btn.textContent = (html.getAttribute('data-theme') === 'dark') ? '🌙' : '☀️';
-      sync();
-      btn.addEventListener('click', () => {
-        const cur = html.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
-        const next = cur === 'dark' ? 'light' : 'dark';
-        html.setAttribute('data-theme', next);
-        try { localStorage.setItem('theme', next); } catch(e){}
-        sync();
-      });
-    })();
-
-    // (Optional) Wire quick actions (no-ops / stubs)
-    document.getElementById('btnSync')?.addEventListener('click', () => alert('Sync queued.'));
-    document.getElementById('btnReport')?.addEventListener('click', () => alert('Report generation started.'));
-    document.getElementById('btnLogs')?.addEventListener('click', () => alert('Opening logs…'));
-  </script>
+  <script type="module" src="/scripts/boot/themeToggle.js?v=9003"></script>
 </body>
 </html>
