@@ -1,48 +1,43 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Privacy Policy – Whylee</title>
 
-  <link rel="stylesheet" href="/styles/brand.css?v=9002">
-  <link rel="stylesheet" href="/styles/style.css?v=9002">
-  <link rel="stylesheet" href="/styles/animations.css?v=9002">
-  <link rel="stylesheet" href="/styles/ads.css?v=9002">
+  <link rel="stylesheet" href="/styles/brand.css?v=9003">
+  <link rel="stylesheet" href="/styles/style.css?v=9003">
+  <link rel="stylesheet" href="/styles/animations.css?v=9003">
 
-  <script type="module">
-    import { mountConsentBanner } from "/scripts/ads/consentManager.js";
-    import { initAdSense, createResponsiveAd, mountAdStyles } from "/scripts/ads/adsense.js";
-    mountConsentBanner();
-    initAdSense();
-    mountAdStyles();
-    window.addEventListener("DOMContentLoaded", () => {
-      createResponsiveAd("#ad-privacy-footer", "1234567893");
-    });
-  </script>
+  <script type="module" src="/scripts/boot/themeInit.js?v=9003"></script>
 </head>
 <body>
-  <header>
-    <h1>Privacy Policy</h1>
+  <header class="site-head">
+    <nav class="nav">
+      <a href="/index.html" class="brand">Whylee</a>
+      <div class="spacer"></div>
+      <a href="/menu.html">Menu</a>
+      <a href="/pro.html">Pro</a>
+      <a href="/profile.html">Profile</a>
+      <button id="themeToggle" class="btn btn--ghost">🌙</button>
+    </nav>
   </header>
 
   <main class="container">
-    <section class="card">
-      <h2>Your Privacy</h2>
-      <p>We respect your privacy and comply with applicable data protection laws. Whylee collects minimal information required to provide its core services.</p>
-
-      <h3>Advertising</h3>
-      <p>We display advertising on the website using Google AdSense and in the Android app using Google AdMob. Ads may be personalized based on your consent and device settings.</p>
-      <p>For users in the EEA, a consent dialog is presented before loading advertising tags. Ads are never displayed during gameplay.</p>
-    </section>
-
-    <div class="adwrap">
-      <div id="ad-privacy-footer"></div>
-    </div>
+    <article class="card">
+      <h1 class="h3">Privacy Policy</h1>
+      <p>Your privacy matters. We collect the minimum needed to run Whylee: account email, usage analytics, and purchase tokens where applicable.</p>
+      <h3>Data Collection</h3>
+      <p>Account: email and profile settings. Usage: gameplay stats to improve your experience. Purchases: tokens for subscription validation.</p>
+      <h3>Data Sharing</h3>
+      <p>We do not sell your data. Payment is handled by Stripe and Google Play Billing where applicable.</p>
+      <h3>Security</h3>
+      <p>Data is encrypted in transit. You can request deletion by contacting <a href="mailto:support@whylee.app">support@whylee.app</a>.</p>
+    </article>
   </main>
 
-  <footer>
-    &copy; 2025 Whylee
-  </footer>
+  <footer class="site-foot">&copy; 2025 Whylee</footer>
+
+  <script type="module" src="/scripts/boot/themeToggle.js?v=9003"></script>
 </body>
 </html>
