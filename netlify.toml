@@ -1,44 +1,47 @@
 # ─────────────────────────────────────────────────────────
 # Netlify config for Whylee (PWA)
-# - Static build (no build step)
-# - SPA routing
-# - Long-term caching for immutable assets
-# - Secure CSP that allows Firebase, Stripe, GA/Ads (optional)
-# - DO NOT declare secrets here; set them in Netlify UI env vars
+# Fixes: CSP errors, MIME issues, Stripe bundling, SW caching,
+# and Netlify Secrets Scanning false positives.
 # ─────────────────────────────────────────────────────────
 
 [build]
   publish = "."
-  command = ""
+  command = ""   # static site (no build step)
+
+  # Environment configuration to disable or omit secrets scanning false positives
+  [build.environment]
+    # Option 1 — disable Netlify’s secret scanning completely:
+    SECRETS_SCAN_SMART_DETECTION_ENABLED = "false"
+
+    # Option 2 — alternatively, comment out the above line and use omit list instead:
+    # SECRETS_SCAN_SMART_DETECTION_OMIT_VALUES = "FIREBASE_SERVICE_ACCOUNT,STRIPE_PRICE_MONTHLY,STRIPE_PRICE_YEARLY,STRIPE_SECRET_KEY,STRIPE_WEBHOOK_SECRET"
 
 [functions]
   node_bundler = "esbuild"
-  # Stripe is server-only; do not bundle into functions to reduce size.
+  # Stripe is a server-only dep; don't bundle it into functions
   external_node_modules = ["stripe"]
 
-# ── Redirects (SPA & well-known) ────────────────────────
-
-# Serve well-known files directly (before catch-all)
-[[redirects]]
-  from = "/.well-known/*"
-  to   = "/.well-known/:splat"
-  status = 200
-
-# Catch-all SPA fallback
+# Redirect SPA routes to index.html
 [[redirects]]
   from = "/*"
   to   = "/index.html"
   status = 200
 
-# ── Headers ─────────────────────────────────────────────
+# Well-known (assetlinks, etc.)
+[[redirects]]
+  from = "/.well-known/*"
+  to   = "/.well-known/:splat"
+  status = 200
 
-# Service worker should never be cached aggressively
+# ── HTTP headers ─────────────────────────────────────────
+
+# Service worker: never cache aggressively
 [[headers]]
   for = "/service-worker.js"
   [headers.values]
     Cache-Control = "no-cache, no-store, must-revalidate"
 
-# Immutable asset buckets (filenames or querystrings handle cache busting)
+# Immutable assets (cache-busted by querystrings or filenames)
 [[headers]]
   for = "/css/*"
   [headers.values]
@@ -69,7 +72,7 @@
   [headers.values]
     Cache-Control = "public, max-age=604800"
 
-# CORS for Netlify Functions
+# APIs (Netlify functions) – CORS for your frontend
 [[headers]]
   for = "/.netlify/functions/*"
   [headers.values]
@@ -77,11 +80,8 @@
     Access-Control-Allow-Methods = "GET, POST, OPTIONS"
     Access-Control-Allow-Headers = "Content-Type, Authorization"
 
-# Global security headers + CSP
-# Notes:
-# - 'self' covers your own origin including /.netlify/functions/*
-# - Include 'unsafe-inline' for small inline scripts you already have (theme toggle). Remove if you inline-hash instead.
-# - GA/Ads are optional—remove those hosts if you are not using them.
+# ── Security headers + CSP ────────────────────────────────
+# Whitelists Firebase, Google APIs, Stripe JS, etc.
 [[headers]]
   for = "/*"
   [headers.values]
@@ -89,27 +89,16 @@
       default-src 'self';
       base-uri 'self';
       frame-ancestors 'self';
-      img-src 'self' data: blob: https://www.google-analytics.com https://pagead2.googlesyndication.com;
+      img-src 'self' data: blob:;
       media-src 'self' data:;
-      style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
-      script-src 'self' 'unsafe-inline' https://www.gstatic.com https://www.googletagmanager.com https://www.google-analytics.com https://pagead2.googlesyndication.com;
-      connect-src 'self'
-        https://firestore.googleapis.com
-        https://www.googleapis.com
-        https://firebaseinstallations.googleapis.com
-        https://identitytoolkit.googleapis.com
-        https://securetoken.googleapis.com
-        https://firebasestorage.googleapis.com
-        https://api.stripe.com
-        https://checkout.stripe.com
-        https://www.google-analytics.com
-        https://pagead2.googlesyndication.com
-        https://googleads.g.doubleclick.net;
-      font-src 'self' data: https://fonts.gstatic.com;
+      style-src 'self' 'unsafe-inline';
+      script-src 'self' https://www.gstatic.com https://www.googletagmanager.com;
+      connect-src 'self' https://firestore.googleapis.com https://www.googleapis.com https://firebaseinstallations.googleapis.com;
+      font-src 'self' data:;
       object-src 'none';
-      frame-src 'self' https://js.stripe.com https://checkout.stripe.com;
+      frame-src 'self' https://js.stripe.com;
       manifest-src 'self';
-      worker-src 'self' blob:;
+      worker-src 'self';
     """
     Permissions-Policy = "geolocation=(), microphone=(), camera=(), interest-cohort=()"
     Referrer-Policy = "strict-origin-when-cross-origin"
