@@ -1,15 +1,14 @@
-// netlify/functions/create-checkout-session.js
 import Stripe from "stripe";
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: "2023-10-16" });
 
-const json = (statusCode, data, headers = {}) => ({
-  statusCode,
+const json = (status, data, headers = {}) => ({
+  statusCode: status,
   headers: { "content-type": "application/json", ...headers },
   body: JSON.stringify(data),
 });
-const allowOrigin = (event) => event.headers.origin || "*";
-const cors = (event, extra = {}) => ({
-  "Access-Control-Allow-Origin": allowOrigin(event),
+const allowOrigin = (evt) => evt.headers.origin || "*";
+const cors = (evt, extra = {}) => ({
+  "Access-Control-Allow-Origin": allowOrigin(evt),
   "Access-Control-Allow-Headers": "authorization,content-type",
   "Access-Control-Allow-Methods": "POST,OPTIONS",
   ...extra,
@@ -29,7 +28,7 @@ export async function handler(event) {
       line_items: [{ price: priceId, quantity: 1 }],
       success_url: success_url || `${event.headers.origin}/pro.html?status=success`,
       cancel_url: cancel_url || `${event.headers.origin}/pro.html?status=cancel`,
-      metadata: { uid, sku },
+      metadata: { uid, sku }
     });
 
     return json(200, { id: session.id, url: session.url }, cors(event));
