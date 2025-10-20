@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Whylee — Admin Monitor</title>
+
+  <link rel="stylesheet" href="/styles/brand.css?v=9003">
+  <link rel="stylesheet" href="/styles/style.css?v=9003">
+  <link rel="stylesheet" href="/styles/animations.css?v=9003">
+
+  <script type="module" src="/scripts/boot/themeInit.js?v=9003"></script>
+</head>
+<body>
+  <header class="site-head">
+    <nav class="nav">
+      <a href="/admin.html" class="brand">Whylee Admin</a>
+      <div class="spacer"></div>
+      <a href="/promo/storyboard/storyboard-grid.html" class="btn btn--ghost">Storyboard</a>
+      <button id="themeToggle" class="btn btn--ghost">🌙</button>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <h1 class="h4">Health Check</h1>
+      <div id="healthBox" class="muted">Loading…</div>
+    </section>
+
+    <section class="card">
+      <h2 class="h5">Recent Logs</h2>
+      <pre id="logsBox" class="code" style="white-space:pre-wrap; max-height:360px; overflow:auto;">(coming soon)</pre>
+    </section>
+  </main>
+
+  <script type="module">
+    // Fetch health JSON (no inline business logic; tiny fetch is allowed as module)
+    (async () => {
+      const box = document.getElementById('healthBox');
+      try {
+        const r = await fetch('/.netlify/functions/health', { headers: { 'accept': 'application/json' }});
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        const j = await r.json();
+        box.textContent = `OK • version=${j.version} • latency=${j.latencyMs}ms`;
+      } catch (e) {
+        box.textContent = `Error fetching health: ${e.message || e}`;
+      }
+    })();
+  </script>
+  <script type="module" src="/scripts/boot/themeToggle.js?v=9003"></script>
+</body>
+</html>
