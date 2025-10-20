@@ -1,59 +1,62 @@
-/* Whylee SW v7006 */
-const CACHE = 'whylee-v7006';
-const ASSETS = [
-  '/', '/index.html',
-  '/css/style.css?v=7006',
-  '/css/animations.css?v=7006',
-  '/styles/avatar.css?v=7006',
-  '/styles/avatar-badge.css?v=7006',
-  '/js/app.js?v=7006',
-  '/js/shell.js?v=7006',
-  '/media/icons/whylee-icon-192.png',
-  '/media/icons/whylee-icon-512.png'
+/* service-worker.js (v3) — same-origin only, Firebase/CDN-safe) */
+
+const CACHE_NAME = 'whylee-v3';
+const STATIC_ASSETS = [
+  '/', '/index.html', '/game.html', '/menu.html',
+  '/styles/brand.css', '/styles/style.css', '/styles/animations.css',
+  '/styles/hud.css', '/styles/streakBar.css',
+  '/scripts/boot/themeInit.js', '/scripts/boot/themeToggle.js',
 ];
 
+// Only cache same-origin requests
+function isSameOrigin(url) {
+  try { return new URL(url).origin === self.location.origin; } catch { return false; }
+}
+
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE).then(cache => cache.addAll(ASSETS))
-  );
-  self.skipWaiting();
+  event.waitUntil((async () => {
+    const cache = await caches.open(CACHE_NAME);
+    try { await cache.addAll(STATIC_ASSETS); } catch (e) { /* ignore */ }
+    self.skipWaiting();
+  })());
 });
 
 self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
-    )
-  );
-  self.clients.claim();
+  event.waitUntil((async () => {
+    const names = await caches.keys();
+    await Promise.all(names.map(n => (n === CACHE_NAME ? null : caches.delete(n))));
+    self.clients.claim();
+  })());
 });
 
-// Cache-first for static, network-first for API
+// Cache-first for same-origin GET; bypass cross-origin (e.g., gstatic firebase)
 self.addEventListener('fetch', (event) => {
-  const { request } = event;
-  const url = new URL(request.url);
+  const req = event.request;
 
-  // Never cache functions
-  if (url.pathname.startsWith('/.netlify/functions/')) return;
-
-  // HTML: network falling back to cache
-  if (request.mode === 'navigate' || request.destination === 'document') {
-    event.respondWith(
-      fetch(request).catch(() => caches.match('/index.html'))
-    );
-    return;
+  // Only GET and only same-origin
+  if (req.method !== 'GET' || !isSameOrigin(req.url)) {
+    return; // let the browser handle it (no SW interception)
   }
 
-  // Static assets: cache-first
-  if (['style', 'script', 'image', 'font'].includes(request.destination)) {
-    event.respondWith(
-      caches.match(request, { ignoreSearch: false }).then(cached => {
-        return cached || fetch(request).then(resp => {
-          const copy = resp.clone();
-          caches.open(CACHE).then(c => c.put(request, copy));
-          return resp;
-        });
-      })
-    );
-  }
+  event.respondWith((async () => {
+    const cache = await caches.open(CACHE_NAME);
+    const cached = await cache.match(req);
+    if (cached) return cached;
+
+    try {
+      const res = await fetch(req);
+      // Optionally cache HTML/CSS/JS/Images served from same origin
+      if (res.ok && (req.destination === 'document' || req.destination === 'style' || req.destination === 'script' || req.destination === 'image')) {
+        cache.put(req, res.clone());
+      }
+      return res;
+    } catch (e) {
+      // Optional: offline fallback for nav requests
+      if (req.mode === 'navigate') {
+        const offline = await cache.match('/index.html');
+        if (offline) return offline;
+      }
+      throw e;
+    }
+  })());
 });
