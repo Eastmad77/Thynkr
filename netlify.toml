@@ -1,44 +1,22 @@
-# ─────────────────────────────────────────────────────────
-# Netlify config for Whylee (PWA)
-# - Static publish (no framework build)
-# - Functions bundled with esbuild
-# - Strong CSP compatible with Firebase + Stripe
-# - Long-term caching for static assets
-# ─────────────────────────────────────────────────────────
-
 [build]
   publish = "."
-  command = ""
+  command = ""   # No framework build – pure static + functions
 
 [functions]
   node_bundler = "esbuild"
   external_node_modules = ["stripe"]
 
-# SPA routing (let the app handle client-side routes)
+# SPA redirects
 [[redirects]]
   from = "/*"
   to   = "/index.html"
   status = 200
 
-# Allow well-known (e.g., assetlinks.json)
-[[redirects]]
-  from = "/.well-known/*"
-  to   = "/.well-known/:splat"
-  status = 200
-
-# ── Cache headers ────────────────────────────────────────
-
-# Service worker: never cache aggressively
+# Cache + security headers
 [[headers]]
   for = "/service-worker.js"
   [headers.values]
     Cache-Control = "no-cache, no-store, must-revalidate"
-
-# Immutable static assets (you already use ?v= cache-busters)
-[[headers]]
-  for = "/styles/*"
-  [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
 
 [[headers]]
   for = "/scripts/*"
@@ -51,23 +29,8 @@
     Cache-Control = "public, max-age=31536000, immutable"
 
 [[headers]]
-  for = "/site.webmanifest"
-  [headers.values]
-    Cache-Control = "public, max-age=3600"
-
-# CORS for Netlify Functions (frontend ↔ functions)
-[[headers]]
-  for = "/.netlify/functions/*"
-  [headers.values]
-    Access-Control-Allow-Origin  = "*"
-    Access-Control-Allow-Methods = "GET, POST, OPTIONS"
-    Access-Control-Allow-Headers = "Content-Type, Authorization"
-
-# ── Security headers (CSP, etc.) ────────────────────────
-[[headers]]
   for = "/*"
   [headers.values]
-    # NOTE: Keep this on one line or a single multi-line block without '#' comments inside.
     Content-Security-Policy = """
       default-src 'self';
       base-uri 'self';
@@ -76,15 +39,7 @@
       media-src 'self' data: blob:;
       style-src 'self' 'unsafe-inline';
       script-src 'self' https://www.gstatic.com https://www.googletagmanager.com;
-      connect-src 'self'
-        https://firestore.googleapis.com
-        https://firebasestorage.googleapis.com
-        https://www.googleapis.com
-        https://firebaseinstallations.googleapis.com
-        https://identitytoolkit.googleapis.com
-        https://securetoken.googleapis.com
-        https://www.google-analytics.com
-        https://api.stripe.com;
+      connect-src 'self' https://firestore.googleapis.com https://firebasestorage.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://firebaseinstallations.googleapis.com https://www.googleapis.com https://api.stripe.com;
       font-src 'self' data:;
       object-src 'none';
       frame-src 'self' https://js.stripe.com;
@@ -92,6 +47,6 @@
       worker-src 'self';
     """
     Referrer-Policy = "strict-origin-when-cross-origin"
-    Permissions-Policy = "geolocation=(), microphone=(), camera=(), interest-cohort=()"
+    Permissions-Policy = "geolocation=(), microphone=(), camera=()"
     X-Content-Type-Options = "nosniff"
     X-Frame-Options = "SAMEORIGIN"
