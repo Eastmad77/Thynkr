@@ -4,15 +4,14 @@
 
 [functions]
   node_bundler = "esbuild"
-  external_node_modules = ["stripe", "firebase-admin"]
+  external_node_modules = ["stripe","firebase-admin"]
 
-# SPA fallback
 [[redirects]]
   from = "/*"
   to   = "/index.html"
   status = 200
 
-# Cache rules
+# Headers
 [[headers]]
   for = "/service-worker.js"
   [headers.values]
@@ -38,7 +37,6 @@
   [headers.values]
     Cache-Control = "public, max-age=3600"
 
-# CORS for Functions
 [[headers]]
   for = "/.netlify/functions/*"
   [headers.values]
@@ -46,7 +44,7 @@
     Access-Control-Allow-Methods = "GET, POST, OPTIONS"
     Access-Control-Allow-Headers = "Content-Type, Authorization"
 
-# Security + CSP (already working for Firebase+Stripe)
+# CSP (allows Firebase + Stripe)
 [[headers]]
   for = "/*"
   [headers.values]
