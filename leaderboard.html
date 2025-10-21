@@ -5,29 +5,9 @@
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>Whylee — Leaderboard</title>
 
-  <link rel="stylesheet" href="/styles/brand.css?v=9003">
-  <link rel="stylesheet" href="/styles/style.css?v=9003">
-  <link rel="stylesheet" href="/styles/animations.css?v=9003">
-  <link rel="stylesheet" href="/styles/charts.css?v=9003">
-
-  <script type="module" src="/scripts/boot/themeInit.js?v=9003"></script>
-</head>
-<body>
-  <header class="site-head">
-    <nav class="nav">
-      <a href="/index.html" class="brand">Whylee</a>
-      <div class="spacer"></div>
-      <a href="/menu.html">Menu</a>
-      <a href="/pro.html">Pro</a>
-      <button id="themeToggle" class="btn btn--ghost">🌙</button>
-    </nav>
-  </header>
-
-  <main class="container">
-    <h1 class="h3">Leaderboard</h1>
-    <ul id="leaderboardList" class="lb"></ul>
-  </main>
-
+  <link rel="stylesheet" href="/styles/brand.css?v=9004">
+  <link rel="stylesheet" href="/styles/style.css?v=9004">
+  <link rel="stylesheet" href="/styles/animations.css?v=9004">
   <style>
     .lb { list-style:none; padding:0; margin:0; display:grid; gap:8px; }
     .lb-row { display:grid; grid-template-columns: 32px 1fr auto auto; align-items:center;
@@ -37,8 +17,27 @@
     .lb-emoji { opacity:.9; }
     .lb-xp { font-variant-numeric: tabular-nums; color: var(--text-muted); }
   </style>
+</head>
+<body class="bg-stars">
+  <header class="site-head">
+    <a class="logo" href="/"><img src="/media/icons/favicon-48.png" alt="Whylee"></a>
+    <nav class="nav">
+      <a href="/menu.html">Menu</a>
+      <a href="/game.html">Play</a>
+      <a href="/profile.html">Profile</a>
+    </nav>
+  </header>
 
-  <script type="module" src="/scripts/leaderboard.js?v=9003"></script>
-  <script type="module" src="/scripts/boot/themeToggle.js?v=9003"></script>
+  <main class="container">
+    <h1 class="h3">Whylee League</h1>
+    <p class="muted">See where you rank this week.</p>
+    <ul id="leaderboardList" class="lb"></ul>
+  </main>
+
+  <!-- Firebase (CSP-safe order) -->
+  <script src="/scripts/firebase-config.js"></script>
+  <script type="module" src="/scripts/firebase-bridge.js?v=9004"></script>
+
+  <script type="module" src="/scripts/leaderboard.js?v=9004"></script>
 </body>
 </html>
