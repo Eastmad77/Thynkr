@@ -1,35 +1,40 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Whylee — Sign In</title>
+  <title>Sign In – Whylee</title>
 
   <link rel="stylesheet" href="/styles/brand.css?v=9005">
   <link rel="stylesheet" href="/styles/style.css?v=9005">
   <link rel="stylesheet" href="/styles/animations.css?v=9005">
 </head>
-<body class="bg-stars">
-  <main class="container narrow">
-    <h1 class="h3">Sign in</h1>
+<body>
+  <header>
+    <h1>Sign In</h1>
+    <nav>
+      <a href="/menu.html">Menu</a>
+    </nav>
+  </header>
+
+  <main class="container">
     <div class="card">
-      <label for="email">Email</label>
-      <input id="email" type="email" placeholder="you@example.com" autocomplete="email">
-      <label for="password">Password</label>
-      <input id="password" type="password" placeholder="••••••••" autocomplete="current-password">
-      <div class="row" style="gap:8px;margin-top:12px">
-        <button id="signInBtn" class="btn btn--brand">Sign in</button>
-        <button id="resetBtn" class="btn btn--ghost">Reset password</button>
-        <span id="msg" class="muted" aria-live="polite"></span>
-      </div>
+      <form id="signin-form">
+        <input type="email" id="email" placeholder="Email" required />
+        <input type="password" id="password" placeholder="Password" required />
+        <button class="btn">Sign In</button>
+      </form>
+      <button id="forgot" class="btn">Forgot Password</button>
     </div>
   </main>
 
-  <!-- Firebase (CSP-safe order) -->
-  <script src="/scripts/firebase-config.js?v=9005"></script>
+  <footer>© 2025 Whylee</footer>
+
+  <!-- Firebase boot (ORDER MATTERS) -->
+  <script type="module" src="/scripts/firebase-config.js?v=9005"></script>
   <script type="module" src="/scripts/firebase-bridge.js?v=9005"></script>
 
-  <!-- Auth screen logic -->
-  <script type="module" src="/scripts/auth.js?v=9005"></script>
+  <!-- page logic -->
+  <script type="module" src="/scripts/signin.js?v=9005"></script>
 </body>
 </html>
