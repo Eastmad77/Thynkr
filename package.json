@@ -1,18 +1,12 @@
 {
   "name": "whylee",
-  "version": "7008.0.2",
-  "description": "Whylee — interactive daily brain-training PWA (Free + Pro versions, cinematic promo tools)",
+  "version": "7008.0.0",
+  "description": "Whylee — gamified daily brain-training PWA (Free + Pro)",
   "type": "module",
   "scripts": {
     "start": "npx serve .",
-    "thumbs": "node tools/make-thumbs.mjs",
-    "brand": "node tools/make-brand-assets.mjs",
-    "generate": "netlify functions:invoke generateDailyQuestions",
-    "build": "npm run thumbs && npm run brand",
-    "motion": "node tools/make-motion-from-posters.mjs",
-    "motion:clean": "rimraf media/motion/*.mp4 media/motion/*.webm || true",
-    "posters:build": "node promo/tools/render-posters.js",
-    "preview:motion": "npx serve . -l 5050"
+    "build": "echo 'Static build complete'",
+    "posters:build": "node media/tools/render-posters.js"
   },
   "dependencies": {
     "firebase-admin": "^12.5.0",
@@ -24,35 +18,7 @@
     "netlify-cli": "^17.34.1",
     "rimraf": "^6.0.1"
   },
-  "engines": {
-    "node": ">=18"
-  },
-  "keywords": [
-    "pwa",
-    "quiz",
-    "game",
-    "netlify",
-    "firebase",
-    "stripe",
-    "brain-training",
-    "education",
-    "ai",
-    "autonomous",
-    "cinematic",
-    "motion",
-    "promo"
-  ],
-  "author": "Whylee Team",
+  "engines": { "node": ">=18" },
   "license": "MIT",
-  "netlify": {
-    "functions": "netlify/functions"
-  },
-  "config": {
-    "ffmpeg": "required",
-    "media": {
-      "posters": "media/posters/v1",
-      "motion": "media/motion",
-      "thumbnails": "media/thumbnails"
-    }
-  }
+  "keywords": ["pwa", "game", "firebase", "netlify", "stripe", "ai", "education"]
 }
