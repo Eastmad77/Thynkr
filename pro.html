@@ -1,39 +1,51 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Whylee — Pro</title>
 
-  <link rel="stylesheet" href="/styles/brand.css?v=9003">
-  <link rel="stylesheet" href="/styles/style.css?v=9003">
-  <link rel="stylesheet" href="/styles/animations.css?v=9003">
-
-  <script type="module" src="/scripts/boot/themeInit.js?v=9003"></script>
+  <link rel="stylesheet" href="/styles/brand.css?v=9005">
+  <link rel="stylesheet" href="/styles/style.css?v=9005">
+  <link rel="stylesheet" href="/styles/animations.css?v=9005">
 </head>
 <body class="bg-stars">
   <header class="site-head">
+    <a class="logo" href="/"><img src="/media/icons/favicon-48.png" alt="Whylee"></a>
     <nav class="nav">
-      <a href="/index.html" class="brand">Whylee</a>
-      <div class="spacer"></div>
       <a href="/menu.html">Menu</a>
-      <a href="/profile.html">Profile</a>
-      <button id="themeToggle" class="btn btn--ghost">🌙</button>
+      <a href="/game.html">Play</a>
+      <a href="/leaderboard.html">Leaderboard</a>
     </nav>
   </header>
 
   <main class="container">
-    <section class="card">
-      <h1 class="h3">Go Pro</h1>
-      <p>Unlock premium avatars, XP boosters, bonus rounds & more.</p>
-      <div class="actions">
-        <button id="buyMonthly" class="btn btn--brand">Buy Monthly</button>
-        <button id="buyYearly" class="btn btn--ghost">Buy Yearly</button>
+    <section class="hero">
+      <h1 class="h2">Upgrade to Whylee Pro</h1>
+      <p class="muted">Unlock exclusive avatars, new challenges, and daily reflections.</p>
+      <img src="/media/posters/v1/poster-07-pro.jpg" alt="Pro Poster" class="hero-img">
+      <div class="row" style="gap:12px;margin-top:12px">
+        <button id="subscribeMonthly" class="btn btn--brand">Subscribe Monthly</button>
+        <button id="subscribeYearly" class="btn btn--ghost">Subscribe Yearly</button>
       </div>
+    </section>
+
+    <section class="features" style="margin-top:24px">
+      <h2 class="h4">Pro Features</h2>
+      <ul class="list">
+        <li>✨ Access to all Pro avatars (Wolf, Tiger, Dragon, Bear)</li>
+        <li>🧠 Advanced Challenge Mode</li>
+        <li>📈 XP bonus and early unlocks</li>
+        <li>🌙 Night mode + new themes</li>
+        <li>💬 Reflection prompts to boost retention</li>
+      </ul>
     </section>
   </main>
 
-  <script type="module" src="/scripts/pro.js?v=9003"></script>
-  <script type="module" src="/scripts/boot/themeToggle.js?v=9003"></script>
+  <footer class="site-foot"><small>&copy; 2025 Whylee</small></footer>
+
+  <script src="/scripts/firebase-config.js?v=9005"></script>
+  <script type="module" src="/scripts/firebase-bridge.js?v=9005"></script>
+  <script type="module" src="/scripts/pro.js?v=9005"></script>
 </body>
 </html>
