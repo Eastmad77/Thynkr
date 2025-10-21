@@ -1,8 +1,8 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
   <title>Admin Panel – Whylee</title>
 
   <link rel="stylesheet" href="/styles/brand.css?v=9005">
@@ -10,57 +10,55 @@
   <link rel="stylesheet" href="/styles/animations.css?v=9005">
 </head>
 <body>
-  <header class="site-head">
+  <header>
     <h1>Admin Panel</h1>
-    <nav class="nav">
+    <nav>
       <a href="/index.html">Home</a>
       <a href="/menu.html">Menu</a>
       <a href="/pro.html">Pro</a>
       <a href="/profile.html">Profile</a>
-      <a href="/promo/storyboard/storyboard-grid.html">Storyboard</a>
     </nav>
   </header>
 
   <main class="container">
     <div class="card">
-      <h2>System Status</h2>
-      <ul>
-        <li>Firebase: <strong>Connected</strong></li>
-        <li>Stripe Integration: <strong>Active</strong></li>
-        <li>Version: <strong>9.0.5</strong></li>
-        <li>Deployed via: <strong>Netlify</strong></li>
-      </ul>
-    </div>
+      <h2>Admin Overview</h2>
+      <p>This panel is for internal monitoring and content updates.</p>
 
-    <div class="card">
-      <h2>Quick Actions</h2>
-      <div class="row" style="gap:8px;flex-wrap:wrap">
-        <button id="btnSync" class="btn">Sync Firebase Data</button>
-        <button id="btnReport" class="btn-pro">Generate Report</button>
-        <button id="btnLogs" class="btn">Check Logs</button>
+      <div class="card" style="background: var(--whylee-surface);">
+        <h3>System Status</h3>
+        <ul>
+          <li>Firebase: <strong>Connected</strong></li>
+          <li>Stripe Integration: <strong>Active</strong></li>
+          <li>Version: <strong>9.0.5</strong></li>
+          <li>Deployed via: <strong>Netlify</strong></li>
+        </ul>
       </div>
-    </div>
 
-    <div class="card">
-      <h2>Latest Activity</h2>
-      <ul>
-        <li>🧠 New challenge “Focus Sprint” added</li>
-        <li>🎨 Updated theme assets pushed</li>
-        <li>🛡️ Trial Manager patch applied</li>
-        <li>📦 Poster bundle synced to /media/posters</li>
-      </ul>
+      <div class="card" style="background: var(--whylee-surface);">
+        <h3>Quick Actions</h3>
+        <button class="btn" id="sync-fb">Sync Firebase Data</button>
+        <button class="btn-pro" id="gen-report">Generate Report</button>
+        <button class="btn" id="check-logs">Check Logs</button>
+      </div>
     </div>
   </main>
 
-  <footer class="site-foot"><small>&copy; 2025 Whylee | Internal Admin Only</small></footer>
+  <footer>© 2025 Whylee | Internal Admin Access Only</footer>
 
-  <!-- Firebase (CSP-safe order) -->
-  <script src="/scripts/firebase-config.js?v=9005"></script>
+  <!-- Firebase boot (ORDER MATTERS) -->
+  <script type="module" src="/scripts/firebase-config.js?v=9005"></script>
   <script type="module" src="/scripts/firebase-bridge.js?v=9005"></script>
 
+  <!-- page logic -->
   <script type="module">
-    import { auth } from "/scripts/firebase-bridge.js?v=9005";
-    console.info("[admin] Firebase currentUser:", auth.currentUser?.uid || "(none)");
+    import { db, doc, getDoc } from "/scripts/firebase-bridge.js?v=9005";
+    // minimal usage example
+    (async () => {
+      try {
+        await getDoc(doc(db, "_health", "latest"));
+      } catch {}
+    })();
   </script>
 </body>
 </html>
