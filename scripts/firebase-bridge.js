@@ -1,79 +1,62 @@
 // /scripts/firebase-bridge.js
-// Unified Firebase bridge for Whylee App (v8)
+// ESM bridge for Firebase Web SDK with explicit exports used across the app.
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
 import {
   getAuth,
   onAuthStateChanged,
   signInWithEmailAndPassword,
+  sendPasswordResetEmail,
   signOut
 } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
 import {
   getFirestore,
+  collection,
   doc,
   getDoc,
   setDoc,
   updateDoc,
-  collection,
-  addDoc
+  onSnapshot,
+  query,
+  where,
+  getDocs
 } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
-// 🔥 Replace this with your Firebase project config
+// Config is supplied by inline <script> or by environment injection build-side.
+// Fallback to window.* if present.
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT.appspot.com",
-  messagingSenderId: "SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey:            window.FIREBASE_API_KEY,
+  authDomain:        window.FIREBASE_AUTH_DOMAIN,
+  projectId:         window.FIREBASE_PROJECT_ID,
+  storageBucket:     window.FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: window.FIREBASE_MESSAGING_SENDER_ID,
+  appId:             window.FIREBASE_APP_ID,
+  measurementId:     window.FIREBASE_MEASUREMENT_ID
 };
 
-// --- Initialise -------------------------------------------------------------
-export const app = initializeApp(firebaseConfig);
-export const auth = getAuth(app);
-export const db = getFirestore(app);
+// Init
+const app  = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db   = getFirestore(app);
 
-// --- Helpers ----------------------------------------------------------------
-
-// Creates a new user document if not present
-export async function ensureUserDoc(user) {
-  if (!user) return;
-  const ref = doc(db, "users", user.uid);
-  const snap = await getDoc(ref);
-  if (!snap.exists()) {
-    await setDoc(ref, {
-      displayName: user.displayName || "New Player",
-      email: user.email || null,
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-      xp: 0,
-      streak: 0,
-      lastPlayed: null,
-      avatarId: "fox",
-      emoji: "🦊",
-      pro: false,
-      unlockedSkins: [],
-      badges: [],
-      settings: { theme: "dark", notifications: true }
-    });
-  }
-}
-
-// Update user data safely
-export async function updateUserData(uid, data) {
-  if (!uid) return;
-  const ref = doc(db, "users", uid);
-  await updateDoc(ref, { ...data, updatedAt: Date.now() });
-}
-
-// Simple sign-out
-export async function signOutUser() {
-  await signOut(auth);
-}
-
-// --- Auth listener ----------------------------------------------------------
-onAuthStateChanged(auth, async (user) => {
-  if (user) await ensureUserDoc(user);
-});
-
-export { doc, getDoc, setDoc, updateDoc, collection, addDoc };
+// Re-exports used throughout app
+export {
+  app,
+  auth,
+  db,
+  // Auth
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  sendPasswordResetEmail,
+  signOut,
+  // Firestore
+  collection,
+  doc,
+  getDoc,
+  setDoc,
+  updateDoc,
+  onSnapshot,
+  query,
+  where,
+  getDocs
+};
