@@ -1,46 +1,127 @@
-The Netlify deploy errored, with the following guidance provided:
+# ─────────────────────────────────────────────────────────
+# Netlify config for Whylee (PWA)
+# Includes: Functions bundling, CSP, SW caching, and secure headers
+# ─────────────────────────────────────────────────────────
 
-**Diagnosis:**
-The build failed due to secrets scanning detecting secrets in the build process.
+[build]
+  publish = "."
+  command = "" # Static PWA (no build step)
 
-**Solution:**
-1. Verify that the secrets mentioned in the error message (FIREBASE_SERVICE_ACCOUNT, STRIPE_PRICE_MONTHLY, STRIPE_PRICE_YEARLY, STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET) are not exposed in any files or part of the build output.
-2. If these secrets are intended to be used, follow the instructions provided in the error message to prevent detection or exposure.
-3. Review the build scripts to ensure no secrets are hardcoded or exposed during the build process to avoid triggering the secrets scanning mechanism again.
+# ─────────────────────────────────────────────────────────
+# Functions
+# ─────────────────────────────────────────────────────────
+[functions]
+  node_bundler = "esbuild"
+  external_node_modules = ["firebase-admin", "stripe"]
+  included_files = ["netlify/functions/_shared/**"]
 
-The relevant error logs are:
+# ─────────────────────────────────────────────────────────
+# Environment (safe defaults)
+# ─────────────────────────────────────────────────────────
+# These variables are managed securely in the Netlify dashboard.
+# DO NOT commit secret values to repo.
+[build.environment]
+  SECRETS_SCAN_SMART_DETECTION_ENABLED = "false"
+  SECRETS_SCAN_SMART_DETECTION_OMIT_VALUES = "true"
 
-Line 92: [91m​[39m
-Line 93: [91mTo prevent exposing secrets, the build will fail until these likely secret values are not found in build output or repo fil
-Line 94: [91m​[39m
-Line 95: [91mIf these are expected, use SECRETS_SCAN_SMART_DETECTION_OMIT_VALUES, or SECRETS_SCAN_SMART_DETECTION_ENABLED to prevent det
-Line 96: [91m​[39m
-Line 97: [91mFor more information on secrets scanning, see the Netlify Docs: https://ntl.fyi/configure-secrets-scanning[39m
-Line 98: [91m[1m​[22m[39m
-Line 99: [91m[1mSecrets scanning detected secrets in files during build.      [22m[39m
-Line 100: [91m[1m────────────────────────────────────────────────────────────────[22m[39m
-Line 101: ​
-Line 102:   [31m[1mError message[22m[39m
-Line 103:   Secrets scanning found secrets in build.
-Line 104: ​
-Line 105:   [31m[1mResolved config[22m[39m
-Line 106:   build:
-Line 107:     environment:
-Line 108:       - FIREBASE_SERVICE_ACCOUNT
-Line 109:       - STRIPE_PRICE_MONTHLY
-Line 110:       - STRIPE_PRICE_YEARLY
-Line 111:       - STRIPE_SECRET_KEY
-Line 112:       - STRIPE_WEBHOOK_SECRET
-Line 113:     publish: /opt/build/repo
-Line 114:     publishOrigin: ui
-Line 115:   functionsDirectory: /opt/build/repo/netlify/functions
-Line 116:   headers:
-Line 117:     - for: /*
-      values:
-        Content-Security-Policy: |-
-          default-src 'self';
-                base-uri 'self';
- 
-Line 118: Build failed due to a user error: Build script returned non-zero exit code: 2
-Line 119: Failing build: Failed to build site
-Line 120: Finished processing build request in 27.697s
+# ─────────────────────────────────────────────────────────
+# Redirects
+# ─────────────────────────────────────────────────────────
+[[redirects]]
+  from = "/*"
+  to   = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/.well-known/*"
+  to   = "/.well-known/:splat"
+  status = 200
+
+# ─────────────────────────────────────────────────────────
+# Caching & Headers
+# ─────────────────────────────────────────────────────────
+[[headers]]
+  for = "/service-worker.js"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
+
+[[headers]]
+  for = "/css/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/js/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/scripts/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/media/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/media/icons/*"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"
+
+[[headers]]
+  for = "/site.webmanifest"
+  [headers.values]
+    Cache-Control = "public, max-age=3600"
+
+# CORS for Netlify Functions
+[[headers]]
+  for = "/.netlify/functions/*"
+  [headers.values]
+    Access-Control-Allow-Origin = "*"
+    Access-Control-Allow-Methods = "GET, POST, OPTIONS"
+    Access-Control-Allow-Headers = "Content-Type, Authorization"
+
+# ─────────────────────────────────────────────────────────
+# Security + Content Security Policy
+# ─────────────────────────────────────────────────────────
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Content-Security-Policy = """
+      default-src 'self';
+      base-uri 'self';
+      frame-ancestors 'self';
+
+      img-src 'self' data: blob:;
+      media-src 'self' data:;
+      font-src 'self' data:;
+      object-src 'none';
+      manifest-src 'self';
+      worker-src 'self';
+      style-src 'self' 'unsafe-inline';
+
+      # JS: Firebase CDN + GTM (optional)
+      script-src 'self' https://www.gstatic.com https://www.googletagmanager.com;
+
+      # Connect: Allow all Firebase/Google endpoints required by Auth, Firestore, Storage
+      connect-src
+        'self'
+        https://www.gstatic.com
+        https://firestore.googleapis.com
+        https://www.googleapis.com
+        https://firebaseinstallations.googleapis.com
+        https://identitytoolkit.googleapis.com
+        https://securetoken.googleapis.com
+        https://storage.googleapis.com
+        https://www.google-analytics.com
+        https://api.stripe.com;
+
+      # Stripe for checkout
+      frame-src 'self' https://js.stripe.com;
+    """
+    Permissions-Policy = "geolocation=(), microphone=(), camera=(), interest-cohort=()"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    X-Content-Type-Options = "nosniff"
+    X-Frame-Options = "SAMEORIGIN"
