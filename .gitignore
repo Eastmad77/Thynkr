@@ -1,38 +1,50 @@
-# Node & tooling
+# ───────────────────────────────
+#   Git Ignore – Whylee Project
+# ───────────────────────────────
+
+# Node / npm
 node_modules/
 npm-debug.log*
+yarn-debug.log*
 yarn-error.log*
-.pnp.*
-.cache/
-.temp/
+package-lock.json
+
+# Build / dist artifacts
 dist/
 build/
-.DS_Store
+.tmp/
+.cache/
 
-# Local env
+# Netlify local state
+.netlify/state.json
+.netlify/logs/
+.netlify/functions-serve/
+
+# Firebase / local emulators
+.firebase/
+firestore-debug.log
+storage-debug.log
+database-debug.log
+
+# Secrets and keys
 .env
 .env.*
-*.local
+serviceAccount*.json
+firebase-adminsdk*.json
+firebase-admin.json
+_firebase-admin.js
 
-# Editor/OS
-.vscode/
-.idea/
-*.swp
-
-# Generated media
+# Media outputs
 media/motion/*.mp4
 media/motion/*.webm
 media/thumbnails/*
-!media/thumbnails/.gitkeep
-media/motion/*
 !media/motion/.gitkeep
 
-# Firebase/Service accounts (never commit secrets)
-*_admin*.json
-*_service*.json
-*_firebase-admin*.js
-serviceAccount*.json
-firebase-adminsdk*.json
+# OS junk
+.DS_Store
+Thumbs.db
 
-# Netlify build cache
-.netlify/
+# IDE
+.vscode/
+.idea/
+*.swp
