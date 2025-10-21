@@ -5,29 +5,26 @@
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>Whylee — Profile</title>
 
-  <link rel="stylesheet" href="/styles/brand.css?v=9003">
-  <link rel="stylesheet" href="/styles/style.css?v=9003">
-  <link rel="stylesheet" href="/styles/animations.css?v=9003">
-  <link rel="stylesheet" href="/styles/avatar.css?v=9003">
-  <link rel="stylesheet" href="/styles/avatar-badge.css?v=9003">
-
-  <script type="module" src="/scripts/boot/themeInit.js?v=9003"></script>
+  <link rel="stylesheet" href="/styles/brand.css?v=9004">
+  <link rel="stylesheet" href="/styles/style.css?v=9004">
+  <link rel="stylesheet" href="/styles/animations.css?v=9004">
+  <link rel="stylesheet" href="/styles/avatar.css?v=9004">
+  <link rel="stylesheet" href="/styles/avatar-badge.css?v=9004">
 </head>
-<body>
+<body class="bg-stars">
   <header class="site-head">
+    <a class="logo" href="/"><img src="/media/icons/favicon-48.png" alt="Whylee"></a>
     <nav class="nav">
-      <a href="/index.html" class="brand">Whylee</a>
-      <div class="spacer"></div>
       <a href="/menu.html">Menu</a>
-      <a href="/pro.html">Pro</a>
-      <button id="themeToggle" class="btn btn--ghost">🌙</button>
+      <a href="/game.html">Play</a>
+      <a href="/leaderboard.html">Leaderboard</a>
     </nav>
   </header>
 
   <main class="container">
     <h1 class="h3">Your Profile</h1>
 
-    <section aria-labelledby="profile-appearance">
+    <section aria-labelledby="profile-appearance" class="card">
       <h2 id="profile-appearance" class="h4">Appearance</h2>
       <p class="muted">Change your avatar and mini emoji.</p>
       <div id="profileAvatarGrid" class="grid" style="margin-top:8px"></div>
@@ -40,7 +37,14 @@
     </section>
   </main>
 
-  <script type="module" src="/scripts/profile.js?v=9003"></script>
-  <script type="module" src="/scripts/boot/themeToggle.js?v=9003"></script>
+  <footer class="site-foot"><small>&copy; 2025 Whylee</small></footer>
+
+  <!-- Firebase (CSP-safe order) -->
+  <script src="/scripts/firebase-config.js"></script>
+  <script type="module" src="/scripts/firebase-bridge.js?v=9004"></script>
+
+  <!-- Modules -->
+  <script type="module" src="/scripts/components/avatarBadge.js?v=9004"></script>
+  <script type="module" src="/scripts/profile.js?v=9004"></script>
 </body>
 </html>
