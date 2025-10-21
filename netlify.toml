@@ -1,22 +1,29 @@
+# Netlify config for Whylee (static PWA + Netlify Functions)
+
 [build]
   publish = "."
-  command = ""   # No framework build – pure static + functions
+  command = "npm ci"   # <-- make sure deps are installed every build
 
 [functions]
   node_bundler = "esbuild"
-  external_node_modules = ["stripe"]
+  external_node_modules = ["stripe","firebase-admin"]  # explicitly mark server deps
 
-# SPA redirects
+# SPA routing
 [[redirects]]
   from = "/*"
   to   = "/index.html"
   status = 200
 
-# Cache + security headers
+# Caching / headers (same as before)
 [[headers]]
   for = "/service-worker.js"
   [headers.values]
     Cache-Control = "no-cache, no-store, must-revalidate"
+
+[[headers]]
+  for = "/styles/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
 
 [[headers]]
   for = "/scripts/*"
@@ -28,6 +35,19 @@
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
 
+[[headers]]
+  for = "/site.webmanifest"
+  [headers.values]
+    Cache-Control = "public, max-age=3600"
+
+[[headers]]
+  for = "/.netlify/functions/*"
+  [headers.values]
+    Access-Control-Allow-Origin  = "*"
+    Access-Control-Allow-Methods = "GET, POST, OPTIONS"
+    Access-Control-Allow-Headers = "Content-Type, Authorization"
+
+# Security headers (kept concise + CSP-safe for Firebase/Stripe)
 [[headers]]
   for = "/*"
   [headers.values]
