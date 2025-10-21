@@ -1,55 +1,42 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Whylee — Game</title>
+  <title>Play – Whylee</title>
 
   <link rel="stylesheet" href="/styles/brand.css?v=9005">
   <link rel="stylesheet" href="/styles/style.css?v=9005">
-  <link rel="stylesheet" href="/styles/animations.css?v=9005">
   <link rel="stylesheet" href="/styles/hud.css?v=9005">
-  <link rel="stylesheet" href="/styles/streakBar.css?v=9005">
+  <link rel="stylesheet" href="/styles/animations.css?v=9005">
 </head>
-<body class="bg-stars">
-  <!-- HUD -->
-  <section id="hud" class="hud" aria-label="Heads-up display">
-    <div id="hudUser" class="hud-avatar"></div>
-    <div class="hud-info">
-      <div id="hudScore" class="hud-score">XP: 0</div>
-      <div class="streak"><div id="streakFill" class="streak-fill"></div></div>
-      <div id="hudPips" class="pips" aria-label="Question progress"></div>
-    </div>
-    <div class="hud-timer"><span class="timer-label">Time</span><span id="timer" class="timer-value">0</span></div>
-  </section>
+<body>
+  <header>
+    <h1>Game</h1>
+    <nav>
+      <a href="/menu.html">Menu</a>
+      <a href="/profile.html">Profile</a>
+    </nav>
+  </header>
 
-  <!-- Game viewport -->
-  <main class="game">
-    <header class="scene-head">
-      <h1 class="title"><span class="title-top">LEVEL 1</span><span class="title-ghost">• Quickfire Quiz</span></h1>
-      <p class="subtitle">Answer fast. Build streaks. Redemption removes a mistake after 3 in a row.</p>
-    </header>
-
-    <div id="viewport" class="viewport"></div>
-
-    <div class="controls" style="display:flex;gap:8px;justify-content:center;margin-top:16px">
-      <button id="startBtn" class="btn btn--brand">Start</button>
-      <button id="nextBtn" class="btn btn--ghost" style="display:none">Next</button>
-      <button id="finishBtn" class="btn btn--brand" style="display:none">Finish</button>
+  <main class="container">
+    <div id="hud" class="card">
+      <!-- HUD content + canvas/grid goes here -->
+      <div id="game-root"></div>
     </div>
   </main>
 
-  <!-- Firebase (CSP-safe order) -->
-  <script src="/scripts/firebase-config.js?v=9005"></script>
+  <footer>© 2025 Whylee</footer>
+
+  <!-- Firebase boot (ORDER MATTERS) -->
+  <script type="module" src="/scripts/firebase-config.js?v=9005"></script>
   <script type="module" src="/scripts/firebase-bridge.js?v=9005"></script>
 
-  <!-- Game modules -->
+  <!-- UI helpers that might use Firebase data -->
+  <script type="module" src="/scripts/ui/posterManager.js?v=9005"></script>
   <script type="module" src="/scripts/ui/streakBar.js?v=9005"></script>
-  <script type="module" src="/scripts/components/pips.js?v=9005"></script>
-  <script type="module" src="/scripts/components/avatarBadge.js?v=9005"></script>
-  <script type="module" src="/scripts/ai/questionEngine.js?v=9005"></script>
-  <script type="module" src="/scripts/entitlements.js?v=9005"></script>
-  <script type="module" src="/scripts/milestones.js?v=9005"></script>
+
+  <!-- page logic -->
   <script type="module" src="/scripts/game.js?v=9005"></script>
 </body>
 </html>
