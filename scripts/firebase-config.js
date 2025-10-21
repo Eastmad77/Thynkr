@@ -1,7 +1,8 @@
 // /scripts/firebase-config.js
-// Must load BEFORE any Firebase modules on every page that uses Firebase.
+// Public Firebase Web SDK config for Whylee / DailyBrainBolt
+// Must be loaded BEFORE /scripts/firebase-bridge.js on every page that uses Firebase.
 
-window.__FIREBASE = {
+export const firebaseConfig = {
   apiKey: "AIzaSyDfjcMzAl-Tll0xsHri91VHiMdTGmd7b2k",
   authDomain: "dailybrainbolt.firebaseapp.com",
   projectId: "dailybrainbolt",
@@ -10,3 +11,6 @@ window.__FIREBASE = {
   appId: "1:118224143962:web:43d85714b96ac1357e7a63",
   measurementId: "G-M0P3TSCF8P"
 };
+
+// ALSO expose globally so non-bundled pages and bridge can see it.
+try { window.firebaseConfig = firebaseConfig; } catch (e) {}
