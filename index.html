@@ -1,58 +1,40 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Whylee — Home</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Whylee – Daily Brain Bolt</title>
 
   <link rel="stylesheet" href="/styles/brand.css?v=9005">
   <link rel="stylesheet" href="/styles/style.css?v=9005">
   <link rel="stylesheet" href="/styles/animations.css?v=9005">
 </head>
-<body class="bg-stars">
-  <header class="site-head">
-    <a class="logo" href="/"><img src="/media/icons/favicon-48.png" alt="Whylee"></a>
-    <nav class="nav">
+<body>
+  <header class="site-header">
+    <h1>Whylee</h1>
+    <nav>
       <a href="/menu.html">Menu</a>
       <a href="/game.html">Play</a>
-      <a href="/pro.html" class="pill pill--gold">Get Pro</a>
+      <a href="/pro.html">Pro</a>
       <a href="/profile.html">Profile</a>
     </nav>
   </header>
 
   <main class="container">
-    <section class="hero hero--cinematic">
-      <h1 class="h2">Daily brain sprints. Premium cinematic flow.</h1>
-      <p class="muted">Build your streak. Unlock avatars. Rise in the Whylee League.</p>
-      <div class="row" style="gap:12px;margin-top:12px">
-        <a class="btn btn--brand" href="/game.html">Play Now</a>
-        <a class="btn btn--ghost" href="/pro.html">See Pro</a>
-      </div>
-    </section>
-
-    <section class="cards">
-      <article class="card glow">
-        <img class="card-img" src="/media/posters/v1/poster-01-start.jpg" alt="Start">
-        <h3>Quickfire</h3><p class="muted">Answer fast. Keep your streak alive.</p>
-      </article>
-      <article class="card glow">
-        <img class="card-img" src="/media/posters/v1/poster-03-reward.jpg" alt="Rewards">
-        <h3>Rewards</h3><p class="muted">Earn XP. Unlock avatars & badges.</p>
-      </article>
-      <article class="card glow">
-        <img class="card-img" src="/media/posters/v1/poster-09-community.jpg" alt="League">
-        <h3>League</h3><p class="muted">Compete on the weekly leaderboard.</p>
-      </article>
+    <section class="hero card">
+      <h2>Daily brain sprints.</h2>
+      <p>Sharpen memory, focus and speed—one minute at a time.</p>
+      <p><a class="btn-pro" href="/game.html">Start</a></p>
     </section>
   </main>
 
-  <footer class="site-foot">
-    <small>&copy; 2025 Whylee · <a href="/privacy.html">Privacy</a> · <a href="/terms.html">Terms</a></small>
-  </footer>
+  <footer class="site-footer">© 2025 Whylee</footer>
 
-  <!-- Firebase (CSP-safe order) -->
-  <script src="/scripts/firebase-config.js?v=9005"></script>
+  <!-- Firebase boot (ORDER MATTERS) -->
+  <script type="module" src="/scripts/firebase-config.js?v=9005"></script>
   <script type="module" src="/scripts/firebase-bridge.js?v=9005"></script>
-  <!-- Optional: homepage modules -->
+
+  <!-- page logic that imports from /scripts/firebase-bridge.js AFTER the two above -->
+  <script type="module" src="/scripts/app.js?v=9005"></script>
 </body>
 </html>
