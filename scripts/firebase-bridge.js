@@ -1,5 +1,5 @@
 // /scripts/firebase-bridge.js
-// ESM bridge for Firebase Web SDK with explicit exports used across the app.
+// Firebase ESM bridge (v11) — uses window.__FIREBASE (set by /scripts/firebase-config.js)
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
 import {
@@ -7,56 +7,44 @@ import {
   onAuthStateChanged,
   signInWithEmailAndPassword,
   sendPasswordResetEmail,
-  signOut
+  signOut,
 } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
 import {
   getFirestore,
-  collection,
-  doc,
-  getDoc,
-  setDoc,
-  updateDoc,
+  // core
+  doc, getDoc, setDoc, updateDoc, deleteDoc,
+  collection, addDoc, getDocs,
+  // queries
+  query, where, orderBy, limit,
+  // realtime
   onSnapshot,
-  query,
-  where,
-  getDocs
+  // fields/ops
+  serverTimestamp, Timestamp, increment, arrayUnion, arrayRemove,
 } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
-// Config is supplied by inline <script> or by environment injection build-side.
-// Fallback to window.* if present.
-const firebaseConfig = {
-  apiKey:            window.FIREBASE_API_KEY,
-  authDomain:        window.FIREBASE_AUTH_DOMAIN,
-  projectId:         window.FIREBASE_PROJECT_ID,
-  storageBucket:     window.FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: window.FIREBASE_MESSAGING_SENDER_ID,
-  appId:             window.FIREBASE_APP_ID,
-  measurementId:     window.FIREBASE_MEASUREMENT_ID
-};
+function resolveConfig() {
+  const cfg = (typeof window !== "undefined") ? window.__FIREBASE : null;
+  if (!cfg || !cfg.apiKey || !cfg.projectId) {
+    const msg = "[firebase-bridge] Missing window.__FIREBASE config (apiKey/projectId). Ensure /scripts/firebase-config.js loads first.";
+    console.error(msg, { cfg });
+    throw new Error(msg);
+  }
+  return cfg;
+}
 
-// Init
-const app  = initializeApp(firebaseConfig);
+const app  = initializeApp(resolveConfig());
 const auth = getAuth(app);
 const db   = getFirestore(app);
 
-// Re-exports used throughout app
 export {
-  app,
-  auth,
-  db,
+  app, auth, db,
   // Auth
-  onAuthStateChanged,
-  signInWithEmailAndPassword,
-  sendPasswordResetEmail,
-  signOut,
-  // Firestore
-  collection,
-  doc,
-  getDoc,
-  setDoc,
-  updateDoc,
-  onSnapshot,
-  query,
-  where,
-  getDocs
+  onAuthStateChanged, signInWithEmailAndPassword, sendPasswordResetEmail, signOut,
+  // Firestore core
+  doc, getDoc, setDoc, updateDoc, deleteDoc,
+  collection, addDoc, getDocs,
+  // Queries & realtime
+  query, where, orderBy, limit, onSnapshot,
+  // Field ops
+  serverTimestamp, Timestamp, increment, arrayUnion, arrayRemove,
 };
