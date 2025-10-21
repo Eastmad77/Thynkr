@@ -2,7 +2,7 @@
 
 [build]
   publish = "."
-  command = "npm ci"   # <-- make sure deps are installed every build
+  command = "npm install"   # <-- make sure deps are installed every build
 
 [functions]
   node_bundler = "esbuild"
