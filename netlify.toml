@@ -1,20 +1,18 @@
-# Netlify config for Whylee (static PWA + Netlify Functions)
-
 [build]
   publish = "."
-  command = "npm install"   # <-- make sure deps are installed every build
+  command = "npm install"
 
 [functions]
   node_bundler = "esbuild"
-  external_node_modules = ["stripe","firebase-admin"]  # explicitly mark server deps
+  external_node_modules = ["stripe", "firebase-admin"]
 
-# SPA routing
+# SPA fallback
 [[redirects]]
   from = "/*"
   to   = "/index.html"
   status = 200
 
-# Caching / headers (same as before)
+# Cache rules
 [[headers]]
   for = "/service-worker.js"
   [headers.values]
@@ -40,14 +38,15 @@
   [headers.values]
     Cache-Control = "public, max-age=3600"
 
+# CORS for Functions
 [[headers]]
   for = "/.netlify/functions/*"
   [headers.values]
-    Access-Control-Allow-Origin  = "*"
+    Access-Control-Allow-Origin = "*"
     Access-Control-Allow-Methods = "GET, POST, OPTIONS"
     Access-Control-Allow-Headers = "Content-Type, Authorization"
 
-# Security headers (kept concise + CSP-safe for Firebase/Stripe)
+# Security + CSP (already working for Firebase+Stripe)
 [[headers]]
   for = "/*"
   [headers.values]
@@ -66,7 +65,7 @@
       manifest-src 'self';
       worker-src 'self';
     """
-    Referrer-Policy = "strict-origin-when-cross-origin"
     Permissions-Policy = "geolocation=(), microphone=(), camera=()"
+    Referrer-Policy = "strict-origin-when-cross-origin"
     X-Content-Type-Options = "nosniff"
     X-Frame-Options = "SAMEORIGIN"
