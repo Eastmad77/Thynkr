@@ -5,14 +5,11 @@
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>Whylee — Game</title>
 
-  <link rel="stylesheet" href="/styles/brand.css?v=9003">
-  <link rel="stylesheet" href="/styles/style.css?v=9003">
-  <link rel="stylesheet" href="/styles/animations.css?v=9003">
-  <link rel="stylesheet" href="/styles/hud.css?v=9003">
-  <link rel="stylesheet" href="/styles/streakBar.css?v=9003">
-  <link rel="stylesheet" href="/styles/dark.css?v=9003">
-
-  <script type="module" src="/scripts/boot/themeInit.js?v=9003"></script>
+  <link rel="stylesheet" href="/styles/brand.css?v=9004">
+  <link rel="stylesheet" href="/styles/style.css?v=9004">
+  <link rel="stylesheet" href="/styles/animations.css?v=9004">
+  <link rel="stylesheet" href="/styles/hud.css?v=9004">
+  <link rel="stylesheet" href="/styles/streakBar.css?v=9004">
 </head>
 <body class="bg-stars">
   <!-- HUD -->
@@ -22,9 +19,6 @@
       <div id="hudScore" class="hud-score">XP: 0</div>
       <div class="streak"><div id="streakFill" class="streak-fill"></div></div>
       <div id="hudPips" class="pips" aria-label="Question progress"></div>
-      <div style="display:flex;align-items:center;gap:8px;margin-top:6px">
-        <button id="themeToggle" class="btn btn--ghost" title="Toggle theme">🌙</button>
-      </div>
     </div>
     <div class="hud-timer"><span class="timer-label">Time</span><span id="timer" class="timer-value">0</span></div>
   </section>
@@ -45,13 +39,16 @@
     </div>
   </main>
 
-  <!-- Modules (no inline scripts) -->
-  <script type="module" src="/scripts/ui/streakBar.js?v=9003"></script>
-  <script type="module" src="/scripts/components/pips.js?v=9003"></script>
-  <script type="module" src="/scripts/components/avatarBadge.js?v=9003"></script>
-  <script type="module" src="/scripts/ai/questionEngine.js?v=9003"></script>
-  <script type="module" src="/scripts/entitlements.js?v=9003"></script>
-  <script type="module" src="/scripts/game.js?v=9003"></script>
-  <script type="module" src="/scripts/boot/themeToggle.js?v=9003"></script>
+  <!-- Firebase (CSP-safe order) -->
+  <script src="/scripts/firebase-config.js"></script>
+  <script type="module" src="/scripts/firebase-bridge.js?v=9004"></script>
+
+  <!-- Game modules -->
+  <script type="module" src="/scripts/ui/streakBar.js?v=9004"></script>
+  <script type="module" src="/scripts/components/pips.js?v=9004"></script>
+  <script type="module" src="/scripts/components/avatarBadge.js?v=9004"></script>
+  <script type="module" src="/scripts/ai/questionEngine.js?v=9004"></script>
+  <script type="module" src="/scripts/entitlements.js?v=9004"></script>
+  <script type="module" src="/scripts/game.js?v=9004"></script>
 </body>
 </html>
