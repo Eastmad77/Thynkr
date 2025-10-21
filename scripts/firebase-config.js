@@ -1,8 +1,7 @@
 // /scripts/firebase-config.js
-// Public Firebase Web SDK config for Whylee / DailyBrainBolt
-// Must load before any Firebase imports in HTML.
+// Must load BEFORE any Firebase modules on every page that uses Firebase.
 
-export const firebaseConfig = {
+window.__FIREBASE = {
   apiKey: "AIzaSyDfjcMzAl-Tll0xsHri91VHiMdTGmd7b2k",
   authDomain: "dailybrainbolt.firebaseapp.com",
   projectId: "dailybrainbolt",
