@@ -1,51 +1,40 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Whylee — Pro</title>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Whylee Pro</title>
 
   <link rel="stylesheet" href="/styles/brand.css?v=9005">
   <link rel="stylesheet" href="/styles/style.css?v=9005">
   <link rel="stylesheet" href="/styles/animations.css?v=9005">
 </head>
-<body class="bg-stars">
-  <header class="site-head">
-    <a class="logo" href="/"><img src="/media/icons/favicon-48.png" alt="Whylee"></a>
-    <nav class="nav">
+<body>
+  <header>
+    <h1>Whylee Pro</h1>
+    <nav>
       <a href="/menu.html">Menu</a>
-      <a href="/game.html">Play</a>
-      <a href="/leaderboard.html">Leaderboard</a>
+      <a href="/profile.html">Profile</a>
     </nav>
   </header>
 
   <main class="container">
-    <section class="hero">
-      <h1 class="h2">Upgrade to Whylee Pro</h1>
-      <p class="muted">Unlock exclusive avatars, new challenges, and daily reflections.</p>
-      <img src="/media/posters/v1/poster-07-pro.jpg" alt="Pro Poster" class="hero-img">
-      <div class="row" style="gap:12px;margin-top:12px">
-        <button id="subscribeMonthly" class="btn btn--brand">Subscribe Monthly</button>
-        <button id="subscribeYearly" class="btn btn--ghost">Subscribe Yearly</button>
-      </div>
-    </section>
-
-    <section class="features" style="margin-top:24px">
-      <h2 class="h4">Pro Features</h2>
-      <ul class="list">
-        <li>✨ Access to all Pro avatars (Wolf, Tiger, Dragon, Bear)</li>
-        <li>🧠 Advanced Challenge Mode</li>
-        <li>📈 XP bonus and early unlocks</li>
-        <li>🌙 Night mode + new themes</li>
-        <li>💬 Reflection prompts to boost retention</li>
-      </ul>
-    </section>
+    <div class="card">
+      <p>Unlock avatars, XP boosts and more.</p>
+      <button id="buy-monthly" class="btn-pro">Buy Monthly</button>
+      <button id="buy-yearly" class="btn-pro">Buy Yearly</button>
+    </div>
   </main>
 
-  <footer class="site-foot"><small>&copy; 2025 Whylee</small></footer>
+  <footer>© 2025 Whylee</footer>
 
-  <script src="/scripts/firebase-config.js?v=9005"></script>
+  <!-- Firebase boot (ORDER MATTERS) -->
+  <script type="module" src="/scripts/firebase-config.js?v=9005"></script>
   <script type="module" src="/scripts/firebase-bridge.js?v=9005"></script>
+
+  <!-- page logic -->
   <script type="module" src="/scripts/pro.js?v=9005"></script>
+  <script type="module" src="/scripts/billing/stripe.js?v=9005"></script>
+  <script type="module" src="/scripts/billing/play.js?v=9005"></script>
 </body>
 </html>
