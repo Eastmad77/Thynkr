@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "start": "npx serve .",
-    "build": "echo 'Static build complete'",
+    "build": "echo \"Static build complete\"",
     "posters:build": "node media/tools/render-posters.js"
   },
   "dependencies": {
@@ -18,7 +18,9 @@
     "netlify-cli": "^17.34.1",
     "rimraf": "^6.0.1"
   },
-  "engines": { "node": ">=18" },
+  "engines": {
+    "node": ">=18"
+  },
   "license": "MIT",
-  "keywords": ["pwa", "game", "firebase", "netlify", "stripe", "ai", "education"]
+  "keywords": ["pwa", "game", "firebase", "netlify", "stripe", "education", "cinematic"]
 }
