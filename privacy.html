@@ -1,43 +1,23 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Privacy Policy – Whylee</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Whylee — Privacy Policy</title>
 
-  <link rel="stylesheet" href="/styles/brand.css?v=9003">
-  <link rel="stylesheet" href="/styles/style.css?v=9003">
-  <link rel="stylesheet" href="/styles/animations.css?v=9003">
-
-  <script type="module" src="/scripts/boot/themeInit.js?v=9003"></script>
+  <link rel="stylesheet" href="/styles/brand.css?v=9005">
+  <link rel="stylesheet" href="/styles/style.css?v=9005">
 </head>
-<body>
-  <header class="site-head">
-    <nav class="nav">
-      <a href="/index.html" class="brand">Whylee</a>
-      <div class="spacer"></div>
-      <a href="/menu.html">Menu</a>
-      <a href="/pro.html">Pro</a>
-      <a href="/profile.html">Profile</a>
-      <button id="themeToggle" class="btn btn--ghost">🌙</button>
-    </nav>
-  </header>
-
-  <main class="container">
-    <article class="card">
-      <h1 class="h3">Privacy Policy</h1>
-      <p>Your privacy matters. We collect the minimum needed to run Whylee: account email, usage analytics, and purchase tokens where applicable.</p>
-      <h3>Data Collection</h3>
-      <p>Account: email and profile settings. Usage: gameplay stats to improve your experience. Purchases: tokens for subscription validation.</p>
-      <h3>Data Sharing</h3>
-      <p>We do not sell your data. Payment is handled by Stripe and Google Play Billing where applicable.</p>
-      <h3>Security</h3>
-      <p>Data is encrypted in transit. You can request deletion by contacting <a href="mailto:support@whylee.app">support@whylee.app</a>.</p>
-    </article>
+<body class="bg-stars">
+  <main class="container narrow">
+    <h1 class="h3">Privacy Policy</h1>
+    <p>We respect your privacy. Whylee collects minimal data for app functionality, such as anonymised analytics and progress storage through Firebase.</p>
+    <p>Your data is never sold or shared with third parties. You can request data deletion by contacting <a href="mailto:support@whylee.app">support@whylee.app</a>.</p>
   </main>
 
-  <footer class="site-foot">&copy; 2025 Whylee</footer>
+  <footer class="site-foot"><small>&copy; 2025 Whylee</small></footer>
 
-  <script type="module" src="/scripts/boot/themeToggle.js?v=9003"></script>
+  <script src="/scripts/firebase-config.js?v=9005"></script>
+  <script type="module" src="/scripts/firebase-bridge.js?v=9005"></script>
 </body>
 </html>
