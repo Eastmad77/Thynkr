@@ -1,33 +1,39 @@
 # ─────────────────────────────────────────────────────────
 # Netlify config for Whylee (PWA)
-# Fixes: CSP errors, MIME issues, Stripe bundling, SW caching
+# Safe TOML syntax (no inline tables), Firebase/Stripe ready
 # ─────────────────────────────────────────────────────────
 
 [build]
   publish = "."
   command = ""
-  environment = { 
-    SECRETS_SCAN_SMART_DETECTION_ENABLED = "false",
-    SECRETS_SCAN_SMART_DETECTION_OMIT_VALUES = "true"
-  }
 
+# Environment (separate table to avoid parser issues)
+[build.environment]
+  SECRETS_SCAN_SMART_DETECTION_ENABLED = "false"
+  SECRETS_SCAN_SMART_DETECTION_OMIT_VALUES = "true"
+
+# Functions bundling & shared includes
 [functions]
   node_bundler = "esbuild"
-  external_node_modules = ["stripe"]
+  external_node_modules = ["firebase-admin", "stripe"]
+  included_files = ["netlify/functions/_shared/**"]
 
-# Redirect SPA routes to index.html
+# ─────────────────────────────────────────────────────────
+# Redirects
+# ─────────────────────────────────────────────────────────
 [[redirects]]
   from = "/*"
   to   = "/index.html"
   status = 200
 
-# Well-known (assetlinks, etc.)
 [[redirects]]
   from = "/.well-known/*"
   to   = "/.well-known/:splat"
   status = 200
 
-# ── HTTP HEADERS ─────────────────────────────────────────
+# ─────────────────────────────────────────────────────────
+# Headers: caching
+# ─────────────────────────────────────────────────────────
 [[headers]]
   for = "/service-worker.js"
   [headers.values]
@@ -54,15 +60,16 @@
     Cache-Control = "public, max-age=31536000, immutable"
 
 [[headers]]
-  for = "/site.webmanifest"
-  [headers.values]
-    Cache-Control = "public, max-age=3600"
-
-[[headers]]
   for = "/media/icons/*"
   [headers.values]
     Cache-Control = "public, max-age=604800"
 
+[[headers]]
+  for = "/site.webmanifest"
+  [headers.values]
+    Cache-Control = "public, max-age=3600"
+
+# CORS for Netlify Functions
 [[headers]]
   for = "/.netlify/functions/*"
   [headers.values]
@@ -70,7 +77,10 @@
     Access-Control-Allow-Methods = "GET, POST, OPTIONS"
     Access-Control-Allow-Headers = "Content-Type, Authorization"
 
-# Expanded CSP
+# ─────────────────────────────────────────────────────────
+# Security headers + Content Security Policy
+# (kept as a single multiline basic string — parser safe)
+# ─────────────────────────────────────────────────────────
 [[headers]]
   for = "/*"
   [headers.values]
@@ -78,16 +88,34 @@
       default-src 'self';
       base-uri 'self';
       frame-ancestors 'self';
+
       img-src 'self' data: blob:;
       media-src 'self' data:;
-      style-src 'self' 'unsafe-inline';
-      script-src 'self' https://www.gstatic.com https://www.googletagmanager.com https://www.googleapis.com;
-      connect-src 'self' https://firestore.googleapis.com https://www.googleapis.com https://firebaseinstallations.googleapis.com https://www.gstatic.com;
       font-src 'self' data:;
       object-src 'none';
-      frame-src 'self' https://js.stripe.com;
       manifest-src 'self';
       worker-src 'self';
+      style-src 'self' 'unsafe-inline';
+
+      script-src
+        'self'
+        https://www.gstatic.com
+        https://www.googletagmanager.com
+        https://www.googleapis.com;
+
+      connect-src
+        'self'
+        https://www.gstatic.com
+        https://www.googleapis.com
+        https://firestore.googleapis.com
+        https://firebaseinstallations.googleapis.com
+        https://identitytoolkit.googleapis.com
+        https://securetoken.googleapis.com
+        https://storage.googleapis.com
+        https://www.google-analytics.com
+        https://api.stripe.com;
+
+      frame-src 'self' https://js.stripe.com;
     """
     Permissions-Policy = "geolocation=(), microphone=(), camera=(), interest-cohort=()"
     Referrer-Policy = "strict-origin-when-cross-origin"
