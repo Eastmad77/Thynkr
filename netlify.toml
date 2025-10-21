@@ -1,55 +1,46 @@
-[[headers]]
-  for = "/*"
-  [headers.values]
-    Content-Security-Policy = """
-      default-src 'self';
-      base-uri 'self';
-      frame-ancestors 'self';
+The Netlify deploy errored, with the following guidance provided:
 
-      img-src
-        'self'
-        data:
-        blob:
-        https://lh3.googleusercontent.com
-        https://firebasestorage.googleapis.com;
+**Diagnosis:**
+The build failed due to secrets scanning detecting secrets in the build process.
 
-      media-src 'self' data:;
-      font-src 'self' data:;
-      object-src 'none';
-      manifest-src 'self';
-      worker-src 'self';
+**Solution:**
+1. Verify that the secrets mentioned in the error message (FIREBASE_SERVICE_ACCOUNT, STRIPE_PRICE_MONTHLY, STRIPE_PRICE_YEARLY, STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET) are not exposed in any files or part of the build output.
+2. If these secrets are intended to be used, follow the instructions provided in the error message to prevent detection or exposure.
+3. Review the build scripts to ensure no secrets are hardcoded or exposed during the build process to avoid triggering the secrets scanning mechanism again.
 
-      style-src 'self' 'unsafe-inline';
+The relevant error logs are:
 
-      # JS may only load from self + Firebase loader + GTM + Stripe
-      script-src
-        'self'
-        https://www.gstatic.com
-        https://www.googletagmanager.com
-        https://www.google-analytics.com
-        https://js.stripe.com;
-
-      # Network/XHR/WebSocket endpoints used by Firebase/GA/Stripe
-      connect-src
-        'self'
-        https://www.gstatic.com
-        https://firestore.googleapis.com
-        https://www.googleapis.com
-        https://firebaseinstallations.googleapis.com
-        https://identitytoolkit.googleapis.com
-        https://securetoken.googleapis.com
-        https://firebasestorage.googleapis.com
-        https://www.google-analytics.com
-        https://js.stripe.com
-        https://api.stripe.com;
-
-      # Allow Stripe checkout frames and (optionally) Google auth popups
-      frame-src
-        'self'
-        https://js.stripe.com
-        https://accounts.google.com;
-    """
-    Permissions-Policy = "geolocation=(), microphone=(), camera=(), interest-cohort=()"
-    Referrer-Policy = "strict-origin-when-cross-origin"
-    X-Content-Type-Options = "nosniff"
-    X-Frame-Options = "SAMEORIGIN"
+Line 92: [91m​[39m
+Line 93: [91mTo prevent exposing secrets, the build will fail until these likely secret values are not found in build output or repo fil
+Line 94: [91m​[39m
+Line 95: [91mIf these are expected, use SECRETS_SCAN_SMART_DETECTION_OMIT_VALUES, or SECRETS_SCAN_SMART_DETECTION_ENABLED to prevent det
+Line 96: [91m​[39m
+Line 97: [91mFor more information on secrets scanning, see the Netlify Docs: https://ntl.fyi/configure-secrets-scanning[39m
+Line 98: [91m[1m​[22m[39m
+Line 99: [91m[1mSecrets scanning detected secrets in files during build.      [22m[39m
+Line 100: [91m[1m────────────────────────────────────────────────────────────────[22m[39m
+Line 101: ​
+Line 102:   [31m[1mError message[22m[39m
+Line 103:   Secrets scanning found secrets in build.
+Line 104: ​
+Line 105:   [31m[1mResolved config[22m[39m
+Line 106:   build:
+Line 107:     environment:
+Line 108:       - FIREBASE_SERVICE_ACCOUNT
+Line 109:       - STRIPE_PRICE_MONTHLY
+Line 110:       - STRIPE_PRICE_YEARLY
+Line 111:       - STRIPE_SECRET_KEY
+Line 112:       - STRIPE_WEBHOOK_SECRET
+Line 113:     publish: /opt/build/repo
+Line 114:     publishOrigin: ui
+Line 115:   functionsDirectory: /opt/build/repo/netlify/functions
+Line 116:   headers:
+Line 117:     - for: /*
+      values:
+        Content-Security-Policy: |-
+          default-src 'self';
+                base-uri 'self';
+ 
+Line 118: Build failed due to a user error: Build script returned non-zero exit code: 2
+Line 119: Failing build: Failed to build site
+Line 120: Finished processing build request in 27.697s
