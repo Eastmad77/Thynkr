@@ -1,46 +1,42 @@
 # ─────────────────────────────────────────────────────────
 # Netlify config for Whylee (PWA)
-# Safe TOML syntax, Firebase/Stripe/CDN CSP, long-term caching
+# - Static publish (no framework build)
+# - Functions bundled with esbuild
+# - Strong CSP compatible with Firebase + Stripe
+# - Long-term caching for static assets
 # ─────────────────────────────────────────────────────────
 
 [build]
   publish = "."
   command = ""
 
-[build.environment]
-  SECRETS_SCAN_SMART_DETECTION_ENABLED = "false"
-  SECRETS_SCAN_SMART_DETECTION_OMIT_VALUES = "true"
-
 [functions]
   node_bundler = "esbuild"
-  external_node_modules = ["firebase-admin", "stripe"]
-  included_files = ["netlify/functions/_shared/**"]
+  external_node_modules = ["stripe"]
 
-# SPA route handling
+# SPA routing (let the app handle client-side routes)
 [[redirects]]
   from = "/*"
   to   = "/index.html"
   status = 200
 
-# Well-known
+# Allow well-known (e.g., assetlinks.json)
 [[redirects]]
   from = "/.well-known/*"
   to   = "/.well-known/:splat"
   status = 200
 
-# Caching
+# ── Cache headers ────────────────────────────────────────
+
+# Service worker: never cache aggressively
 [[headers]]
   for = "/service-worker.js"
   [headers.values]
     Cache-Control = "no-cache, no-store, must-revalidate"
 
+# Immutable static assets (you already use ?v= cache-busters)
 [[headers]]
-  for = "/css/*"
-  [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
-
-[[headers]]
-  for = "/js/*"
+  for = "/styles/*"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
 
@@ -55,43 +51,47 @@
     Cache-Control = "public, max-age=31536000, immutable"
 
 [[headers]]
-  for = "/media/icons/*"
-  [headers.values]
-    Cache-Control = "public, max-age=604800"
-
-[[headers]]
   for = "/site.webmanifest"
   [headers.values]
     Cache-Control = "public, max-age=3600"
 
-# CORS for Functions
+# CORS for Netlify Functions (frontend ↔ functions)
 [[headers]]
   for = "/.netlify/functions/*"
   [headers.values]
-    Access-Control-Allow-Origin = "*"
+    Access-Control-Allow-Origin  = "*"
     Access-Control-Allow-Methods = "GET, POST, OPTIONS"
     Access-Control-Allow-Headers = "Content-Type, Authorization"
 
-# Security + CSP (NO comments inside the string)
+# ── Security headers (CSP, etc.) ────────────────────────
 [[headers]]
   for = "/*"
   [headers.values]
+    # NOTE: Keep this on one line or a single multi-line block without '#' comments inside.
     Content-Security-Policy = """
       default-src 'self';
       base-uri 'self';
       frame-ancestors 'self';
       img-src 'self' data: blob:;
-      media-src 'self' data:;
+      media-src 'self' data: blob:;
+      style-src 'self' 'unsafe-inline';
+      script-src 'self' https://www.gstatic.com https://www.googletagmanager.com;
+      connect-src 'self'
+        https://firestore.googleapis.com
+        https://firebasestorage.googleapis.com
+        https://www.googleapis.com
+        https://firebaseinstallations.googleapis.com
+        https://identitytoolkit.googleapis.com
+        https://securetoken.googleapis.com
+        https://www.google-analytics.com
+        https://api.stripe.com;
       font-src 'self' data:;
       object-src 'none';
+      frame-src 'self' https://js.stripe.com;
       manifest-src 'self';
       worker-src 'self';
-      style-src 'self' 'unsafe-inline';
-      script-src 'self' https://www.gstatic.com https://www.googleapis.com https://www.googletagmanager.com;
-      connect-src 'self' https://www.gstatic.com https://www.googleapis.com https://firestore.googleapis.com https://firebaseinstallations.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://storage.googleapis.com https://www.google-analytics.com https://api.stripe.com;
-      frame-src 'self' https://js.stripe.com;
     """
-    Permissions-Policy = "geolocation=(), microphone=(), camera=(), interest-cohort=()"
     Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "geolocation=(), microphone=(), camera=(), interest-cohort=()"
     X-Content-Type-Options = "nosniff"
     X-Frame-Options = "SAMEORIGIN"
