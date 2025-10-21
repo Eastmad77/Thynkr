@@ -1,6 +1,6 @@
 // /scripts/firebase-config.js
-// Public Firebase Web SDK config for Whylee / DailyBrainBolt
-// Must be loaded BEFORE /scripts/firebase-bridge.js on every page that uses Firebase.
+// Public Firebase Web SDK config for Whylee / DailyBrainBolt.
+// IMPORTANT: we both export AND attach it to window so other modules can read it.
 
 export const firebaseConfig = {
   apiKey: "AIzaSyDfjcMzAl-Tll0xsHri91VHiMdTGmd7b2k",
@@ -12,5 +12,5 @@ export const firebaseConfig = {
   measurementId: "G-M0P3TSCF8P"
 };
 
-// ALSO expose globally so non-bundled pages and bridge can see it.
-try { window.firebaseConfig = firebaseConfig; } catch (e) {}
+// Make it visible to any script that expects a global:
+window.firebaseConfig = firebaseConfig;
