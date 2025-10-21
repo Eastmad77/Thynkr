@@ -1,40 +1,43 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Whylee — Menu</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Menu – Whylee</title>
 
   <link rel="stylesheet" href="/styles/brand.css?v=9005">
   <link rel="stylesheet" href="/styles/style.css?v=9005">
   <link rel="stylesheet" href="/styles/animations.css?v=9005">
 </head>
-<body class="bg-stars">
-  <header class="site-head">
-    <a class="logo" href="/"><img src="/media/icons/favicon-48.png" alt="Whylee"></a>
-    <nav class="nav">
+<body>
+  <header>
+    <h1>Menu</h1>
+    <nav>
+      <a href="/index.html">Home</a>
       <a href="/game.html">Play</a>
-      <a href="/leaderboard.html">Leaderboard</a>
-      <a href="/pro.html" class="pill pill--gold">Get Pro</a>
+      <a href="/pro.html">Pro</a>
       <a href="/profile.html">Profile</a>
     </nav>
   </header>
 
   <main class="container">
-    <h1 class="h3">Main Menu</h1>
-    <div class="grid" style="gap:16px;margin-top:16px">
-      <a class="card" href="/game.html"><h3>🎯 Start Game</h3><p>Begin your daily challenge.</p></a>
-      <a class="card" href="/leaderboard.html"><h3>🏆 Leaderboard</h3><p>See who’s leading this week.</p></a>
-      <a class="card" href="/pro.html"><h3>✨ Pro Mode</h3><p>Unlock new avatars and features.</p></a>
-      <a class="card" href="/profile.html"><h3>👤 Profile</h3><p>Customise your look and emoji.</p></a>
+    <div class="card">
+      <ul class="menu-list">
+        <li><a class="btn" href="/game.html">Start Game</a></li>
+        <li><a class="btn" href="/leaderboard.html">Leaderboard</a></li>
+        <li><a class="btn" href="/reflections.html">Reflections</a></li>
+        <li><a class="btn" href="/pro.html">Go Pro</a></li>
+      </ul>
     </div>
   </main>
 
-  <footer class="site-foot">
-    <small>&copy; 2025 Whylee</small>
-  </footer>
+  <footer>© 2025 Whylee</footer>
 
-  <script src="/scripts/firebase-config.js?v=9005"></script>
+  <!-- Firebase boot (ORDER MATTERS) -->
+  <script type="module" src="/scripts/firebase-config.js?v=9005"></script>
   <script type="module" src="/scripts/firebase-bridge.js?v=9005"></script>
+
+  <!-- page logic -->
+  <script type="module" src="/scripts/menu.js?v=9005"></script>
 </body>
 </html>
