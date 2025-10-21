@@ -1,62 +1,55 @@
-/* service-worker.js (v3) — same-origin only, Firebase/CDN-safe) */
-
-const CACHE_NAME = 'whylee-v3';
-const STATIC_ASSETS = [
-  '/', '/index.html', '/game.html', '/menu.html',
-  '/styles/brand.css', '/styles/style.css', '/styles/animations.css',
-  '/styles/hud.css', '/styles/streakBar.css',
-  '/scripts/boot/themeInit.js', '/scripts/boot/themeToggle.js',
+// /service-worker.js
+const CACHE_NAME = "whylee-app-v9";
+const AVOID_HOSTS = [
+  "www.gstatic.com",
+  "www.googleapis.com",
+  "firestore.googleapis.com",
+  "firebaseinstallations.googleapis.com",
+  "identitytoolkit.googleapis.com",
+  "securetoken.googleapis.com",
+  "storage.googleapis.com",
+  "js.stripe.com",
+  "www.google-analytics.com"
 ];
 
-// Only cache same-origin requests
-function isSameOrigin(url) {
-  try { return new URL(url).origin === self.location.origin; } catch { return false; }
-}
-
-self.addEventListener('install', (event) => {
-  event.waitUntil((async () => {
-    const cache = await caches.open(CACHE_NAME);
-    try { await cache.addAll(STATIC_ASSETS); } catch (e) { /* ignore */ }
-    self.skipWaiting();
-  })());
+// Install (optional precache kept minimal)
+self.addEventListener("install", (event) => {
+  event.waitUntil(self.skipWaiting());
 });
 
-self.addEventListener('activate', (event) => {
-  event.waitUntil((async () => {
-    const names = await caches.keys();
-    await Promise.all(names.map(n => (n === CACHE_NAME ? null : caches.delete(n))));
-    self.clients.claim();
-  })());
+self.addEventListener("activate", (event) => {
+  event.waitUntil(self.clients.claim());
 });
 
-// Cache-first for same-origin GET; bypass cross-origin (e.g., gstatic firebase)
-self.addEventListener('fetch', (event) => {
-  const req = event.request;
+// Network strategy: bypass external CDNs; cache-first for own assets
+self.addEventListener("fetch", (event) => {
+  const url = new URL(event.request.url);
 
-  // Only GET and only same-origin
-  if (req.method !== 'GET' || !isSameOrigin(req.url)) {
-    return; // let the browser handle it (no SW interception)
+  // Skip non-GET
+  if (event.request.method !== "GET") return;
+
+  // Bypass Firebase/Stripe/GA CDNs to avoid CSP violations and opaque caching
+  if (AVOID_HOSTS.includes(url.hostname)) {
+    return; // let the request go to network untouched
   }
 
-  event.respondWith((async () => {
-    const cache = await caches.open(CACHE_NAME);
-    const cached = await cache.match(req);
-    if (cached) return cached;
-
-    try {
-      const res = await fetch(req);
-      // Optionally cache HTML/CSS/JS/Images served from same origin
-      if (res.ok && (req.destination === 'document' || req.destination === 'style' || req.destination === 'script' || req.destination === 'image')) {
-        cache.put(req, res.clone());
+  // Cache-first for same-origin assets
+  if (url.origin === location.origin) {
+    event.respondWith((async () => {
+      const cache = await caches.open(CACHE_NAME);
+      const cached = await cache.match(event.request);
+      if (cached) return cached;
+      try {
+        const resp = await fetch(event.request);
+        // Only cache basic, same-origin GETs
+        if (resp && resp.status === 200 && resp.type === "basic") {
+          cache.put(event.request, resp.clone());
+        }
+        return resp;
+      } catch (_) {
+        // Optionally return a fallback page/asset here
+        return new Response("", { status: 504 });
       }
-      return res;
-    } catch (e) {
-      // Optional: offline fallback for nav requests
-      if (req.mode === 'navigate') {
-        const offline = await cache.match('/index.html');
-        if (offline) return offline;
-      }
-      throw e;
-    }
-  })());
+    })());
+  }
 });
