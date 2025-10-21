@@ -1,39 +1,34 @@
 # ─────────────────────────────────────────────────────────
 # Netlify config for Whylee (PWA)
-# Safe TOML syntax (no inline tables), Firebase/Stripe ready
+# Safe TOML syntax, Firebase/Stripe/CDN CSP, long-term caching
 # ─────────────────────────────────────────────────────────
 
 [build]
   publish = "."
   command = ""
 
-# Environment (separate table to avoid parser issues)
 [build.environment]
   SECRETS_SCAN_SMART_DETECTION_ENABLED = "false"
   SECRETS_SCAN_SMART_DETECTION_OMIT_VALUES = "true"
 
-# Functions bundling & shared includes
 [functions]
   node_bundler = "esbuild"
   external_node_modules = ["firebase-admin", "stripe"]
   included_files = ["netlify/functions/_shared/**"]
 
-# ─────────────────────────────────────────────────────────
-# Redirects
-# ─────────────────────────────────────────────────────────
+# SPA route handling
 [[redirects]]
   from = "/*"
   to   = "/index.html"
   status = 200
 
+# Well-known
 [[redirects]]
   from = "/.well-known/*"
   to   = "/.well-known/:splat"
   status = 200
 
-# ─────────────────────────────────────────────────────────
-# Headers: caching
-# ─────────────────────────────────────────────────────────
+# Caching
 [[headers]]
   for = "/service-worker.js"
   [headers.values]
@@ -69,7 +64,7 @@
   [headers.values]
     Cache-Control = "public, max-age=3600"
 
-# CORS for Netlify Functions
+# CORS for Functions
 [[headers]]
   for = "/.netlify/functions/*"
   [headers.values]
@@ -77,10 +72,7 @@
     Access-Control-Allow-Methods = "GET, POST, OPTIONS"
     Access-Control-Allow-Headers = "Content-Type, Authorization"
 
-# ─────────────────────────────────────────────────────────
-# Security headers + Content Security Policy
-# (kept as a single multiline basic string — parser safe)
-# ─────────────────────────────────────────────────────────
+# Security + CSP (NO comments inside the string)
 [[headers]]
   for = "/*"
   [headers.values]
@@ -88,7 +80,6 @@
       default-src 'self';
       base-uri 'self';
       frame-ancestors 'self';
-
       img-src 'self' data: blob:;
       media-src 'self' data:;
       font-src 'self' data:;
@@ -96,25 +87,8 @@
       manifest-src 'self';
       worker-src 'self';
       style-src 'self' 'unsafe-inline';
-
-      script-src
-        'self'
-        https://www.gstatic.com
-        https://www.googletagmanager.com
-        https://www.googleapis.com;
-
-      connect-src
-        'self'
-        https://www.gstatic.com
-        https://www.googleapis.com
-        https://firestore.googleapis.com
-        https://firebaseinstallations.googleapis.com
-        https://identitytoolkit.googleapis.com
-        https://securetoken.googleapis.com
-        https://storage.googleapis.com
-        https://www.google-analytics.com
-        https://api.stripe.com;
-
+      script-src 'self' https://www.gstatic.com https://www.googleapis.com https://www.googletagmanager.com;
+      connect-src 'self' https://www.gstatic.com https://www.googleapis.com https://firestore.googleapis.com https://firebaseinstallations.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://storage.googleapis.com https://www.google-analytics.com https://api.stripe.com;
       frame-src 'self' https://js.stripe.com;
     """
     Permissions-Policy = "geolocation=(), microphone=(), camera=(), interest-cohort=()"
