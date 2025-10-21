@@ -6,7 +6,8 @@
   "scripts": {
     "start": "npx serve .",
     "build": "echo \"Static build complete\"",
-    "posters:build": "node media/tools/render-posters.js"
+    "posters:build": "node media/tools/render-posters.js",
+    "clean": "rimraf node_modules .netlify .cache"
   },
   "dependencies": {
     "firebase-admin": "^12.5.0",
@@ -22,5 +23,13 @@
     "node": ">=18"
   },
   "license": "MIT",
-  "keywords": ["pwa", "game", "firebase", "netlify", "stripe", "education", "cinematic"]
+  "keywords": [
+    "pwa",
+    "game",
+    "firebase",
+    "netlify",
+    "stripe",
+    "education",
+    "cinematic"
+  ]
 }
