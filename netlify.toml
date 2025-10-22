@@ -1,29 +1,27 @@
-# ─────────────────────────────────────────────────────────
-# Netlify config for Whylee (PWA)
-# Static site; bundles Functions with esbuild
-# ─────────────────────────────────────────────────────────
+# netlify.toml
+# Whylee – Netlify configuration
 
 [build]
   publish = "."
-  command = "npm install"
+  command = "npm install --no-audit --fund=false"
 
 [functions]
   node_bundler = "esbuild"
   external_node_modules = ["stripe", "firebase-admin"]
+  included_files = ["netlify/functions/**"]
 
-# SPA routing
+# ---- SPA routing ----
 [[redirects]]
   from = "/*"
   to   = "/index.html"
   status = 200
 
-# Service worker: never cache aggressively
+# ---- Headers ----
 [[headers]]
   for = "/service-worker.js"
   [headers.values]
     Cache-Control = "no-cache, no-store, must-revalidate"
 
-# Long-lived assets
 [[headers]]
   for = "/styles/*"
   [headers.values]
@@ -44,7 +42,6 @@
   [headers.values]
     Cache-Control = "public, max-age=3600"
 
-# API (functions) CORS
 [[headers]]
   for = "/.netlify/functions/*"
   [headers.values]
@@ -64,7 +61,15 @@
       media-src 'self' data: blob:;
       style-src 'self' 'unsafe-inline';
       script-src 'self' https://www.gstatic.com https://www.googletagmanager.com;
-      connect-src 'self' https://firestore.googleapis.com https://firebasestorage.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://firebaseinstallations.googleapis.com https://www.googleapis.com https://api.stripe.com https://www.gstatic.com;
+      connect-src 'self'
+        https://www.gstatic.com
+        https://firestore.googleapis.com
+        https://firebasestorage.googleapis.com
+        https://identitytoolkit.googleapis.com
+        https://securetoken.googleapis.com
+        https://firebaseinstallations.googleapis.com
+        https://www.googleapis.com
+        https://api.stripe.com;
       font-src 'self' data:;
       object-src 'none';
       frame-src 'self' https://js.stripe.com;
