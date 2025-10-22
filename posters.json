@@ -1,5 +1,5 @@
 {
-  "v": 3,
+  "v": 4,
   "items": [
     {
       "id": "poster-start",
@@ -50,6 +50,11 @@
       "id": "poster-brand",
       "src": "/media/posters/V1/poster-10-brand.jpg",
       "thumb": "/media/posters/V1/poster-10-brand.jpg"
+    },
+    {
+      "id": "poster-success",
+      "src": "/media/posters/V1/poster-success.jpg",
+      "thumb": "/media/posters/V1/poster-success.jpg"
     },
     {
       "id": "poster-gameover",
