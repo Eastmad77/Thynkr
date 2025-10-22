@@ -1,7 +1,8 @@
-const started = Date.now();
-const json = (s, d) => ({ statusCode: s, headers: { "content-type": "application/json" }, body: JSON.stringify(d) });
-
+// netlify/functions/health.js
 export async function handler() {
-  const now = Date.now();
-  return json(200, { ok: true, service: "whylee", uptimeSec: Math.round((now - started) / 1000), timestamp: new Date(now).toISOString() });
+  return {
+    statusCode: 200,
+    headers: { 'content-type': 'application/json; charset=utf-8' },
+    body: JSON.stringify({ ok: true, service: 'whylee', ts: Date.now() }),
+  };
 }
