@@ -1,6 +1,6 @@
 [build]
-  publish = "."
   command = "npm install"
+  publish = "."
 
 [functions]
   node_bundler = "esbuild"
@@ -8,10 +8,9 @@
 
 [[redirects]]
   from = "/*"
-  to   = "/index.html"
+  to = "/index.html"
   status = 200
 
-# Headers
 [[headers]]
   for = "/service-worker.js"
   [headers.values]
@@ -44,7 +43,6 @@
     Access-Control-Allow-Methods = "GET, POST, OPTIONS"
     Access-Control-Allow-Headers = "Content-Type, Authorization"
 
-# CSP (allows Firebase + Stripe)
 [[headers]]
   for = "/*"
   [headers.values]
