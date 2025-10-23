@@ -1,40 +1,36 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="system">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Whylee – Daily Brain Bolt</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Whylee – Daily BrainBolt</title>
 
-  <link rel="stylesheet" href="/styles/brand.css?v=9007">
-  <link rel="stylesheet" href="/styles/style.css?v=9007">
-  <link rel="stylesheet" href="/styles/animations.css?v=9007">
+  <link rel="stylesheet" href="/styles/brand.css?v=9007"/>
+  <link rel="stylesheet" href="/styles/style.css?v=9007"/>
+  <link rel="stylesheet" href="/styles/animations.css?v=9007"/>
 </head>
 <body>
   <header class="site-header">
-    <h1>Whylee</h1>
-    <nav>
+    <a class="brand" href="/index.html">Whylee</a>
+    <nav class="nav">
       <a href="/menu.html">Menu</a>
-      <a href="/game.html">Play</a>
-      <a href="/pro.html">Pro</a>
+      <a href="/leaderboard.html">Leaderboard</a>
       <a href="/profile.html">Profile</a>
+      <a href="/pro.html">Pro</a>
     </nav>
   </header>
 
   <main class="container">
-    <section class="hero card">
-      <h2>Daily brain sprints.</h2>
-      <p>Sharpen memory, focus and speed—one minute at a time.</p>
-      <p><a class="btn-pro" href="/game.html">Start</a></p>
-    </section>
+    <!-- Your existing homepage content here -->
+    <h1>Daily BrainBolt</h1>
+    <p>Sharpen your mind every day.</p>
   </main>
-
-  <footer class="site-footer">© 2025 Whylee</footer>
 
   <!-- Firebase boot (ORDER MATTERS) -->
   <script type="module" src="/scripts/firebase-config.js?v=9007"></script>
   <script type="module" src="/scripts/firebase-bridge.js?v=9007"></script>
 
-  <!-- page logic that imports from /scripts/firebase-bridge.js AFTER the two above -->
+  <!-- Page logic -->
   <script type="module" src="/scripts/app.js?v=9007"></script>
 </body>
 </html>
