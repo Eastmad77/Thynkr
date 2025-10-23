@@ -53,3 +53,5 @@ netlify.toml.local.bak
 
 # Ignore Netlify local folders
 .netlify/
+
+!.netlify/secret-allowlist.json
