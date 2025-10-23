@@ -1,32 +1,36 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="en" data-theme="system">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Whylee — Contact</title>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Contact – Whylee</title>
 
-  <link rel="stylesheet" href="/styles/brand.css?v=9006">
-  <link rel="stylesheet" href="/styles/style.css?v=9006">
+  <link rel="stylesheet" href="/styles/brand.css?v=9007">
+  <link rel="stylesheet" href="/styles/style.css?v=9007">
+  <link rel="stylesheet" href="/styles/animations.css?v=9007">
 </head>
-<body class="bg-stars">
-  <header class="site-head">
-    <a class="logo" href="/"><img src="/media/icons/favicon-48.png" alt="Whylee"></a>
+<body>
+  <header class="site-header">
+    <a class="brand" href="/index.html">Whylee</a>
     <nav class="nav">
       <a href="/menu.html">Menu</a>
-      <a href="/game.html">Play</a>
+      <a href="/leaderboard.html">Leaderboard</a>
+      <a href="/profile.html">Profile</a>
       <a href="/pro.html">Pro</a>
     </nav>
   </header>
 
   <main class="container narrow">
-    <h1 class="h3">Contact</h1>
-    <p class="muted">For support, feedback, or collaboration, email us directly.</p>
-    <p><a href="mailto:support@whylee.app" class="btn btn--ghost">support@whylee.app</a></p>
+    <h1>Contact Us</h1>
+    <p>If you need help or want to share feedback, we’d love to hear from you.</p>
+    <div class="card">
+      <ul>
+        <li>Email: <a href="mailto:support@dailybrainbolt.com">support@dailybrainbolt.com</a></li>
+        <li>Website: <a href="https://dailybrainbolt.com">dailybrainbolt.com</a></li>
+      </ul>
+    </div>
   </main>
 
-  <footer class="site-foot"><small>&copy; 2025 Whylee</small></footer>
-
-  <script src="/scripts/firebase-config.js?v=9006"></script>
-  <script type="module" src="/scripts/firebase-bridge.js?v=9005"></script>
+  <!-- No Firebase required here; add if you later need auth state -->
 </body>
 </html>
