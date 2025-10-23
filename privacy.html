@@ -1,23 +1,42 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="en" data-theme="system">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Whylee — Privacy Policy</title>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Privacy Policy – Whylee</title>
 
-  <link rel="stylesheet" href="/styles/brand.css?v=9006">
-  <link rel="stylesheet" href="/styles/style.css?v=9006">
+  <link rel="stylesheet" href="/styles/brand.css?v=9007">
+  <link rel="stylesheet" href="/styles/style.css?v=9007">
+  <link rel="stylesheet" href="/styles/animations.css?v=9007">
 </head>
-<body class="bg-stars">
-  <main class="container narrow">
-    <h1 class="h3">Privacy Policy</h1>
-    <p>We respect your privacy. Whylee collects minimal data for app functionality, such as anonymised analytics and progress storage through Firebase.</p>
-    <p>Your data is never sold or shared with third parties. You can request data deletion by contacting <a href="mailto:support@whylee.app">support@whylee.app</a>.</p>
+<body>
+  <header class="site-header">
+    <a class="brand" href="/index.html">Whylee</a>
+    <nav class="nav">
+      <a href="/menu.html">Menu</a>
+      <a href="/leaderboard.html">Leaderboard</a>
+      <a href="/profile.html">Profile</a>
+      <a href="/pro.html">Pro</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <h1>Privacy Policy</h1>
+    <div class="card">
+      <p>Last updated: 2025-10-21</p>
+      <p>We collect minimal data to provide and improve the service.</p>
+      <h2>Data We Process</h2>
+      <ul>
+        <li>Account info (email) for sign-in</li>
+        <li>Gameplay stats to power leaderboards and streaks</li>
+      </ul>
+      <h2>Third Parties</h2>
+      <p>We use Firebase and Stripe. See their policies for details.</p>
+      <h2>Contact</h2>
+      <p>Have questions? <a href="/contact.html">Contact us</a>.</p>
+    </div>
   </main>
 
-  <footer class="site-foot"><small>&copy; 2025 Whylee</small></footer>
-
-  <script src="/scripts/firebase-config.js?v=9006"></script>
-  <script type="module" src="/scripts/firebase-bridge.js?v=9006"></script>
+  <!-- Static page; Firebase not required -->
 </body>
 </html>
