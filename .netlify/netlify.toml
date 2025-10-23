@@ -1,0 +1,93 @@
+functionsDirectory = "C:\\Users\\Brendan\\Documents\\Whylee\\netlify\\functions"
+functionsDirectoryOrigin = "default"
+headersOrigin = "config"
+redirectsOrigin = "config"
+plugins = []
+
+[build]
+publish = "C:\\Users\\Brendan\\Documents\\Whylee"
+publishOrigin = "config"
+commandOrigin = "config"
+command = "npm install --no-audit --fund=false"
+functions = "C:\\Users\\Brendan\\Documents\\Whylee\\netlify\\functions"
+
+[build.environment]
+
+[build.processing]
+
+[build.processing.css]
+
+[build.processing.html]
+
+[build.processing.images]
+
+[build.processing.js]
+
+[build.services]
+
+[functions]
+
+[functions."*"]
+included_files = ["netlify/functions/**"]
+external_node_modules = ["stripe", "firebase-admin"]
+node_bundler = "esbuild"
+
+[[headers]]
+for = "/service-worker.js"
+
+[headers.values]
+Cache-Control = "no-cache, no-store, must-revalidate"
+
+[[headers]]
+for = "/styles/*"
+
+[headers.values]
+Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+for = "/scripts/*"
+
+[headers.values]
+Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+for = "/media/*"
+
+[headers.values]
+Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+for = "/site.webmanifest"
+
+[headers.values]
+Cache-Control = "public, max-age=3600"
+
+[[headers]]
+for = "/.netlify/functions/*"
+
+[headers.values]
+Access-Control-Allow-Origin = "*"
+Access-Control-Allow-Methods = "GET, POST, OPTIONS"
+Access-Control-Allow-Headers = "Content-Type, Authorization"
+
+[[headers]]
+for = "/*"
+
+[headers.values]
+Content-Security-Policy = "default-src 'self';\r\n      base-uri 'self';\r\n      frame-ancestors 'self';\r\n      img-src 'self' data: blob:;\r\n      media-src 'self' data: blob:;\r\n      style-src 'self' 'unsafe-inline';\r\n      script-src 'self' https://www.gstatic.com https://www.googletagmanager.com;\r\n      connect-src 'self'\r\n        https://www.gstatic.com\r\n        https://firestore.googleapis.com\r\n        https://firebasestorage.googleapis.com\r\n        https://identitytoolkit.googleapis.com\r\n        https://securetoken.googleapis.com\r\n        https://firebaseinstallations.googleapis.com\r\n        https://www.googleapis.com\r\n        https://api.stripe.com;\r\n      font-src 'self' data:;\r\n      object-src 'none';\r\n      frame-src 'self' https://js.stripe.com;\r\n      manifest-src 'self';\r\n      worker-src 'self';"
+Permissions-Policy = "geolocation=(), microphone=(), camera=()"
+Referrer-Policy = "strict-origin-when-cross-origin"
+X-Content-Type-Options = "nosniff"
+X-Frame-Options = "SAMEORIGIN"
+
+[[redirects]]
+from = "/*"
+to = "/index.html"
+status = 200.0
+force = false
+
+[redirects.query]
+
+[redirects.conditions]
+
+[redirects.headers]
