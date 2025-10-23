@@ -1,95 +1,44 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="system">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Password Reset – Whylee</title>
 
-  <!-- Whylee Theming -->
-  <link rel="stylesheet" href="/styles/brand.css?v=8000">
-  <link rel="stylesheet" href="/styles/style.css?v=8000">
-  <link rel="stylesheet" href="/styles/animations.css?v=8000">
-
-  <style>
-    body {
-      background: radial-gradient(ellipse at top, #0A0E17 0%, #000 100%);
-      color: var(--whylee-text);
-      font-family: "Inter", system-ui, sans-serif;
-    }
-    header, footer {
-      text-align: center;
-      padding: 1rem 0;
-    }
-    .container.narrow {
-      max-width: 400px;
-      margin: 4rem auto;
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 12px;
-      padding: 2rem;
-      box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
-    }
-    .btn {
-      width: 100%;
-      margin-top: 1rem;
-      background: var(--whylee-accent);
-      border: none;
-      color: #000;
-      font-weight: bold;
-      padding: 0.75rem;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: 0.25s;
-    }
-    .btn:hover {
-      filter: brightness(1.2);
-    }
-    #resetMessage {
-      margin-top: 1rem;
-      font-weight: 500;
-      text-align: center;
-    }
-    a {
-      color: var(--whylee-accent);
-      text-decoration: none;
-    }
-  </style>
+  <link rel="stylesheet" href="/styles/brand.css?v=9007" />
+  <link rel="stylesheet" href="/styles/style.css?v=9007" />
+  <link rel="stylesheet" href="/styles/animations.css?v=9007" />
 </head>
 <body>
-  <header>
-    <h1>Password Reset</h1>
-    <nav>
-      <a href="index.html">Home</a> |
-      <a href="menu.html">Menu</a> |
-      <a href="pro.html">Pro</a> |
-      <a href="auth.html">Sign In</a>
+  <header class="site-header">
+    <a class="brand" href="/index.html">Whylee</a>
+    <nav class="nav">
+      <a href="/sign-in.html">Sign In</a>
+      <a href="/profile.html">Profile</a>
+      <a href="/pro.html">Pro</a>
     </nav>
   </header>
 
   <main class="container narrow">
     <div class="card auth-card">
-      <h2>Reset Your Password</h2>
-      <p>Enter your registered email and we’ll send a link to reset your password.</p>
+      <h1>Password Reset</h1>
+      <p class="muted">Enter your account email and we’ll send a reset link.</p>
 
-      <form id="resetForm">
+      <form id="resetForm" novalidate>
         <label for="email">Email</label>
-        <input type="email" id="email" placeholder="you@example.com" required>
+        <input id="email" type="email" placeholder="you@example.com" required autocomplete="username" />
         <button type="submit" class="btn">Send Reset Link</button>
       </form>
 
-      <div id="resetMessage" class="hidden"></div>
-
-      <p style="margin-top:1rem; text-align:center;">
-        <a href="auth.html">Return to Sign In</a>
-      </p>
+      <p id="resetStatus" class="muted" aria-live="polite"></p>
     </div>
   </main>
 
-  <footer>
-    &copy; 2025 Whylee | Secure Access Portal
-  </footer>
+  <!-- Firebase boot (ORDER MATTERS) -->
+  <script type="module" src="/scripts/firebase-config.js?v=9007"></script>
+  <script type="module" src="/scripts/firebase-bridge.js?v=9007"></script>
 
-  <!-- Whylee Firebase Auth Integration -->
-  <script type="module" src="/scripts/auth.js?v=8000"></script>
+  <!-- Page logic -->
+  <script type="module" src="/scripts/reset.js?v=9007"></script>
 </body>
 </html>
