@@ -1,22 +1,30 @@
-# netlify.toml
-# Whylee – Netlify configuration
-
 [build]
   publish = "."
-  command = "npm install --no-audit --fund=false"
+  command = "npm install"   # local success used npm install, not npm ci
+
+[build.environment]
+  NODE_VERSION = "18"       # match your local Node 18
+  NPM_FLAGS = "--no-audit --no-fund"
 
 [functions]
   node_bundler = "esbuild"
-  external_node_modules = ["stripe", "firebase-admin"]
-  included_files = ["netlify/functions/**"]
+  external_node_modules = ["stripe","firebase-admin"]
 
-# ---- SPA routing ----
+# SPA routing
 [[redirects]]
   from = "/*"
-  to   = "/index.html"
+  to = "/index.html"
   status = 200
 
-# ---- Headers ----
+# CORS for functions
+[[headers]]
+  for = "/.netlify/functions/*"
+  [headers.values]
+    Access-Control-Allow-Origin = "*"
+    Access-Control-Allow-Methods = "GET, POST, OPTIONS"
+    Access-Control-Allow-Headers = "Content-Type, Authorization"
+
+# Caching
 [[headers]]
   for = "/service-worker.js"
   [headers.values]
@@ -42,14 +50,7 @@
   [headers.values]
     Cache-Control = "public, max-age=3600"
 
-[[headers]]
-  for = "/.netlify/functions/*"
-  [headers.values]
-    Access-Control-Allow-Origin = "*"
-    Access-Control-Allow-Methods = "GET, POST, OPTIONS"
-    Access-Control-Allow-Headers = "Content-Type, Authorization"
-
-# Security headers + CSP
+# Security headers + CSP (keeps Firebase/Stripe working)
 [[headers]]
   for = "/*"
   [headers.values]
@@ -61,15 +62,7 @@
       media-src 'self' data: blob:;
       style-src 'self' 'unsafe-inline';
       script-src 'self' https://www.gstatic.com https://www.googletagmanager.com;
-      connect-src 'self'
-        https://www.gstatic.com
-        https://firestore.googleapis.com
-        https://firebasestorage.googleapis.com
-        https://identitytoolkit.googleapis.com
-        https://securetoken.googleapis.com
-        https://firebaseinstallations.googleapis.com
-        https://www.googleapis.com
-        https://api.stripe.com;
+      connect-src 'self' https://firestore.googleapis.com https://firebasestorage.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://firebaseinstallations.googleapis.com https://www.googleapis.com https://api.stripe.com;
       font-src 'self' data:;
       object-src 'none';
       frame-src 'self' https://js.stripe.com;
