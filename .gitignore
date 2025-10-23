@@ -50,3 +50,6 @@ Thumbs.db
 *.swp
 
 netlify.toml.local.bak
+
+# Ignore Netlify local folders
+.netlify/
