@@ -1,64 +1,38 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="system">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
-  <title>Admin Panel – Whylee</title>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Admin – Whylee</title>
 
   <link rel="stylesheet" href="/styles/brand.css?v=9007">
   <link rel="stylesheet" href="/styles/style.css?v=9007">
   <link rel="stylesheet" href="/styles/animations.css?v=9007">
 </head>
 <body>
-  <header>
-    <h1>Admin Panel</h1>
-    <nav>
+  <header class="site-header">
+    <a class="brand" href="/index.html">Whylee</a>
+    <nav class="nav">
       <a href="/index.html">Home</a>
-      <a href="/menu.html">Menu</a>
-      <a href="/pro.html">Pro</a>
+      <a href="/admin-monitor.html">Monitor</a>
       <a href="/profile.html">Profile</a>
+      <a href="/pro.html">Pro</a>
     </nav>
   </header>
 
   <main class="container">
+    <h1>Admin Console</h1>
     <div class="card">
-      <h2>Admin Overview</h2>
-      <p>This panel is for internal monitoring and content updates.</p>
-
-      <div class="card" style="background: var(--whylee-surface);">
-        <h3>System Status</h3>
-        <ul>
-          <li>Firebase: <strong>Connected</strong></li>
-          <li>Stripe Integration: <strong>Active</strong></li>
-          <li>Version: <strong>9.0.5</strong></li>
-          <li>Deployed via: <strong>Netlify</strong></li>
-        </ul>
-      </div>
-
-      <div class="card" style="background: var(--whylee-surface);">
-        <h3>Quick Actions</h3>
-        <button class="btn" id="sync-fb">Sync Firebase Data</button>
-        <button class="btn-pro" id="gen-report">Generate Report</button>
-        <button class="btn" id="check-logs">Check Logs</button>
-      </div>
+      <p>Admin tools for content and users.</p>
+      <div id="admin-root"></div>
     </div>
   </main>
-
-  <footer>© 2025 Whylee | Internal Admin Access Only</footer>
 
   <!-- Firebase boot (ORDER MATTERS) -->
   <script type="module" src="/scripts/firebase-config.js?v=9007"></script>
   <script type="module" src="/scripts/firebase-bridge.js?v=9007"></script>
 
-  <!-- page logic -->
-  <script type="module">
-    import { db, doc, getDoc } from "/scripts/firebase-bridge.js?v=9007";
-    // minimal usage example
-    (async () => {
-      try {
-        await getDoc(doc(db, "_health", "latest"));
-      } catch {}
-    })();
-  </script>
+  <!-- Page logic -->
+  <script type="module" src="/scripts/admin.js?v=9007"></script>
 </body>
 </html>
