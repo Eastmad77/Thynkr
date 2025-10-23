@@ -15,9 +15,12 @@
     "stripe": "^17.3.0"
   },
   "devDependencies": {
-    "serve": "^14.2.3",
+    "autoprefixer": "^10.4.21",
     "netlify-cli": "^17.34.1",
-    "rimraf": "^6.0.1"
+    "postcss": "^8.5.6",
+    "rimraf": "^6.0.1",
+    "serve": "^14.2.3",
+    "tailwindcss": "^4.1.15"
   },
   "engines": {
     "node": ">=18"
