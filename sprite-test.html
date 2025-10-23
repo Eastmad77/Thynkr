@@ -1,25 +1,59 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="en" data-theme="system">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Whylee — Sprite Test</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Sprite Test – Whylee</title>
 
-  <link rel="stylesheet" href="/styles/brand.css?v=9007">
-  <link rel="stylesheet" href="/styles/style.css?v=9007">
-  <link rel="stylesheet" href="/styles/animations.css?v=9007">
-  <link rel="stylesheet" href="/styles/avatar.css?v=9007">
-
-  <script type="module" src="/scripts/boot/themeInit.js?v=9007"></script>
+  <link rel="stylesheet" href="/styles/brand.css?v=9007" />
+  <link rel="stylesheet" href="/styles/style.css?v=9007" />
+  <link rel="stylesheet" href="/styles/animations.css?v=9007" />
+  <style>
+    .sprite-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:16px}
+    .sprite-tile{background:var(--card);border-radius:12px;padding:12px;text-align:center;box-shadow:var(--shadow-sm)}
+    .sprite-tile img{width:96px;height:96px;object-fit:contain}
+    .sprite-tile .name{font-size:.85rem;margin-top:6px;color:var(--muted)}
+  </style>
 </head>
 <body>
+  <header class="site-header">
+    <a class="brand" href="/index.html">Whylee</a>
+    <nav class="nav">
+      <a href="/menu.html">Menu</a>
+      <a href="/leaderboard.html">Leaderboard</a>
+      <a href="/profile.html">Profile</a>
+    </nav>
+  </header>
+
   <main class="container">
-    <h1 class="h3">Avatar Sprite Test</h1>
-    <div class="avatar-grid">
-      <img src="/media/avatars/avatars-sprite.svg" alt="Avatars sprite"/>
-    </div>
+    <h1>Sprite & Avatar Test</h1>
+    <p class="muted">Quick visual check for avatar and icon assets.</p>
+
+    <section class="card">
+      <h2>Avatars</h2>
+      <div id="avatarGrid" class="sprite-grid"></div>
+    </section>
+
+    <section class="card">
+      <h2>Icons</h2>
+      <div class="sprite-grid">
+        <div class="sprite-tile">
+          <img src="/media/icons/app-icon.svg" alt="App Icon" />
+          <div class="name">app-icon.svg</div>
+        </div>
+        <div class="sprite-tile">
+          <img src="/media/icons/favicon-96.png" alt="Favicon 96" />
+          <div class="name">favicon-96.png</div>
+        </div>
+      </div>
+    </section>
   </main>
 
-  <script type="module" src="/scripts/boot/themeToggle.js?v=9007"></script>
+  <!-- Firebase (optional for this page, but safe) -->
+  <script type="module" src="/scripts/firebase-config.js?v=9007"></script>
+  <script type="module" src="/scripts/firebase-bridge.js?v=9007"></script>
+
+  <!-- Page logic loads avatars from /media/avatars/avatars.json -->
+  <script type="module" src="/scripts/tests/sprite-test.js?v=9007"></script>
 </body>
 </html>
