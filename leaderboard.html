@@ -1,36 +1,33 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="system">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Leaderboard – Whylee</title>
 
-  <link rel="stylesheet" href="/styles/brand.css?v=9007">
-  <link rel="stylesheet" href="/styles/style.css?v=9007">
-  <link rel="stylesheet" href="/styles/animations.css?v=9007">
+  <link rel="stylesheet" href="/styles/brand.css?v=9007"/>
+  <link rel="stylesheet" href="/styles/style.css?v=9007"/>
+  <link rel="stylesheet" href="/styles/animations.css?v=9007"/>
 </head>
 <body>
-  <header>
-    <h1>Leaderboard</h1>
-    <nav>
+  <header class="site-header">
+    <a class="brand" href="/index.html">Whylee</a>
+    <nav class="nav">
+      <a href="/index.html">Home</a>
       <a href="/menu.html">Menu</a>
-      <a href="/game.html">Play</a>
+      <a href="/profile.html">Profile</a>
+      <a href="/pro.html">Pro</a>
     </nav>
   </header>
 
   <main class="container">
-    <div class="card">
-      <table id="leaderboard"></table>
-    </div>
+    <!-- Existing leaderboard table/content -->
+    <h1>Leaderboard</h1>
+    <div id="leaderboard-root"></div>
   </main>
 
-  <footer>© 2025 Whylee</footer>
-
-  <!-- Firebase boot (ORDER MATTERS) -->
   <script type="module" src="/scripts/firebase-config.js?v=9007"></script>
   <script type="module" src="/scripts/firebase-bridge.js?v=9007"></script>
-
-  <!-- page logic -->
   <script type="module" src="/scripts/leaderboard.js?v=9007"></script>
 </body>
 </html>
