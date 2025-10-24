@@ -1,30 +1,33 @@
+# netlify.toml — Whylee
+
 [build]
   publish = "."
-  command = "npm install"   # local success used npm install, not npm ci
+  command = "npm install"         # use npm install (avoids npm ci lockfile issues)
 
 [build.environment]
-  NODE_VERSION = "18"       # match your local Node 18
-  NPM_FLAGS = "--no-audit --no-fund"
+  NODE_VERSION = "18"             # matches your local Node 18
+  NPM_FLAGS    = "--no-audit --no-fund"
 
 [functions]
   node_bundler = "esbuild"
-  external_node_modules = ["stripe","firebase-admin"]
+  # These are the only native deps you bundle at runtime
+  external_node_modules = ["stripe", "firebase-admin"]
 
-# SPA routing
+# ---- SPA routing (always serve index.html) ----
 [[redirects]]
   from = "/*"
-  to = "/index.html"
+  to   = "/index.html"
   status = 200
 
-# CORS for functions
+# ---- CORS for all Netlify Functions ----
 [[headers]]
   for = "/.netlify/functions/*"
   [headers.values]
-    Access-Control-Allow-Origin = "*"
+    Access-Control-Allow-Origin  = "*"
     Access-Control-Allow-Methods = "GET, POST, OPTIONS"
     Access-Control-Allow-Headers = "Content-Type, Authorization"
 
-# Caching
+# ---- Caching strategy ----
 [[headers]]
   for = "/service-worker.js"
   [headers.values]
@@ -50,7 +53,12 @@
   [headers.values]
     Cache-Control = "public, max-age=3600"
 
-# Security headers + CSP (keeps Firebase/Stripe working)
+# ---- Security headers + CSP ----
+# Notes:
+# - Added https://www.gstatic.com to connect-src to quiet Firebase source-map fetch warnings.
+# - Added https://js.stripe.com to script-src (Stripe.js v3 loads as a script).
+# - Added google-analytics domains in case GA4 is enabled now or later.
+# - Kept everything else tight to your current usage.
 [[headers]]
   for = "/*"
   [headers.values]
@@ -58,18 +66,38 @@
       default-src 'self';
       base-uri 'self';
       frame-ancestors 'self';
+
       img-src 'self' data: blob:;
       media-src 'self' data: blob:;
+
       style-src 'self' 'unsafe-inline';
-      script-src 'self' https://www.gstatic.com https://www.googletagmanager.com;
-      connect-src 'self' https://firestore.googleapis.com https://firebasestorage.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://firebaseinstallations.googleapis.com https://www.googleapis.com https://api.stripe.com;
+
+      script-src 'self'
+        https://www.gstatic.com
+        https://www.googletagmanager.com
+        https://js.stripe.com;
+
+      connect-src 'self'
+        https://www.gstatic.com
+        https://firestore.googleapis.com
+        https://firebasestorage.googleapis.com
+        https://identitytoolkit.googleapis.com
+        https://securetoken.googleapis.com
+        https://firebaseinstallations.googleapis.com
+        https://www.googleapis.com
+        https://api.stripe.com
+        https://www.google-analytics.com
+        https://region1.google-analytics.com;
+
       font-src 'self' data:;
       object-src 'none';
+
       frame-src 'self' https://js.stripe.com;
+
       manifest-src 'self';
       worker-src 'self';
     """
     Permissions-Policy = "geolocation=(), microphone=(), camera=()"
-    Referrer-Policy = "strict-origin-when-cross-origin"
+    Referrer-Policy    = "strict-origin-when-cross-origin"
     X-Content-Type-Options = "nosniff"
-    X-Frame-Options = "SAMEORIGIN"
+    X-Frame-Options        = "SAMEORIGIN"
