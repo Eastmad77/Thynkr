@@ -1,7 +1,7 @@
 {
   "$schema": "https://json.schemastore.org/json-schema",
-  "_comment": "Defines poster flows for Free vs Pro, plus contextual screens (success, fail, night, upgrade). File names must exist in /media/posters/V1/.",
-  "version": 2,
+  "_comment": "Defines poster flows for Free vs Pro, plus contextual screens (success, fail, night, upgrade). File names must exist in /media/posters/.",
+  "version": 1,
   "defaults": {
     "durationMs": 2200,
     "easing": "ease-out",
@@ -9,29 +9,26 @@
   },
   "flows": {
     "free": [
-      { "file": "poster-01-start.jpg",        "caption": "Tap to Begin",               "durationMs": 1600 },
-      { "file": "poster-02-mode.jpg",         "caption": "Play Free or Go Pro" },
-      { "file": "poster-06-challenge.jpg",    "caption": "Challenge Mode" }
+      { "file": "poster-01-start.jpg",   "caption": "Tap to Begin",             "durationMs": 1600 },
+      { "file": "poster-02-mode.jpg",    "caption": "Play Free or Go Pro" },
+      { "file": "poster-06-challenge.jpg","caption": "Challenge Mode" }
     ],
     "pro": [
-      { "file": "poster-05-upgrade.jpg",      "caption": "Go Pro • 3-Day Free Trial",  "durationMs": 2600 },
-      { "file": "poster-07-pro.jpg",          "caption": "Pro Rewards" },
-      { "file": "poster-08-levelup.jpg",      "caption": "Level Up • Unlock Brilliance" }
+      { "file": "poster-05-upgrade.jpg", "caption": "Go Pro • 3-Day Free Trial", "durationMs": 2600 },
+      { "file": "poster-07-pro.jpg",     "caption": "Pro Rewards" },
+      { "file": "poster-08-levelup.jpg", "caption": "Level Up • Unlock Brilliance" }
     ]
   },
   "contexts": {
     "onSuccess": [
-      { "file": "poster-success.jpg",         "caption": "Nice! Challenge Complete",   "durationMs": 2000 },
-      { "file": "poster-03-reward.jpg",       "caption": "XP Earned! Badge Unlocked",  "durationMs": 2200 },
-      { "file": "poster-pro-success.jpg",     "caption": "Pro Bonus • Streak Boost",   "durationMs": 2000 }
+      { "file": "poster-03-reward.jpg",  "caption": "XP Earned! Badge Unlocked", "durationMs": 2200 }
     ],
     "onFail": [
-      { "file": "poster-gameover.jpg",        "caption": "Game Over • Try Again",      "durationMs": 1800 },
-      { "file": "poster-pro-retry.jpg",       "caption": "Retry in Pro for Bonus",     "durationMs": 1800 }
+      { "file": "poster-gameover.jpg",   "caption": "Game Over • Try Again",     "durationMs": 1800 }
     ],
     "nightExit": [
-      { "file": "poster-10-brand.jpg",        "caption": "Your Smart Companion",       "durationMs": 1600 },
-      { "file": "poster-night.jpg",           "caption": "See You Tomorrow",           "durationMs": 1800 }
+      { "file": "poster-10-brand.jpg",   "caption": "Your Smart Companion",      "durationMs": 1600 },
+      { "file": "poster-night.jpg",      "caption": "See You Tomorrow",          "durationMs": 1800 }
     ]
   },
   "library": [
