@@ -55,3 +55,7 @@ netlify.toml.local.bak
 .netlify/
 
 !.netlify/secret-allowlist.json
+
+.netlify/*
+
+!.netlify/secret-allowlist.json
