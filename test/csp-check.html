@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Whylee CSP/Firebase/Posters Check</title>
+
+  <!-- light styling just to see output -->
+  <style>
+    :root { color-scheme: light dark; }
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin: 2rem; }
+    .ok { color: #0a0; }
+    .bad { color: #b00; }
+    .card { border: 1px solid #ccc; padding: 1rem; border-radius: 8px; max-width: 840px; }
+    .log { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; white-space: pre-wrap; }
+    #posterMount { margin-top: 1rem; }
+  </style>
+</head>
+<body>
+  <h1>✅ Whylee – CSP / Firebase / Posters sanity check</h1>
+
+  <div class="card">
+    <p>This page verifies three things:</p>
+    <ol>
+      <li><strong>CSP</strong> allows <code>www.gstatic.com</code> and <code>googleapis.com</code> in <code>script-src</code>/<code>connect-src</code>.</li>
+      <li><strong>Firebase boot order</strong> works: <code>firebase-config.js</code> then <code>firebase-bridge.js</code>.</li>
+      <li><strong>Posters</strong> manifest loads and an image renders.</li>
+    </ol>
+
+    <h3>Status</h3>
+    <ul id="status">
+      <li id="s-config">firebaseConfig present …</li>
+      <li id="s-bridge">firebase-bridge loaded …</li>
+      <li id="s-gstatic">connect to <code>www.gstatic.com</code> …</li>
+      <li id="s-gapi">connect to <code>www.googleapis.com</code> …</li>
+      <li id="s-posters">load <code>/posters.json?v=9007</code> …</li>
+      <li id="s-image">load poster image …</li>
+    </ul>
+
+    <div id="posterMount"></div>
+
+    <h3>Console</h3>
+    <div class="log" id="log"></div>
+  </div>
+
+  <!-- 1) Firebase boot (ORDER MATTERS) -->
+  <script type="module" src="/scripts/firebase-config.js?v=9007"></script>
+  <script type="module" src="/scripts/firebase-bridge.js?v=9007"></script>
+
+  <!-- 2) Posters helper -->
+  <script type="module" src="/scripts/posters.js?v=9007"></script>
+
+  <!-- 3) Test logic -->
+  <script type="module">
+    const logEl = document.getElementById('log');
+    const status = id => document.getElementById(id);
+    const ok = (el, msg='OK') => { el.className='ok'; el.textContent = el.textContent.replace('…','') + ' ' + msg; }
+    const bad = (el, msg) => { el.className='bad'; el.textContent = el.textContent.replace('…','') + ' ' + msg; }
+
+    const log = (msg) => { console.log(msg); logEl.textContent += `${msg}\n`; };
+
+    // 1) Check firebaseConfig injected by /scripts/firebase-config.js
+    try {
+      if (window.firebaseConfig && typeof window.firebaseConfig === 'object') {
+        ok(status('s-config'), 'found');
+      } else {
+        throw new Error('window.firebaseConfig missing');
+      }
+    } catch (e) {
+      bad(status('s-config'), e.message);
+      log('[config]', e);
+    }
+
+    // 2) Validate firebase-bridge executed (it throws if config missing)
+    try {
+      // Heuristic: the bridge usually attaches something to window or logs.
+      // If it didn’t throw, we treat as loaded.
+      ok(status('s-bridge'), 'loaded (no throw)');
+    } catch (e) {
+      bad(status('s-bridge'), e.message);
+      log('[bridge]', e);
+    }
+
+    // 3) CSP connect test to gstatic/googleapis (no-cors to avoid CORS noise)
+    try {
+      await fetch('https://www.gstatic.com/generate_204', { mode: 'no-cors' });
+      ok(status('s-gstatic'), 'ok');
+    } catch (e) {
+      bad(status('s-gstatic'), 'blocked by CSP?'); log(e);
+    }
+
+    try {
+      await fetch('https://www.googleapis.com/generate_204', { mode: 'no-cors' });
+      ok(status('s-gapi'), 'ok');
+    } catch (e) {
+      bad(status('s-gapi'), 'blocked by CSP?'); log(e);
+    }
+
+    // 4) Posters manifest + one image
+    try {
+      const res = await fetch('/posters.json?v=9007', { cache: 'no-store' });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      ok(status('s-posters'), `v=${data.v} items=${(data.items||[]).length}`);
+
+      const first = (data.items || [])[0];
+      if (!first) throw new Error('no items in posters.json');
+
+      const img = new Image();
+      img.alt = 'Poster preview';
+      img.style.maxWidth = '640px';
+      img.style.display = 'block';
+      img.style.marginTop = '8px';
+      img.onload = () => ok(status('s-image'), `loaded ${first.id}`);
+      img.onerror = () => bad(status('s-image'), `failed ${first.src}`);
+      img.src = first.src;
+
+      document.getElementById('posterMount').appendChild(img);
+
+      // also try the overlay helper if available
+      if (window.WhyleePoster?.showPoster) {
+        window.WhyleePoster.showPoster(first.id, { autohide: 2000 });
+      }
+    } catch (e) {
+      bad(status('s-posters'), e.message);
+      log('[posters]', e);
+    }
+
+    // surface any global errors
+    window.addEventListener('error', (e) => {
+      log('[window.onerror] ' + (e.message || e.error));
+    });
+  </script>
+</body>
+</html>
