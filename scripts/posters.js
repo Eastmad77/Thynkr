@@ -1,42 +1,63 @@
-// /scripts/posters.js — v9007
+// /scripts/posters.js — v9007 (clean)
+const MANIFEST_URL = '/posters.json?v=9007';
+
 let POSTERS = null;
 
+/** Load and cache the manifest once per page load. */
 async function loadPosterManifest() {
   if (POSTERS) return POSTERS;
+
   try {
-    const res = await fetch('/posters.json?v=9007', { cache: 'no-store' });
+    // Try version-busted URL first; fall back to plain if needed.
+    let res = await fetch(MANIFEST_URL, { cache: 'no-store' });
+    if (!res.ok) {
+      console.warn(`[posters] ${MANIFEST_URL} -> HTTP ${res.status}; trying /posters.json`);
+      res = await fetch('/posters.json', { cache: 'no-store' });
+    }
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     POSTERS = await res.json();
-  } catch (e) {
-    console.warn('[posters] failed to load manifest', e);
+    if (!POSTERS || !Array.isArray(POSTERS.items)) {
+      throw new Error('Malformed manifest (missing items[])');
+    }
+  } catch (err) {
+    console.warn('[posters] failed to load manifest:', err);
     POSTERS = { v: 0, items: [] };
   }
   return POSTERS;
 }
 
+/** Find entry by id; warns if not found. */
 function findPosterById(id) {
   const entry = (POSTERS?.items || []).find(p => p.id === id);
   if (!entry) console.warn('[posters] id not found:', id);
   return entry || { id, src: '', thumb: '' };
 }
 
+/** Remove any existing overlay so we never stack multiples. */
+function removeExistingOverlay() {
+  const existing = document.querySelector('.whylee-poster-overlay');
+  if (existing) existing.remove();
+}
+
+/**
+ * Show a poster overlay by id from posters.json.
+ * @param {string} id - Poster id in posters.json
+ * @param {{autohide?: number}} options
+ */
 export async function showPoster(id, { autohide = 0 } = {}) {
   await loadPosterManifest();
   const meta = findPosterById(id);
   if (!meta.src) return;
 
+  removeExistingOverlay();
+
   const overlay = document.createElement('div');
-  overlay.className = 'overlay-poster';
+  overlay.className = 'whylee-poster-overlay';
   overlay.style.cssText = `
     position: fixed; inset: 0; display: grid; place-items: center;
-    background: rgba(0,0,0,.7); z-index: 9999; opacity: 0;
+    background: rgba(0,0,0,.68); z-index: 9999; opacity: 0;
     transition: opacity .25s ease;
   `;
-  overlay.addEventListener('click', () => {
-    overlay.setAttribute('closing', '');
-    overlay.style.opacity = '0';
-    setTimeout(() => overlay.remove(), 280);
-  });
 
   const frame = document.createElement('div');
   frame.style.width = 'min(90vw, 1280px)';
@@ -49,6 +70,7 @@ export async function showPoster(id, { autohide = 0 } = {}) {
     : '#0b1724';
   frame.style.overflow = 'hidden';
 
+  // Preload full image
   const img = new Image();
   img.decoding = 'async';
   img.loading = 'eager';
@@ -65,21 +87,26 @@ export async function showPoster(id, { autohide = 0 } = {}) {
     frame.appendChild(img);
     requestAnimationFrame(() => (img.style.opacity = '1'));
   };
+  img.onerror = (e) => {
+    console.warn('[posters] image failed to load:', meta.src, e);
+  };
+
+  // Close interactions
+  const close = () => {
+    overlay.style.opacity = '0';
+    setTimeout(() => overlay.remove(), 260);
+    window.removeEventListener('keydown', onKey);
+  };
+  const onKey = (ev) => { if (ev.key === 'Escape') close(); };
+  window.addEventListener('keydown', onKey);
+  overlay.addEventListener('click', close);
 
   overlay.appendChild(frame);
   document.body.appendChild(overlay);
   requestAnimationFrame(() => (overlay.style.opacity = '1'));
 
-  if (autohide > 0) {
-    setTimeout(() => {
-      if (overlay.isConnected) {
-        overlay.setAttribute('closing', '');
-        overlay.style.opacity = '0';
-        setTimeout(() => overlay.remove(), 280);
-      }
-    }, autohide);
-  }
+  if (autohide > 0) setTimeout(() => overlay.isConnected && close(), autohide);
 }
 
-// Expose globally for legacy calls in game.js
+// Expose globally for legacy calls (e.g., in game.js)
 window.WhyleePoster = { showPoster };
